@@ -37,9 +37,12 @@ test('effects: LUFS Normalize applies at full length', async ({ page }) => {
     timeout: 15_000,
   });
   await expect(page.getByText(/9\.27 s/)).toBeVisible();
-  // the edit is on the undo stack (app undo shortcut: Shift+Z / Z)
-  await page.keyboard.press('Shift+z');
+  // user-facing standard: Ctrl+Z undoes the applied effect, Ctrl+Y redoes it
+  await page.keyboard.press('Control+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+  await page.keyboard.press('Control+y');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Redid/i, { timeout: 8000 });
+  await expect(page.getByText(/9\.27 s/)).toBeVisible();
 });
 
 test('effects: true-peak Limiter applies and undoes cleanly', async ({ page }) => {
@@ -49,6 +52,7 @@ test('effects: true-peak Limiter applies and undoes cleanly', async ({ page }) =
     timeout: 15_000,
   });
   await expect(page.getByText(/9\.27 s/)).toBeVisible();
+  // legacy AudioMass combo still works (Shift+Z)
   await page.keyboard.press('Shift+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
 });

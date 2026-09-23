@@ -82,7 +82,7 @@ function MenuItem({ cmd, onRun }: { cmd: Command; onRun: () => void }) {
     >
       <span class="menu-check">{cmd.check && cmd.isChecked?.() ? '✔' : ''}</span>
       <span class="menu-label">{cmd.label()}</span>
-      {cmd.kbd && <span class="menu-kbd">{cmd.kbd}</span>}
+      {cmd.kbd && <span class="menu-kbd">{cmd.kbd()}</span>}
     </button>
   );
 }

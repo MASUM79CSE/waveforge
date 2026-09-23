@@ -1,5 +1,8 @@
 import { t } from '../i18n';
 import * as A from './actions';
+import { kbdHints } from './shortcuts';
+
+const HINTS = kbdHints();
 import * as EA from './editActions';
 
 /**
@@ -9,7 +12,7 @@ import * as EA from './editActions';
 export interface Command {
   id: string;
   label: () => string;
-  kbd?: string; // display form
+  kbd?: () => string; // display form (platform-aware — see shortcuts.kbdHints)
   run: () => void;
   check?: boolean; // renders with a checkmark state
   isChecked?: () => boolean;
@@ -18,7 +21,7 @@ export interface Command {
 
 export const commands: Command[] = [
   // File
-  { id: 'file.open', label: () => t().fileOpen, kbd: 'Ctrl+O', run: () => A.pickAudioFile() },
+  { id: 'file.open', label: () => t().fileOpen, kbd: () => HINTS.open, run: () => A.pickAudioFile() },
   { id: 'file.url', label: () => t().fileUrl, run: () => A.openUrlDialog() },
   { id: 'file.sample', label: () => t().fileSample, run: () => void A.loadSample() },
   {
@@ -36,15 +39,15 @@ export const commands: Command[] = [
   { id: 'file.draftOpen', label: () => t().fileDraftOpen, run: () => A.openDraftsDialog() },
 
   // Edit
-  { id: 'edit.undo', label: () => t().editUndo, kbd: 'Shift+Z', run: () => EA.undo() },
-  { id: 'edit.redo', label: () => t().editRedo, kbd: 'Shift+Y', run: () => EA.redo() },
-  { id: 'edit.cut', label: () => t().editCut, kbd: 'Shift+X', run: () => EA.cutSelection() },
-  { id: 'edit.copy', label: () => t().editCopy, kbd: 'Shift+C', run: () => EA.copySelection() },
-  { id: 'edit.paste', label: () => t().editPaste, kbd: 'Shift+V', run: () => EA.pasteFromClipboard() },
+  { id: 'edit.undo', label: () => t().editUndo, kbd: () => HINTS.undo, run: () => EA.undo() },
+  { id: 'edit.redo', label: () => t().editRedo, kbd: () => HINTS.redo, run: () => EA.redo() },
+  { id: 'edit.cut', label: () => t().editCut, kbd: () => HINTS.cut, run: () => EA.cutSelection() },
+  { id: 'edit.copy', label: () => t().editCopy, kbd: () => HINTS.copy, run: () => EA.copySelection() },
+  { id: 'edit.paste', label: () => t().editPaste, kbd: () => HINTS.paste, run: () => EA.pasteFromClipboard() },
   {
     id: 'edit.delete',
     label: () => t().editDelete,
-    kbd: 'Del',
+    kbd: () => 'Del',
     run: () => EA.deleteSelection(),
     sep: true,
   },
@@ -52,18 +55,18 @@ export const commands: Command[] = [
   {
     id: 'edit.silence',
     label: () => t().editInsertSilence,
-    kbd: 'Shift+N',
+    kbd: () => HINTS.insertSilence,
     run: () => EA.insertSilence(),
     sep: true,
   },
   {
     id: 'edit.selectAll',
     label: () => t().editSelectAll,
-    kbd: 'Shift+A',
+    kbd: () => HINTS.selectAll,
     run: () => A.edit.selectAll(),
     sep: true,
   },
-  { id: 'edit.deselect', label: () => t().editDeselect, kbd: 'Q', run: () => A.edit.deselect() },
+  { id: 'edit.deselect', label: () => t().editDeselect, kbd: () => 'Q', run: () => A.edit.deselect() },
 
   // Effects (sample ops; native-node effects arrive in M3)
   { id: 'fx.gain', label: () => t().fxGain, run: () => A.openGainPrompt() },
@@ -86,19 +89,19 @@ export const commands: Command[] = [
   { id: 'fx.rate', label: () => t().fxRate, run: () => A.openEffectDialog('fx.rate') },
 
   // View
-  { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: '+', run: () => A.view.zoomIn() },
-  { id: 'view.zoomOut', label: () => t().viewZoomOut, kbd: '-', run: () => A.view.zoomOut() },
+  { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: () => '+', run: () => A.view.zoomIn() },
+  { id: 'view.zoomOut', label: () => t().viewZoomOut, kbd: () => '-', run: () => A.view.zoomOut() },
   {
     id: 'view.zoomReset',
     label: () => t().viewZoomReset,
-    kbd: '0',
+    kbd: () => '0',
     run: () => A.view.zoomReset(),
     sep: true,
   },
   {
     id: 'view.center',
     label: () => t().viewCenter,
-    kbd: 'Tab',
+    kbd: () => 'Tab',
     run: () => A.view.center(),
     sep: true,
   },

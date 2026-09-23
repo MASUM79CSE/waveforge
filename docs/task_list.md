@@ -270,6 +270,19 @@ pending — record with the E2 phase.
 - [x] **e2e** (`tests/e2e/effects.spec.ts`): LUFS Normalize applies at full
       length (9.27 s preserved) + undo; true-peak Limiter applies + undoes.
 
+### UX hardening (user-reported): standard undo/redo shortcuts
+
+- [x] Undo/redo were bound only to the AudioMass legacy Shift+Z/Shift+Y —
+      Ctrl+Z / Ctrl+Y did nothing. New pure shortcut table
+      (`src/app/shortcuts.ts`, 10 unit tests): Ctrl/Cmd+Z undo, Ctrl+Y AND
+      Ctrl+Shift+Z redo (both conventions), Ctrl/Cmd+X/C/V cut/copy/paste,
+      Ctrl/Cmd+A select all, Ctrl+O open; legacy shift-letter set kept.
+      Alt combos and unmapped combos stay with the browser.
+- [x] Menu shortcut hints are now platform-aware (⌘ glyphs on macOS,
+      Ctrl elsewhere) and rendered from the same table.
+- [x] e2e: apply LUFS Normalize → Ctrl+Z → "Undid" → Ctrl+Y → "Redid"
+      (duration preserved); legacy Shift+Z path still asserted.
+
 ### Defects fixed during E1
 
 - [x] **M3 defect: the effect registry was never populated in the browser**
