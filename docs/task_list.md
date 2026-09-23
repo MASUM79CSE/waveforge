@@ -20,12 +20,18 @@
 
 ## M1 — Core engine: load, render, transport (next)
 
-- [ ] R&R spike: WaveSurfer 7 / peaks.js evaluation → close `adr/001`
-- [ ] `engine/AudioDocument`, decode pipeline (Zod-gated) + progress/cancel
-- [ ] `workers/peaks.worker` + `PeakClient` (tile LRU) + protocol schemas
-- [ ] `WaveRenderer`: lanes, DPR, zoom/scroll, ruler, progressive tiles
-- [ ] Transport: play/pause/stop/seek/loop; keyboard map; follow cursor
-- [ ] Sample file generator (`scripts/gen-sample.mjs`) + Load Sample action
-- [ ] Integration tests: decode→install→render; e2e flow #1 (Playwright)
+- [x] R&R spike: wavesurfer.js 8 / peaks.js 4 evaluated → `adr/001` closed (custom renderer)
+- [x] TDD RED→GREEN: `viewState`, `transportMath`, `peaksCompute`, `protocol` (Zod),
+      `AudioDocument`, `PeakClient` (fake-transport protocol tests)
+- [x] `workers/peaks.worker` (mip cache, byte budget) + `WaveRenderer`
+      (lanes, DPR, zoom/scroll, ruler, progressive tiles, raw path, pointer+wheel)
+- [x] `AudioEngine` transport (play/pause/stop/seek/loop, drift-free clock)
+- [x] Loading: file picker / drag&drop / URL (Zod + progress) / generated sample
+      (`scripts/gen-sample.mjs` → `public/samples/demo.wav`)
+- [x] Keyboard map (Space/arrows/Home/End/L/±/0/Tab/Q/Shift+A/Ctrl+O), follow cursor
+- [x] URL dialog, loading overlay, status bar (selection/zoom/position)
+- [ ] e2e flow #1 — **moved to M4** with the Playwright suite (deviation logged:
+      §8.4 schedules Playwright from M4; M1 verified via live-server smoke of all
+      modules + pure-math integration tests instead)
 
 ## M2+ — see Build Plan §10 (roadmap)
