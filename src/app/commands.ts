@@ -1,10 +1,9 @@
 import { t } from '../i18n';
-import { openAbout, openWelcome, toastNotYet } from './actions';
+import * as A from './actions';
 
 /**
  * Command registry — one place where menus and keyboard shortcuts meet.
- * Every not-yet-implemented entry names its milestone, so the UI never lies
- * about what the app can do (honest-shell policy for M0).
+ * Not-yet-implemented entries name their milestone (honest-shell policy).
  */
 export interface Command {
   id: string;
@@ -17,81 +16,59 @@ export interface Command {
 }
 
 export const commands: Command[] = [
-  // File (loading/export land in M1/M4, drafts in M6)
-  {
-    id: 'file.open',
-    label: () => t().fileOpen,
-    kbd: 'Ctrl+O',
-    run: () => toastNotYet(t().fileOpen, 'M1'),
-  },
-  { id: 'file.url', label: () => t().fileUrl, run: () => toastNotYet(t().fileUrl, 'M1') },
-  { id: 'file.sample', label: () => t().fileSample, run: () => toastNotYet(t().fileSample, 'M1') },
+  // File
+  { id: 'file.open', label: () => t().fileOpen, kbd: 'Ctrl+O', run: () => A.pickAudioFile() },
+  { id: 'file.url', label: () => t().fileUrl, run: () => A.openUrlDialog() },
+  { id: 'file.sample', label: () => t().fileSample, run: () => void A.loadSample() },
   {
     id: 'file.export',
     label: () => t().fileExport,
-    run: () => toastNotYet(t().fileExport, 'M4'),
+    run: () => A.toastNotYet(t().fileExport, 'M4'),
     sep: true,
   },
-  {
-    id: 'file.draftSave',
-    label: () => t().fileDraftSave,
-    run: () => toastNotYet(t().fileDraftSave, 'M6'),
-  },
-  {
-    id: 'file.draftOpen',
-    label: () => t().fileDraftOpen,
-    run: () => toastNotYet(t().fileDraftOpen, 'M6'),
-  },
+  { id: 'file.draftSave', label: () => t().fileDraftSave, run: () => A.toastNotYet(t().fileDraftSave, 'M6') },
+  { id: 'file.draftOpen', label: () => t().fileDraftOpen, run: () => A.toastNotYet(t().fileDraftOpen, 'M6') },
 
-  // Edit (M2)
-  { id: 'edit.undo', label: () => t().editUndo, kbd: 'Shift+Z', run: () => toastNotYet(t().editUndo, 'M2') },
-  { id: 'edit.redo', label: () => t().editRedo, kbd: 'Shift+Y', run: () => toastNotYet(t().editRedo, 'M2') },
+  // Edit
+  { id: 'edit.undo', label: () => t().editUndo, kbd: 'Shift+Z', run: () => A.toastNotYet(t().editUndo, 'M2') },
+  { id: 'edit.redo', label: () => t().editRedo, kbd: 'Shift+Y', run: () => A.toastNotYet(t().editRedo, 'M2') },
   {
     id: 'edit.selectAll',
     label: () => t().editSelectAll,
     kbd: 'Shift+A',
-    run: () => toastNotYet(t().editSelectAll, 'M2'),
+    run: () => A.edit.selectAll(),
     sep: true,
   },
-  {
-    id: 'edit.deselect',
-    label: () => t().editDeselect,
-    kbd: 'Q',
-    run: () => toastNotYet(t().editDeselect, 'M2'),
-  },
+  { id: 'edit.deselect', label: () => t().editDeselect, kbd: 'Q', run: () => A.edit.deselect() },
 
-  // View (M1 — renderer)
-  { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: '+', run: () => toastNotYet(t().viewZoomIn, 'M1') },
-  { id: 'view.zoomOut', label: () => t().viewZoomOut, kbd: '-', run: () => toastNotYet(t().viewZoomOut, 'M1') },
+  // View
+  { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: '+', run: () => A.view.zoomIn() },
+  { id: 'view.zoomOut', label: () => t().viewZoomOut, kbd: '-', run: () => A.view.zoomOut() },
   {
     id: 'view.zoomReset',
     label: () => t().viewZoomReset,
     kbd: '0',
-    run: () => toastNotYet(t().viewZoomReset, 'M1'),
+    run: () => A.view.zoomReset(),
     sep: true,
   },
   {
     id: 'view.center',
     label: () => t().viewCenter,
     kbd: 'Tab',
-    run: () => toastNotYet(t().viewCenter, 'M1'),
+    run: () => A.view.center(),
     sep: true,
   },
   {
     id: 'view.follow',
     label: () => t().viewFollow,
-    run: () => toastNotYet(t().viewFollow, 'M1'),
+    run: () => A.view.toggleFollow(),
     check: true,
-    isChecked: () => false,
+    isChecked: () => A.isFollowOn(),
   },
 
-  // Help (working now)
-  {
-    id: 'help.welcome',
-    label: () => t().helpWelcome,
-    run: () => openWelcome(),
-  },
-  { id: 'help.about', label: () => t().helpAbout, run: () => openAbout() },
+  // Help
+  { id: 'help.welcome', label: () => t().helpWelcome, run: () => A.openWelcome() },
+  { id: 'help.about', label: () => t().helpAbout, run: () => A.openAbout() },
 ];
 
 export function runCommand(id: string): void {

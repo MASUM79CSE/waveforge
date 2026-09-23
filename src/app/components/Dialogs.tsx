@@ -1,6 +1,6 @@
 import { Brand } from '../../brand';
 import { t } from '../../i18n';
-import { closeAbout, closeWelcome } from '../actions';
+import { closeAbout, closeWelcome, loadSample, pickAudioFile } from '../actions';
 import { aboutOpen, welcomeOpen } from '../state';
 import { Modal } from './Modal';
 import { BrandMark } from './MenuBar';
@@ -14,11 +14,27 @@ export function WelcomeDialog() {
           <BrandMark />
         </div>
         <p class="welcome-lead">{t().welcomeLead}</p>
+        <div class="empty-actions">
+          <button
+            class="btn-primary"
+            onClick={() => {
+              closeWelcome();
+              pickAudioFile();
+            }}
+          >
+            {t().quickOpen}
+          </button>
+          <button
+            class="btn-secondary"
+            onClick={() => {
+              closeWelcome();
+              void loadSample();
+            }}
+          >
+            {t().quickSample}
+          </button>
+        </div>
         <p class="welcome-privacy">{t().welcomePrivacy}</p>
-        <p class="welcome-milestone">{t().welcomeMilestone}</p>
-        <button class="btn-primary welcome-start" onClick={closeWelcome}>
-          {t().welcomeStart}
-        </button>
         <p class="welcome-attribution">{Brand.attribution}</p>
       </div>
     </Modal>

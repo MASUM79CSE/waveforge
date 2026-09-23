@@ -65,6 +65,26 @@ export const en = {
   ok: 'OK',
   close: 'Close',
 
+  // url dialog
+  urlTitle: 'Load From URL',
+  urlHint: 'The file must be served over https and allow cross-origin access (CORS).',
+  urlPlaceholder: 'https://example.com/song.mp3',
+  urlLoad: 'Load',
+  urlCancel: 'Cancel',
+
+  // canvas / empty state
+  dropHint: 'Drag & drop an audio file here',
+  quickOpen: 'Open file',
+  quickSample: 'Load sample',
+
+  // loading + toasts
+  loadingFile: (name: string) => `Decoding ${name}…`,
+  loadingUrl: 'Downloading…',
+  loadingSample: 'Loading sample…',
+  toastLoaded: (name: string) => `Loaded ${name}`,
+  loopOn: 'Loop on',
+  loopOff: 'Loop off',
+
   // toast helpers
   notYet: (feature: string, milestone: string) => `${feature} — arrives in ${milestone}`,
 
