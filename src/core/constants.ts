@@ -40,3 +40,18 @@ export const GEQ20_HZ = Array.from({ length: 20 }, (_, i) =>
 /** Recording limits & persistence (M4). */
 export const RECORD_MAX_SECONDS = 600;
 export const RECORD_SETTINGS_KEY = 'record';
+
+/** Analysis & tools (M5) — BS.1770-4 + tempo + ID3 boundaries. */
+export const LUFS_BLOCK_S = 0.4;
+export const LUFS_OVERLAP = 0.75;
+export const LUFS_SHORT_TERM_S = 3;
+export const LUFS_GATE_ABS_LU = -70;
+export const LUFS_GATE_REL_LU = -10;
+/** Tempo search bounds (BPM) and onset frame size. */
+export const BPM_MIN = 60;
+export const BPM_MAX = 180;
+export const BPM_PRIOR = 120;
+export const ONSET_FRAME_S = 0.01;
+/** ID3 v2.4 text limits. */
+export const ID3_MAX_TEXT = 500;
+export const ID3_MAX_FRAME = 4096;
