@@ -108,28 +108,6 @@ const G10 = Object.fromEntries(
 ) as Params;
 
 describe('buildGraph (construction contracts)', () => {
-  test('compressor: Dynamics + makeup gain, params in WebAudio units', () => {
-    const ctx = new FakeContext();
-    const { input, output } = buildGraph(
-      ctx as unknown as BaseAudioContext,
-      'compressor',
-      { thresholdDb: -18, kneeDb: 20, ratio: 6, attackMs: 25, releaseMs: 200, makeupDb: 12 },
-      { channels: 2 },
-    );
-    expect(ctx.dynamics).toHaveLength(1);
-    expect(ctx.gains).toHaveLength(1);
-    const comp = must(ctx.dynamics[0]);
-    expect(comp.threshold.value).toBe(-18);
-    expect(comp.knee.value).toBe(20);
-    expect(comp.ratio.value).toBe(6);
-    expect(comp.attack.value).toBeCloseTo(0.025, 6);
-    expect(comp.release.value).toBeCloseTo(0.2, 6);
-    // makeup 12 dB -> linear 3.981 on the trailing gain, which is the output
-    expect(output).toBe(ctx.gains[0]);
-    expect(must(ctx.gains[0]).gain.value).toBeCloseTo(10 ** (12 / 20), 4);
-    expect(wired(input, ctx.gains[0])).toBe(true);
-  });
-
   test('distortion: WaveShaper carries the generated curve', () => {
     const ctx = new FakeContext();
     const { output } = buildGraph(

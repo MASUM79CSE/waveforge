@@ -65,6 +65,7 @@ export const menus: MenuDef[] = [
       'fx.fadeOut',
       '-',
       'fx.normalize',
+      'fx.normalizeLufs',
       'fx.reverse',
       'fx.invert',
       '-',

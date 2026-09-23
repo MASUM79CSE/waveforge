@@ -32,8 +32,6 @@ export function buildGraph(
   opts: GraphOpts,
 ): BuiltGraph {
   switch (graphId) {
-    case 'compressor':
-      return buildCompressor(ctx, params);
     case 'distortion':
       return buildDistortion(ctx, params);
     case 'delay':
@@ -49,19 +47,6 @@ export function buildGraph(
     default:
       throw new Error(`buildGraph: unknown graphId ${graphId}`);
   }
-}
-
-function buildCompressor(ctx: BaseAudioContext, params: Params): BuiltGraph {
-  const comp = ctx.createDynamicsCompressor();
-  comp.threshold.value = Number(params.thresholdDb);
-  comp.knee.value = Number(params.kneeDb);
-  comp.ratio.value = Number(params.ratio);
-  comp.attack.value = Number(params.attackMs) / 1000;
-  comp.release.value = Number(params.releaseMs) / 1000;
-  const makeup = ctx.createGain();
-  makeup.gain.value = Math.pow(10, Number(params.makeupDb) / 20);
-  comp.connect(makeup);
-  return { input: comp, output: makeup };
 }
 
 function buildDistortion(ctx: BaseAudioContext, params: Params): BuiltGraph {

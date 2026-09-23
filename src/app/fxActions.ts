@@ -4,6 +4,11 @@
  * stage-then-swap safe (ADR 002/005). Kernel effects run their pure
  * process on the region; graph effects render offline first.
  */
+// fx composition root: defs.ts self-registers the built-in effects on its
+// first import — without this side-effect import the registry stays empty
+// in the browser and every effect dialog silently renders null (caught by
+// the E1 e2e: unit tests import defs directly and never saw it)
+import '../fx/defs';
 import { makeOverwritePaste, sliceRegion } from '../engine/editOps';
 import type { EffectDef, KernelEffectDef, Params } from '../fx/types';
 import { getEffect, validateParams } from '../fx/registry';

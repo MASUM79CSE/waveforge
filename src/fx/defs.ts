@@ -4,8 +4,9 @@
  * dialog UI contract and the validation clamp ranges.
  */
 import { FX_MAX_FEEDBACK, FX_MIN_TAIL_GAIN, GEQ20_HZ } from '../core/constants';
-import { hardLimit } from './limiter';
+import { applyNormalizeLufs, truePeakLimit } from './mastering';
 import { registerEffect } from './registry';
+import { compressKernel } from './compressor';
 import { noiseGate } from './gate';
 import { resample } from './resample';
 import type { EffectDef, Params, ParamSpec } from './types';
@@ -40,14 +41,22 @@ const DEFS: EffectDef[] = [
   {
     id: 'fx.compressor',
     labelKey: 'fxCompressor',
-    kind: 'graph',
-    graphId: 'compressor',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      compressKernel(channels, sampleRate, {
+        thresholdDb: Number(params.thresholdDb),
+        ratio: Number(params.ratio),
+        kneeDb: Number(params.kneeDb),
+        attackMs: Number(params.attackMs),
+        releaseMs: Number(params.releaseMs),
+        makeupDb: Number(params.makeupDb),
+      }),
     specs: [
       num('thresholdDb', 'paramThreshold', -60, 0, 1, -24),
-      num('kneeDb', 'paramKnee', 0, 40, 1, 12),
+      num('kneeDb', 'paramKnee', 0, 24, 1, 6),
       num('ratio', 'paramRatio', 1, 20, 0.5, 4),
-      num('attackMs', 'paramAttack', 0, 200, 1, 10),
-      num('releaseMs', 'paramRelease', 10, 1000, 5, 120),
+      num('attackMs', 'paramAttack', 0.5, 100, 0.5, 10),
+      num('releaseMs', 'paramRelease', 10, 1000, 5, 150),
       num('makeupDb', 'paramMakeup', 0, 24, 0.5, 0),
     ],
   },
@@ -56,15 +65,29 @@ const DEFS: EffectDef[] = [
     labelKey: 'fxLimiter',
     kind: 'kernel',
     process: (channels, sampleRate, params) =>
-      hardLimit(channels, sampleRate, {
+      truePeakLimit(channels, sampleRate, {
         ceilingDb: Number(params.ceilingDb),
         lookaheadMs: Number(params.lookaheadMs),
         releaseMs: Number(params.releaseMs),
       }),
     specs: [
-      num('ceilingDb', 'paramCeiling', -24, 0, 0.5, -0.5),
-      num('lookaheadMs', 'paramLookahead', 1, 30, 1, 15),
-      num('releaseMs', 'paramRelease', 5, 500, 5, 50),
+      num('ceilingDb', 'paramCeiling', -24, 0, 0.1, -1),
+      num('lookaheadMs', 'paramLookahead', 1, 30, 1, 5),
+      num('releaseMs', 'paramRelease', 5, 500, 5, 60),
+    ],
+  },
+  {
+    id: 'fx.normalizeLufs',
+    labelKey: 'fxNormalizeLufs',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      applyNormalizeLufs(channels, sampleRate, {
+        targetLufs: Number(params.targetLufs),
+        ceilingDbtp: params.ceilingEnable ? -1 : null,
+      }),
+    specs: [
+      num('targetLufs', 'paramTargetLufs', -24, -9, 0.5, -14),
+      bool('ceilingEnable', 'paramTrueCeil', true),
     ],
   },
   {

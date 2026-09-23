@@ -7,6 +7,7 @@ import { en } from '../../src/i18n/en';
 const EXPECTED_ORDER = [
   'fx.compressor',
   'fx.limiter',
+  'fx.normalizeLufs',
   'fx.distortion',
   'fx.delay',
   'fx.reverb',
@@ -61,8 +62,9 @@ describe('fx definitions hygiene', () => {
   test('kernel defs have a process fn; graph defs have a graphId + tail info', () => {
     const kinds = Object.fromEntries(defs.map((def) => [def.id, def.kind]));
     expect(kinds).toEqual({
-      'fx.compressor': 'graph',
+      'fx.compressor': 'kernel',
       'fx.limiter': 'kernel',
+      'fx.normalizeLufs': 'kernel',
       'fx.distortion': 'graph',
       'fx.delay': 'graph',
       'fx.reverb': 'graph',
