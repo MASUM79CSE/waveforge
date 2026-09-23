@@ -15,7 +15,7 @@ import * as S from './state';
 export const engine = new AudioEngine();
 export const renderer = new WaveRenderer();
 
-const bufferFactory: BufferFactory = (channels, sampleRate): AudioBufferLike => {
+export const bufferFactory: BufferFactory = (channels, sampleRate): AudioBufferLike => {
   const ctx = getSharedContext();
   const buffer = ctx.createBuffer(channels.length, channels[0]?.length ?? 0, sampleRate);
   for (let ch = 0; ch < channels.length; ++ch) {

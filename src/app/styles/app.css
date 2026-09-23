@@ -499,3 +499,52 @@
   border-color: var(--accent-line);
   background: var(--accent-dim);
 }
+
+/* Effect dialog (M3) */
+.fx-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 340px;
+}
+
+.fx-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fx-label {
+  width: 120px;
+  flex: none;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.fx-slider {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.fx-num {
+  width: 76px;
+  flex: none;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 3px 6px;
+}
+
+.fx-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.fx-spacer {
+  flex: 1;
+}

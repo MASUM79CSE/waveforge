@@ -1,7 +1,7 @@
 import { runCommand } from './commands';
-import { edit, transport, view } from './actions';
+import { closeEffectDialog, edit, transport, view } from './actions';
 import * as EA from './editActions';
-import { aboutOpen, welcomeOpen, urlOpen } from './state';
+import { aboutOpen, welcomeOpen, urlOpen, effectDialogId } from './state';
 
 function isTypingTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
@@ -15,7 +15,8 @@ export function bindKeyboard(): void {
 
     // Escape closes dialogs (topmost first)
     if (event.key === 'Escape') {
-      if (urlOpen.value) urlOpen.value = false;
+      if (effectDialogId.value) closeEffectDialog();
+      else if (urlOpen.value) urlOpen.value = false;
       else if (aboutOpen.value) aboutOpen.value = false;
       else if (welcomeOpen.value) welcomeOpen.value = false;
       return;

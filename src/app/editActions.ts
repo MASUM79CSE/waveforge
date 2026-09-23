@@ -57,13 +57,13 @@ function selectionRange(): { start: number; len: number } | null {
 }
 
 /** Edit target: the selection when present, else the whole document. */
-function targetRange(): { start: number; len: number } | null {
+export function targetRange(): { start: number; len: number } | null {
   const doc = getDoc();
   if (!doc || doc.length === 0) return null;
   return selectionRange() ?? { start: 0, len: doc.length };
 }
 
-function currentChannels(): Float32Array[] {
+export function currentChannels(): Float32Array[] {
   const doc = getDoc();
   if (!doc) return [];
   const channels: Float32Array[] = [];

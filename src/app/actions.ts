@@ -9,6 +9,7 @@ import { clampSeek } from '../engine/transportMath';
 import { decodeBlob } from '../io/decode';
 import { t, tError } from '../i18n';
 import { installDoc, engine, renderer, getDoc } from './runtime';
+import { stopPreview } from './preview';
 import * as S from './state';
 import type { Toast } from './state';
 
@@ -91,6 +92,15 @@ export function closeGainPrompt(): void {
 
 export function openNormalizePrompt(): void {
   S.normalizePromptOpen.value = true;
+}
+
+export function openEffectDialog(id: string): void {
+  S.effectDialogId.value = id;
+}
+
+export function closeEffectDialog(): void {
+  stopPreview();
+  S.effectDialogId.value = null;
 }
 
 export function closeNormalizePrompt(): void {

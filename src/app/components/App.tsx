@@ -6,6 +6,7 @@ import { Toasts } from './Toasts';
 import { AboutDialog, WelcomeDialog } from './Dialogs';
 import { UrlDialog } from './UrlDialog';
 import { GainDialog, NormalizeDialog } from './PromptDialogs';
+import { EffectDialog } from './EffectDialog';
 
 export function App() {
   return (
@@ -22,6 +23,7 @@ export function App() {
       <UrlDialog />
       <GainDialog />
       <NormalizeDialog />
+      <EffectDialog />
     </div>
   );
 }

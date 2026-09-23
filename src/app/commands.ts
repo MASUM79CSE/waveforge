@@ -68,6 +68,16 @@ export const commands: Command[] = [
   { id: 'fx.reverse', label: () => t().fxReverse, run: () => EA.applyReverse() },
   { id: 'fx.invert', label: () => t().fxInvert, run: () => EA.applyInvert(), sep: true },
   { id: 'fx.removeSilence', label: () => t().fxRemoveSilence, run: () => EA.applyRemoveSilence() },
+  { id: 'fx.compressor', label: () => t().fxCompressor, run: () => A.openEffectDialog('fx.compressor') },
+  { id: 'fx.limiter', label: () => t().fxLimiter, run: () => A.openEffectDialog('fx.limiter') },
+  { id: 'fx.pgeq', label: () => t().fxPGEQ, run: () => A.openEffectDialog('fx.pgeq') },
+  { id: 'fx.geq10', label: () => t().fxGEQ10, run: () => A.openEffectDialog('fx.geq10') },
+  { id: 'fx.geq20', label: () => t().fxGEQ20, run: () => A.openEffectDialog('fx.geq20') },
+  { id: 'fx.delay', label: () => t().fxDelay, run: () => A.openEffectDialog('fx.delay') },
+  { id: 'fx.reverb', label: () => t().fxReverb, run: () => A.openEffectDialog('fx.reverb') },
+  { id: 'fx.distortion', label: () => t().fxDistortion, run: () => A.openEffectDialog('fx.distortion') },
+  { id: 'fx.gate', label: () => t().fxGate, run: () => A.openEffectDialog('fx.gate') },
+  { id: 'fx.rate', label: () => t().fxRate, run: () => A.openEffectDialog('fx.rate') },
 
   // View
   { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: '+', run: () => A.view.zoomIn() },

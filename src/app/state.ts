@@ -57,6 +57,8 @@ export const normalizePromptOpen = signal(false);
 // editing
 export const canUndo = signal(false);
 export const canRedo = signal(false);
+export const effectDialogId = signal<string | null>(null);
+export const previewActive = signal(false);
 export const channelMutes = signal<[boolean, boolean]>([false, false]);
 export const channelsSwapped = signal(false);
 
