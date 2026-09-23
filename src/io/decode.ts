@@ -7,7 +7,7 @@ import { getErrorMessage } from '../core/errors';
 
 let sharedCtx: AudioContext | null = null;
 
-function getSharedContext(): AudioContext {
+export function getSharedContext(): AudioContext {
   if (!sharedCtx) sharedCtx = new AudioContext();
   return sharedCtx;
 }

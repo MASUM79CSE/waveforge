@@ -10,10 +10,15 @@ import { clampSeek, positionAt, type LoopRegion } from './transportMath';
 
 const END_EPSILON = 0.005;
 const MIN_LOOP_SECONDS = 0.01;
+const STEREO = 2;
 
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  private splitter: ChannelSplitterNode | null = null;
+  private merger: ChannelMergerNode | null = null;
+  private chGains: GainNode[] = [];
+  private swapped = false;
   private doc: AudioDocument | null = null;
   private source: AudioBufferSourceNode | null = null;
   private startedAtCtx = 0;
@@ -39,10 +44,35 @@ export class AudioEngine {
       this.ctx = new AudioContext();
       this.master = this.ctx.createGain();
       this.master.connect(this.ctx.destination);
+
+      // per-channel routing: splitter → per-channel gain → merger → master
+      this.splitter = this.ctx.createChannelSplitter(STEREO);
+      this.merger = this.ctx.createChannelMerger(STEREO);
+      this.chGains = [this.ctx.createGain(), this.ctx.createGain()];
+      for (let ch = 0; ch < STEREO; ++ch) {
+        this.chGains[ch]?.connect(this.merger, 0, ch);
+      }
+      this.merger.connect(this.master);
+      this.routeChannels();
       return this.ctx;
     } catch (error: unknown) {
       logger.error('AudioContext unavailable', { detail: getErrorMessage(error) });
       return null;
+    }
+  }
+
+  private routeChannels(): void {
+    if (!this.merger) return;
+    for (let ch = 0; ch < STEREO; ++ch) {
+      const gain = this.chGains[ch];
+      if (!gain) continue;
+      try {
+        gain.disconnect();
+      } catch {
+        /* not yet connected */
+      }
+      const target = this.swapped ? (ch === 0 ? 1 : 0) : ch;
+      gain.connect(this.merger, 0, target);
     }
   }
 
@@ -76,6 +106,21 @@ export class AudioEngine {
     this.master.gain.value = Math.max(0, Math.min(1.5, v));
   }
 
+  /** Mute/unmute a stereo channel (playback routing, not destructive). */
+  setChannelMute(ch: number, muted: boolean): void {
+    const ctx = this.ensureContext();
+    const gain = this.chGains[ch];
+    if (!ctx || !gain) return;
+    gain.gain.value = muted ? 0 : 1;
+  }
+
+  /** Swap left/right output routing (flip channels). */
+  setChannelsSwapped(swapped: boolean): void {
+    this.ensureContext();
+    this.swapped = swapped;
+    this.routeChannels();
+  }
+
   async play(): Promise<void> {
     const doc = this.doc;
     if (!doc || this.playing) return;
@@ -87,7 +132,11 @@ export class AudioEngine {
     // runtime documents always wrap a real AudioBuffer (AudioBufferLike is a
     // test-only structural view — see tests/unit/audioDocument.test.ts)
     src.buffer = doc.buffer as AudioBuffer;
-    src.connect(this.master);
+
+    // stereo documents route through per-channel gains (mute/flip); mono
+    // connects straight to the master to preserve proper upmixing
+    if (doc.channels >= STEREO && this.splitter) src.connect(this.splitter);
+    else src.connect(this.master);
 
     const duration = doc.duration;
     let from = this.cursor;

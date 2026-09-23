@@ -81,14 +81,21 @@ export class WaveRenderer {
     this.g = null;
   }
 
-  setDocument(doc: AudioDocument | null, peaks: PeakClient | null): void {
+  setDocument(doc: AudioDocument | null, peaks: PeakClient | null, opts?: { keepView?: boolean }): void {
     this.doc = doc;
     this.peaks = peaks;
     this.cursor = 0;
     this.selection = null;
     this.pendingRaw.clear();
     const env = this.env();
-    if (doc && env) this.view = V.fitView(env);
+    if (doc && env) {
+      if (opts?.keepView) {
+        // keep zoom/pan across edits, clamping the pan into the new length
+        this.view = { spp: this.view.spp, start: Math.min(this.view.start, V.maxStart(env, this.view.spp)) };
+      } else {
+        this.view = V.fitView(env);
+      }
+    }
     this.emitView();
     this.requestDraw();
   }
