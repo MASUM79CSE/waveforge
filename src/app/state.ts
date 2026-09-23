@@ -104,6 +104,24 @@ export function setBeatsShown(value: boolean): void {
 export const metadataOpen = signal(false);
 export const tags = signal<Record<string, string>>({});
 
+// drafts + autosave + PWA (M6)
+export const draftsOpen = signal(false);
+export const draftSaveOpen = signal(false);
+export const draftsBusy = signal(false);
+export const restoreStamp = signal<number | null>(null);
+export const updateReady = signal(false);
+export interface DraftRow {
+  id: string;
+  name: string;
+  updatedAt: number;
+  duration: number;
+  channels: number;
+  sizeBytes: number;
+  compressed: boolean;
+}
+export const draftsList = signal<DraftRow[]>([]);
+export const draftsUsage = signal<{ usage: number; quota: number } | null>(null);
+
 function readStoredBool(key: string, fallback: boolean): boolean {
   try {
     return localStorage.getItem(`${STORAGE_PREFIX}.${key}`) === '1' ? true :

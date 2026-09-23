@@ -10,7 +10,7 @@ export interface AudioBufferLike {
   getChannelData(channel: number): Float32Array;
 }
 
-export type DocSource = 'file' | 'url' | 'sample' | 'recording';
+export type DocSource = 'file' | 'url' | 'sample' | 'recording' | 'draft';
 
 export interface DocMeta {
   name: string;

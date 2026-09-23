@@ -18,6 +18,7 @@ import { getSharedContext, resumeSharedContext } from '../io/decode';
 import { tError } from '../i18n';
 import * as S from './state';
 import { invalidateAnalysis } from './analysisActions';
+import { notifyAutosaveEdit } from './draftActions';
 
 export const engine = new AudioEngine();
 export const renderer = new WaveRenderer();
@@ -52,6 +53,7 @@ function updateHistorySignals(): void {
 /** Fresh load: resets view, history and transport. */
 export function installDoc(doc: AudioDocument | null): void {
   invalidateAnalysis();
+  S.restoreStamp.value = null; // an explicit load supersedes the restore offer
   engine.setDocument(doc);
   peaks?.dispose();
   peaks = doc ? new PeakClient(doc.buffer) : null;
@@ -101,6 +103,7 @@ export function performEdit(outcome: EditOutcome, label: string): boolean {
   if (!doc) return false;
   swapDoc(doc, engine.cursor);
   updateHistorySignals();
+  notifyAutosaveEdit();
   return true;
 }
 

@@ -32,8 +32,8 @@ export const commands: Command[] = [
     run: () => A.openExportDialog(),
     sep: true,
   },
-  { id: 'file.draftSave', label: () => t().fileDraftSave, run: () => A.toastNotYet(t().fileDraftSave, 'M6') },
-  { id: 'file.draftOpen', label: () => t().fileDraftOpen, run: () => A.toastNotYet(t().fileDraftOpen, 'M6') },
+  { id: 'file.draftSave', label: () => t().fileDraftSave, run: () => A.openSaveDraftDialog() },
+  { id: 'file.draftOpen', label: () => t().fileDraftOpen, run: () => A.openDraftsDialog() },
 
   // Edit
   { id: 'edit.undo', label: () => t().editUndo, kbd: 'Shift+Z', run: () => EA.undo() },

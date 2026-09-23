@@ -355,4 +355,17 @@ export {
   toggleBeatsShown,
 } from './analysisActions';
 
+export {
+  closeDraftsDialog,
+  closeSaveDraftDialog,
+  confirmSaveDraft,
+  deleteDraft,
+  discardAutosave,
+  openDraft,
+  openDraftsDialog,
+  openSaveDraftDialog,
+  renameDraft,
+  restoreAutosave,
+} from './draftActions';
+
 export { Brand };
