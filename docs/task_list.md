@@ -239,4 +239,44 @@ Repository pattern; the browser bridge lives in `draftActions`.
 - localStorage access is centralised (`settings.ts` namespaced + validated;
   M4 record settings keep their own reviewed namespace).
 
+## Effects v2 — E1 Precision mastering (complete)
+
+Per `docs/effects-v2-plan.md` §E1 (RED → green, analytic gates). ADR 009
+pending — record with the E2 phase.
+
+- [x] **`src/fx/mastering.ts`**: 4× oversampled true-peak engine (65-tap
+      Kaiser β 8.5 polyphase, cutoff at the old Nyquist, DC gain exact ×4;
+      passband flat to 18 kHz, stopband −80 dB @ 30 kHz, −94 dB @ 32 kHz);
+      `truePeakLimit` (hardLimit's lookahead skeleton fed from the TP
+      envelope, program-adaptive 5 ms fast-unload after 20 ms of < 1 dB GR);
+      `applyNormalizeLufs` (M5 BS.1770-4 kernels + flat gain clamped ±24 dB
+      + optional −1 dBTP ceiling pass); `truePeakDb` estimator.
+- [x] **`src/fx/compressor.ts`**: soft-knee compressor kernel — 10 ms RMS
+      sliding-window detection per channel, exact piecewise static curve
+      (continuous at both knee edges), one-pole attack/release in dB,
+      makeup after gain. Replaces the DynamicsCompressorNode graph def.
+- [x] **Gates met**: sweep {997 Hz…15.5 kHz} @ −0.5 dBFS into −1 dBTP →
+      TP ≤ −0.9 dBTP (all six); fs/4@45° intersample witness (samples read
+      −3.5 dB, TP estimate −0.5 ± 0.3); LUFS round-trip −23 dBFS → −14 LUFS
+      within ±0.3; bypass nulls bit-exact; linked-stereo image preserved;
+      release monotone (no step > 0.5 dB/frame); steady-state GR ladder
+      −60…0 dB matches the static curve ±0.1 dB; 30 s worst-case stability;
+      `[profile]` 60 s stereo 44.1 kHz: tplimiter 867 ms, normalizeLufs
+      1147 ms, compressor 621 ms (budgets 1.5 s ✓, no B1 trigger).
+- [x] **Registry/menu**: `fx.compressor` → kernel (knee 0–24 dB, attack
+      0.5–100 ms); `fx.limiter` → true-peak (ceiling −1 dBTP default,
+      lookahead 5 ms); new `fx.normalizeLufs` (target −24…−9 LUFS, default
+      −14, ceiling toggle) in the Effects menu + command + i18n.
+- [x] **e2e** (`tests/e2e/effects.spec.ts`): LUFS Normalize applies at full
+      length (9.27 s preserved) + undo; true-peak Limiter applies + undoes.
+
+### Defects fixed during E1
+
+- [x] **M3 defect: the effect registry was never populated in the browser**
+      — nothing in `src/` imported `fx/defs.ts`, so `getEffect` always
+      returned undefined and *every* effect dialog silently rendered null.
+      Unit tests import defs directly (registered there), and no earlier
+      e2e opened an effect dialog. Fixed with a side-effect import at the
+      fx composition root (`fxActions`); e2e now covers dialog open/apply.
+
 ## M7+ — see Build Plan §10 (roadmap)

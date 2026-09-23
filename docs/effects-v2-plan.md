@@ -31,7 +31,7 @@
 - **Accuracy gate:** apply at target −16 on the demo, re-measure with the same kernels → `|measured − target| ≤ 0.3 LU` in a unit test and in an e2e toast readout.
 
 ### E1b. True-peak limiter (`tplimiter`, kernel)
-- Detection on a 4× oversampled signal: zero-stuff ×4 → 33-tap Kaiser-windowed polyphase FIR per phase (β = 8.5, stopband ≥ 90 dB); ceiling param in dBTP.
+- Detection on a 4× oversampled signal: zero-stuff ×4 → 65-tap Kaiser-windowed polyphase FIR (β = 8.5, cutoff at the old Nyquist). *Correction during E1: 33 taps cannot deliver both a π/4 cutoff and ≥ 80 dB stopband (Kaiser N ≈ (A−8)/(2.285·Δω) ⇒ 46+ taps for 90 dB); 65 taps measured: passband flat to 18 kHz, −80 dB @ 30 kHz, −94 dB @ 32 kHz.*
 - Gain reduction: lookahead 5 ms, release 60 ms (program-adaptive: fast unload when GR < 1 dB for > 20 ms), dual-stage (static ceil + soft clipper at ceil +0.3 dB only as a guard).
 - **Accuracy gates:**
   - sweep set {997 Hz, 3k, 7k, 9.5k, 12.5k, 15.5 kHz} @ −0.5 dBFS into ceiling −1.0 → oversampled peak ≤ −1.0 + 0.1 dB, and **no sample of the output exceeds +0.05 dB over ceiling** after 4× estimation;
@@ -40,10 +40,10 @@
 
 ### E1c. Soft-knee compressor upgrade (existing `compressor` def, pure rework)
 - Detection: 10 ms RMS (existing meter math), soft knee W 0–24 dB (default 6), ratio 1–20, attack 0.5–100 ms, release 10–1000 ms.
-- Static curve, exact piecewise (x = level dB, T = threshold, R = ratio, W = knee):
+- Static curve, exact piecewise (x = level dB, T = threshold, R = ratio, W = knee) — *corrected during E1 from the standard continuous output equations; the original linear branch had a wrong offset and sign:*
   - `x ≤ T − W/2` → GR 0
-  - `T − W/2 < x < T + W/2` → `GR = (1/R − 1) · (x − T + W/2)² / (2W)`
-  - `x ≥ T + W/2` → `GR = (1/R − 1) · (x − T + W/2)`
+  - `T − W/2 < x < T + W/2` → `GR = (1 − 1/R) · (x − T + W/2)² / (2W)`
+  - `x ≥ T + W/2` → `GR = (1 − 1/R) · (x − T)`
 - **Accuracy gate:** step the input −60…0 dB in 1 dB; measured steady-state GR matches the formula **±0.1 dB** at every step (both channels independently). Bypass null 1e-9.
 
 ---
@@ -130,7 +130,7 @@ Every new kernel (all of E1–E6) must pass, in order:
 4. **Determinism** — seeded PRNG only; two runs bit-identical; no `Math.random` (security grep extended to fx).
 5. **Stability** — 30 s pink noise + impulse through worst-case params: output bounded (|x| ≤ 4), no NaN/Inf, denormals flushed (state += 1e-20 every 65 536 samples or FMA-scale guard).
 6. **Stereo honesty** — every effect exercised in mono AND stereo; stereo-only behavior (width, decorrelation) asserted by construction.
-7. **Profile log** — `[profile] <fx> 60 s stereo: …ms` printed by the slowest test per package; budgets: E1 ≤ 1.5 s, E2 ≤ 0.6 s, E3 ≤ 0.8 s, E4 ≤ 1.5 s, E5 ≤ 3 s, E6 ≤ 4 s. Breach ⇒ move that kernel to the analysis/peaks worker pattern (B1 process), not to a lower tolerance.
+7. **Profile log** — `[profile] <fx> 60 s stereo: …ms` printed by the slowest test per package; budgets: E1 ≤ 1.5 s, E2 ≤ 0.6 s, E3 ≤ 0.8 s, E4 ≤ 1.5 s, E5 ≤ 3 s, E6 ≤ 4 s. Breach ⇒ move that kernel to the analysis/peaks worker pattern (B1 process), not to a lower tolerance. *E1 note: budgets bind to uninstrumented runs (v8 coverage instrumentation slows hot loops ~3× — in-test smoke guards are set at 5 s; recorded uninstrumented numbers feed the B1 review).*
 8. **e2e** — one flow per package applied to demo.wav from the real menu: region growth for tail effects asserted via the status bar, LUFS-normalize asserts the toast readout ±0.3 LU round-trip.
 9. **Gates** — tsc, eslint, coverage ≥ 80 % on `src/fx/**` (pure by construction), build, security greps; conventional commits per package (`test(fx2)` → `feat(fx2)` split).
 
