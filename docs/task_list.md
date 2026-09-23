@@ -185,4 +185,58 @@ Analysis kernels are pure + worker-resident; the UI reads signals only
 - [x] ID3 constants wired into the zod schema (was hardcoded 500)
 - [x] BPM envelope frame 0 zeroed (frame-0 ramp is not an onset)
 
-## M6+ — see Build Plan §10 (roadmap)
+## M6 — Persistence & PWA (complete)
+
+Storage is a pure-testable layer (`src/storage/`, ADR 008) behind a
+Repository pattern; the browser bridge lives in `draftActions`.
+
+- [x] **DraftRepository** (`idb` v8): metadata store + payload store split
+      (lists never deserialize PCM); `findAll/findById/save/update/delete`
+      + autosave ring (`writeAutosave/readAutosave/clearAutosave`).
+- [x] **Payload format `WFD1`/`WFR1`** (`draftPayload.ts`, pure): 4-byte
+      BE magic + u32 LE header length + zod-validated JSON header +
+      interleaved float32 PCM; gzip via CompressionStream when available
+      (sniffed by gzip magic), raw fallback self-describing and readable
+      forever; every decode failure maps to WF-E402. SHA-256 `hashPcm`
+      (FNV-1a fallback without WebCrypto).
+- [x] **Drafts manager**: open/rename/delete per row, usage footer,
+      empty state; corrupt rows stay listed (open → WF-E402 toast, delete
+      works) — never blocks the list (§6.3). Save prompt defaults to the
+      document name; draft loads rebuild via `bufferFactory` + installDoc
+      (cursor restored).
+- [x] **Autosave ring** (§6.3.2): 30 s debounce after the last edit OR
+      every 8 committed edit ops (1 s micro-debounce collapses bursts);
+      injectable sink + settings kill-switch (`autosaveEnabled`);
+      write failures never reach the edit path.
+- [x] **Crash recovery**: boot probe shows a restore banner when a ring
+      record exists; Restore rebuilds the session (name/cursor), Discard
+      drops it; any explicit load supersedes the offer.
+- [x] **Quota guard** (§6.3.5): `storage.estimate()` ≥ 90% before writes
+      → WF-E401 toast + drafts manager opens; `QuotaExceededError` on
+      write maps to the same typed path.
+- [x] **Settings boundary** (`storage/settings.ts`): namespaced JSON with
+      zod-validated reads + silent fallback; Node-safe store shim for
+      tests; legacy `'1'/'0'` flags still readable.
+- [x] **PWA** (`vite-plugin-pwa` 1.3, Workbox 7, ADR 008 D6): full precache
+      (21 entries ≈ 2.6 MB incl. workers/wasm/demo), `prompt` update flow —
+      UpdateBanner offers Reload, never auto-applies mid-session; manifest
+      + brand icons (SVG → 192/512/maskable PNG).
+- [x] **e2e**: flow #5 (save → reload → reopen → same document), #5b
+      (edit burst → reload → restore banner → session back), #6 (offline:
+      production preview + real SW, go offline, reload, load sample). The
+      M5 analysis specs were retitled `analysis:` to free plan numbering.
+
+### Security review (IDB layer + SW — M6 exit gate)
+
+- No `innerHTML`/`document.write`/`eval`/`new Function` in the M6 surface.
+- SW is Workbox-generated: same-origin precache only (revision-hashed),
+  `SKIP_WAITING` is its sole message handler, navigation fallback to
+  index.html; no runtime caching rules, no remote importScripts.
+- Untrusted bytes enter only through `decodeDraft` → zod header schema +
+  length checks; all structural failures typed WF-E402 (list unaffected).
+- Draft/autosave writes structured-clone into IDB — document buffers are
+  never detached or shared; no postMessage in the storage layer.
+- localStorage access is centralised (`settings.ts` namespaced + validated;
+  M4 record settings keep their own reviewed namespace).
+
+## M7+ — see Build Plan §10 (roadmap)
