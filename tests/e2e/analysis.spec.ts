@@ -12,11 +12,10 @@ async function loadSample(page: import('@playwright/test').Page): Promise<void> 
 }
 
 /**
- * e2e flow #6 — analysis tools (M5): the spectrum panel mounts with live
- * canvas, LUFS measurement populates the readouts, and the Analyze menu
- * toggles persist.
+ * Analysis tools (M5): the spectrum panel mounts with live canvas, LUFS
+ * measurement populates the readouts, and the Analyze menu toggles persist.
  */
-test('flow #6: spectrum panel + LUFS measurement', async ({ page }) => {
+test('analysis: spectrum panel + LUFS measurement', async ({ page }) => {
   await loadSample(page);
 
   await page.getByRole('button', { name: 'Analyze' }).click();
@@ -38,8 +37,8 @@ test('flow #6: spectrum panel + LUFS measurement', async ({ page }) => {
   await expect(page.getByRole('menuitem', { name: /spectrum panel/i })).toContainText('✔');
 });
 
-/** e2e flow #6b — BPM detection runs and reports via toast. */
-test('flow #6b: BPM detection reports a result', async ({ page }) => {
+/** BPM detection runs and reports via toast. */
+test('analysis: BPM detection reports a result', async ({ page }) => {
   await loadSample(page);
   await page.getByRole('button', { name: 'Analyze' }).click();
   await page.getByRole('menuitem', { name: /tempo/i }).click();
@@ -47,8 +46,8 @@ test('flow #6b: BPM detection reports a result', async ({ page }) => {
   await expect(page.locator('.toast-msg').nth(1)).toBeVisible({ timeout: 15_000 });
 });
 
-/** e2e flow #6c — MP3 export embeds the ID3v2.4 tag set via Song Info. */
-test('flow #6c: MP3 export embeds song info as ID3', async ({ page }) => {
+/** MP3 export embeds the ID3v2.4 tag set via Song Info. */
+test('analysis: MP3 export embeds song info as ID3', async ({ page }) => {
   await loadSample(page);
   await page.getByRole('button', { name: 'File' }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import preact from '@preact/preset-vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   // pre-bundle worker deps so first export never triggers a mid-session
@@ -7,7 +8,32 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@breezystack/lamejs'],
   },
-  plugins: [preact()],
+  plugins: [
+    preact(),
+    // PWA (M6, ADR 008 D6): full precache incl. workers/wasm/demo — the
+    // update flow is 'prompt' so an update never interrupts audio work
+    VitePWA({
+      registerType: 'prompt',
+      // globPatterns already covers public/ wasm/wav/js + icons — no includeAssets
+      manifest: {
+        name: 'WaveForge',
+        short_name: 'WaveForge',
+        description: 'Free browser audio editor — private, offline-capable',
+        theme_color: '#0a0e13',
+        background_color: '#0a0e13',
+        display: 'standalone',
+        start_url: '/',
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,wasm,wav}'],
+      },
+    }),
+  ],
   server: {
     host: true,
     allowedHosts: true,
@@ -51,6 +77,10 @@ export default defineConfig({
         'src/engine/bpm.ts',
         'src/engine/spectrum.ts',
         'src/io/id3.ts',
+        // M6 pure storage layer
+        'src/storage/draftPayload.ts',
+        'src/storage/autosave.ts',
+        'src/storage/settings.ts',
         'src/io/wavEncoder.ts',
         'src/io/exportName.ts',
         'src/engine/recordBuffer.ts',
