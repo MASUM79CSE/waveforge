@@ -22,7 +22,16 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/core/**'],
+      include: [
+        // pure modules — TDD'd; browser classes join as their harnesses land
+        'src/core/**',
+        'src/engine/viewState.ts',
+        'src/engine/transportMath.ts',
+        'src/engine/peaksCompute.ts',
+        'src/engine/protocol.ts',
+        'src/engine/AudioDocument.ts',
+        'src/engine/peakClient.ts',
+      ],
       thresholds: {
         lines: 80,
         functions: 80,
