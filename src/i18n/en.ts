@@ -185,7 +185,7 @@ export const en = {
     'WF-E103': 'This file is too large for this device.',
     'WF-E201': 'Could not reach that URL. Check the address and your connection.',
     'WF-E202': 'That server does not allow browser access (CORS).',
-    'WF-E301': 'Playback was blocked by the browser — press play again.',
+    'WF-E301': 'The browser blocked audio — click anywhere once, then press play.',
     'WF-E302': 'Enhanced recording is unavailable; using the compatibility path.',
     'WF-E401': 'Local storage is full — manage your drafts.',
     'WF-E402': 'This draft appears to be damaged.',

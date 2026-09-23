@@ -8,8 +8,10 @@ import { AudioEngine } from '../engine/AudioEngine';
 import { PeakClient } from '../engine/peakClient';
 import { WaveRenderer } from '../engine/WaveRenderer';
 import { findZeroCross, type EditOutcome } from '../engine/editOps';
+import { toastInfo } from './actions';
 import { ZERO_CROSS_RADIUS_S } from '../core/constants';
-import { getSharedContext } from '../io/decode';
+import { getSharedContext, resumeSharedContext } from '../io/decode';
+import { tError } from '../i18n';
 import * as S from './state';
 
 export const engine = new AudioEngine();
@@ -110,6 +112,15 @@ export function runRedo(): string | null {
   updateHistorySignals();
   return result.label;
 }
+
+// ---- audio unlock: browsers suspend AudioContexts until a user gesture ----
+engine.onBlocked = () => toastInfo(tError('WF-E301'));
+function unlockAudio(): void {
+  engine.unlockFromGesture();
+  resumeSharedContext();
+}
+document.addEventListener('pointerdown', unlockAudio);
+document.addEventListener('keydown', unlockAudio);
 
 // ---- engine → signals ----
 engine.onCursor = (t) => {

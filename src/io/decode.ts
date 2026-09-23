@@ -12,6 +12,13 @@ export function getSharedContext(): AudioContext {
   return sharedCtx;
 }
 
+/** Resume the shared context if it exists (never creates one). */
+export function resumeSharedContext(): void {
+  if (sharedCtx && sharedCtx.state !== 'running') {
+    void sharedCtx.resume().catch(() => {});
+  }
+}
+
 export function decodeArrayBuffer(data: ArrayBuffer): Promise<AudioBuffer> {
   const ctx = getSharedContext();
   return new Promise((resolve, reject) => {

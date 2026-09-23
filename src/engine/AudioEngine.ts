@@ -50,7 +50,12 @@ export class AudioEngine {
       this.merger = this.ctx.createChannelMerger(STEREO);
       this.chGains = [this.ctx.createGain(), this.ctx.createGain()];
       for (let ch = 0; ch < STEREO; ++ch) {
-        this.chGains[ch]?.connect(this.merger, 0, ch);
+        const gain = this.chGains[ch];
+        if (!gain) continue;
+        // BOTH legs are required: splitter→gain feeds the chain, gain→merger
+        // drains it. (Missing the first leg left stereo documents silent.)
+        this.splitter.connect(gain, ch, 0);
+        gain.connect(this.merger, 0, ch);
       }
       this.merger.connect(this.master);
       this.routeChannels();
@@ -76,17 +81,45 @@ export class AudioEngine {
     }
   }
 
+  onBlocked: (() => void) | null = null;
+  private blockedNotified = false;
+
+  /**
+   * Resume the context, bounding the wait: under strict autoplay policies
+   * (sandboxed iframes) `resume()` can stay pending forever. Reports via
+   * `onBlocked` once per suspension episode; playback still starts so a
+   * later unlock (gesture) makes it audible without re-pressing play.
+   */
   private async resumeContext(): Promise<boolean> {
     const ctx = this.ensureContext();
     if (!ctx) return false;
-    if (ctx.state === 'running') return true;
-    try {
-      await ctx.resume();
+    if (ctx.state === 'running') {
+      this.blockedNotified = false;
       return true;
+    }
+    try {
+      await Promise.race([
+        ctx.resume(),
+        new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 400)),
+      ]);
     } catch (error: unknown) {
       logger.warn('AudioContext resume blocked', { detail: getErrorMessage(error) });
-      return false;
     }
+    const state = ctx.state as AudioContextState; // assertion widens narrowing
+    if (state === 'running') {
+      this.blockedNotified = false;
+      return true;
+    }
+    if (!this.blockedNotified) {
+      this.blockedNotified = true;
+      this.onBlocked?.();
+    }
+    return false;
+  }
+
+  /** Best-effort resume from a user gesture (pointer/key handlers). */
+  unlockFromGesture(): void {
+    if (this.ctx && this.ctx.state !== 'running') void this.ctx.resume().catch(() => {});
   }
 
   setDocument(doc: AudioDocument | null): void {

@@ -7,7 +7,7 @@
  */
 import { buildGraph } from '../fx/graphs';
 import type { EffectDef, Params } from '../fx/types';
-import { getSharedContext } from '../io/decode';
+import { getSharedContext, resumeSharedContext } from '../io/decode';
 import { previewActive } from './state';
 
 const AB_FADE_S = 0.03;
@@ -34,6 +34,7 @@ export interface PreviewPlan {
 export function startPreview(plan: PreviewPlan): void {
   stopPreview();
   wetIsUp = false;
+  resumeSharedContext(); // preview sources are silent until the ctx runs
   const ctx = getSharedContext();
 
   const dry = ctx.createGain();
