@@ -31,6 +31,9 @@ export default defineConfig({
         'src/engine/protocol.ts',
         'src/engine/AudioDocument.ts',
         'src/engine/peakClient.ts',
+        'src/engine/editOps.ts',
+        'src/engine/history.ts',
+        'src/engine/AudioEditor.ts',
       ],
       thresholds: {
         lines: 80,
