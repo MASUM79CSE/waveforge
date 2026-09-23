@@ -135,4 +135,54 @@
 - [x] lamejs pre-bundled (optimizeDeps) — first export no longer triggers a
       mid-session vite re-optimization page reload
 
-## M5+ — see Build Plan §10 (roadmap)
+## M5 — Analysis & tools (complete)
+
+Analysis kernels are pure + worker-resident; the UI reads signals only
+(ADR 007). The automation envelope editor moved to its own post-M6 package
+(ADR 007 §deviation, supersedes ADR 005 placement).
+
+- [x] **LUFS** (BS.1770-4 / EBU Tech 3341): K-weighting via libebur128's
+      exact 48 kHz biquads (hardcoded; other rates via `redesignBiquad`
+      exact bilinear redesign — identity at 48 kHz), 400 ms blocks with
+      absolute (−70 LUFS) + relative (−10 LU) gating, momentary + short-term
+      tracks. Anchors: −23 dBFS 997 Hz stereo → −23.0 ±0.5 @48k AND @44.1k;
+      ±10 LU linearity; mono/stereo +3 dB; 10 kHz shelf +1..6 dB; silence
+      → −∞; gate invariance (8 s silence padding ≤ 0.5 LU delta).
+- [x] **BPM**: onset envelope (10 ms RMS frames, positive diff) →
+      autocorrelation 60–180 BPM with 120 BPM prior → comb phase alignment
+      → beats (seconds) + confidence. Anchors: 100–140 click tracks ±1 BPM;
+      90 holds; beat[0] ≤ 1 period; constant tone → no onsets.
+- [x] **ID3v2.4 writer + v2.3/v2.4 reader** (`src/io/id3.ts`): syncsafe
+      sizes, UTF-8 text frames, zod boundary (500-char text, digits-only
+      track, control-char strip, 4-digit year). Song Info dialog; tag is
+      prepended to MP3 exports when any field is set; loader sniffs a
+      leading ID3 tag and prefills Song Info.
+- [x] **Spectrum panel**: master-tap AnalyserNode (2048 FFT, parallel
+      branch), 48 log-spaced bands (pure `spectrum.ts` mapping), rAF draw
+      while open; LUFS + BPM readouts; Measure/Detect buttons; beat-grid
+      toggle. Panel + beat toggles persist (localStorage).
+- [x] **Snap-to-beats**: selection edges snap to the nearest beat within
+      min(80 ms, period/4); beats take priority over zero-crossings when
+      both enabled (per-edge fallback).
+- [x] **analysis.worker.ts**: module worker, zod-validated `detect-bpm` /
+      `measure-lufs` commands over the standard {cmd,id} protocol; replies
+      carry kernel timings (logged `[profile]`).
+- [x] **Profiling (§8.5 B1 trigger)**: LUFS 60 s stereo 48 kHz ≈ 400 ms
+      (< 2 s gate ✓); BPM 60 s stereo 44.1 kHz ≈ 12 ms. No B1 trigger.
+- [x] i18n strings (Analyze menu, panel, metadata, toasts); commands
+      `analyze.{lufs,bpm,beats,panel}` in a new top-level Analyze menu.
+
+### Defects fixed during M5 bring-up
+
+- [x] RBJ-from-spec K-weighting shelf gave +13 dB @99 Hz (wrong) → replaced
+      with libebur128's exact 48 kHz coefficients + exact bilinear redesign
+      for other rates (see Errors log in ADR 007)
+- [x] Chromium cannot transfer TypedArray views to workers → transfer the
+      underlying ArrayBuffers (with plain-clone fallback); channel copies
+      are made first so document memory is never detached
+- [x] LUFS gate invariance bound set to 0.5 LU (partially-toned edge blocks
+      legitimately flip gate membership; math verified against anchors)
+- [x] ID3 constants wired into the zod schema (was hardcoded 500)
+- [x] BPM envelope frame 0 zeroed (frame-0 ramp is not an onset)
+
+## M6+ — see Build Plan §10 (roadmap)
