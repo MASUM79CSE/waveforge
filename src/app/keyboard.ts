@@ -70,24 +70,33 @@ export function bindKeyboard(): void {
         event.preventDefault();
         view.center();
         break;
+      // shift combos match both cases: real browsers deliver 'Z' for
+      // Shift+Z, but synthesized/IME events may deliver 'z'+shiftKey
+      case 'a':
       case 'A':
         if (event.shiftKey) edit.selectAll();
         break;
+      case 'z':
       case 'Z':
         if (event.shiftKey) EA.undo();
         break;
+      case 'y':
       case 'Y':
         if (event.shiftKey) EA.redo();
         break;
+      case 'x':
       case 'X':
         if (event.shiftKey) EA.cutSelection();
         break;
+      case 'c':
       case 'C':
         if (event.shiftKey) EA.copySelection();
         break;
+      case 'v':
       case 'V':
         if (event.shiftKey) EA.pasteFromClipboard();
         break;
+      case 'n':
       case 'N':
         if (event.shiftKey) EA.insertSilence();
         break;

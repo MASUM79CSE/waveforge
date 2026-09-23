@@ -16,6 +16,7 @@ export const menus: MenuDef[] = [
       'file.url',
       'file.sample',
       '-',
+      'file.recordSettings',
       'file.export',
       '-',
       'file.draftSave',

@@ -32,6 +32,10 @@ export function toastInfo(message: string): void {
   pushToast('info', message);
 }
 
+export function toastError(message: string): void {
+  pushToast('err', message);
+}
+
 /** One reporting path for every caught error (Build Plan §6.2). */
 function reportError(error: unknown): void {
   if (isWaveForgeError(error)) {
@@ -92,6 +96,22 @@ export function closeGainPrompt(): void {
 
 export function openNormalizePrompt(): void {
   S.normalizePromptOpen.value = true;
+}
+
+export function openExportDialog(): void {
+  S.exportOpen.value = true;
+}
+
+export function closeExportDialog(): void {
+  S.exportOpen.value = false;
+}
+
+export function openRecordSettings(): void {
+  S.recordSettingsOpen.value = true;
+}
+
+export function closeRecordSettings(): void {
+  S.recordSettingsOpen.value = false;
 }
 
 export function openEffectDialog(id: string): void {

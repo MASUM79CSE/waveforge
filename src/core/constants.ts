@@ -36,3 +36,7 @@ export const GEQ20_Q = 2.0;
 export const GEQ20_HZ = Array.from({ length: 20 }, (_, i) =>
   Math.round(31.25 * Math.pow(512, i / 19) * 100) / 100,
 );
+
+/** Recording limits & persistence (M4). */
+export const RECORD_MAX_SECONDS = 600;
+export const RECORD_SETTINGS_KEY = 'record';

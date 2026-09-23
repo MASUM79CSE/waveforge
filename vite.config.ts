@@ -2,6 +2,11 @@ import { defineConfig } from 'vitest/config';
 import preact from '@preact/preset-vite';
 
 export default defineConfig({
+  // pre-bundle worker deps so first export never triggers a mid-session
+  // dependency re-optimization (which force-reloads the page)
+  optimizeDeps: {
+    include: ['@breezystack/lamejs'],
+  },
   plugins: [preact()],
   server: {
     host: true,
@@ -41,6 +46,10 @@ export default defineConfig({
         'src/fx/registry.ts',
         'src/fx/defs.ts',
         'src/fx/graphs.ts',
+        'src/io/wavEncoder.ts',
+        'src/io/exportName.ts',
+        'src/engine/recordBuffer.ts',
+        'src/engine/meter.ts',
       ],
       thresholds: {
         lines: 80,

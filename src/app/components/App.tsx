@@ -7,6 +7,9 @@ import { AboutDialog, WelcomeDialog } from './Dialogs';
 import { UrlDialog } from './UrlDialog';
 import { GainDialog, NormalizeDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
+import { exportOpen, recordSettingsOpen } from '../state';
+import { ExportDialog } from './ExportDialog';
+import { RecordSettingsDialog } from './RecordSettingsDialog';
 
 export function App() {
   return (
@@ -24,6 +27,8 @@ export function App() {
       <GainDialog />
       <NormalizeDialog />
       <EffectDialog />
+      {exportOpen.value && <ExportDialog />}
+      {recordSettingsOpen.value && <RecordSettingsDialog />}
     </div>
   );
 }

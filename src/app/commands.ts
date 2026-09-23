@@ -22,9 +22,14 @@ export const commands: Command[] = [
   { id: 'file.url', label: () => t().fileUrl, run: () => A.openUrlDialog() },
   { id: 'file.sample', label: () => t().fileSample, run: () => void A.loadSample() },
   {
+    id: 'file.recordSettings',
+    label: () => t().fileRecord,
+    run: () => A.openRecordSettings(),
+  },
+  {
     id: 'file.export',
     label: () => t().fileExport,
-    run: () => A.toastNotYet(t().fileExport, 'M4'),
+    run: () => A.openExportDialog(),
     sep: true,
   },
   { id: 'file.draftSave', label: () => t().fileDraftSave, run: () => A.toastNotYet(t().fileDraftSave, 'M6') },

@@ -2,9 +2,17 @@ import { useEffect, useState } from 'preact/hooks';
 import { cursorPos, docInfo, looping, playing, channelMutes, channelsSwapped } from '../state';
 import { transport } from '../actions';
 import { toggleChannelMute, toggleChannelsSwapped } from '../editActions';
+import { toggleRecord } from '../recordActions';
+import { recording, recLevel, recSeconds } from '../state';
 import { engine } from '../runtime';
 import { fmtClock } from '../../core/format';
 import { t } from '../../i18n';
+
+/** dBFS → 0..100 meter width (-60 dB floor). */
+function meterPercent(peakDb: number): number {
+  if (!Number.isFinite(peakDb)) return 0;
+  return Math.max(0, Math.min(100, Math.round(((peakDb + 60) / 60) * 100)));
+}
 
 export function TransportBar() {
   const doc = docInfo.value;
@@ -76,9 +84,22 @@ export function TransportBar() {
         </div>
       )}
 
-      <button class="tbtn" title="Record (M4)" disabled>
+      <button
+        class={`tbtn ${recording.value ? 'recording' : ''}`}
+        title={recording.value ? t().recordStop : t().recordStart}
+        onClick={() => void toggleRecord()}
+      >
         <Svg d="M12 7a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0v-3a5 5 0 0 1 5-5zM8 21h8" />
       </button>
+      {recording.value && (
+        <span class="rec-meter" title={`${Math.round(recLevel.value.peakDb)} dB`}>
+          <span
+            class="rec-meter-fill"
+            style={{ width: `${meterPercent(recLevel.value.peakDb)}%` }}
+          />
+          <span class="rec-time">{fmtClock(recSeconds.value)}</span>
+        </span>
+      )}
 
       <div class="transport-vol">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

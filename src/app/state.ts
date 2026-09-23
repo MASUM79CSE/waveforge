@@ -59,6 +59,16 @@ export const canUndo = signal(false);
 export const canRedo = signal(false);
 export const effectDialogId = signal<string | null>(null);
 export const previewActive = signal(false);
+
+// M4 — recording & export
+export const recording = signal(false);
+export const recLevel = signal({ peakDb: Number.NEGATIVE_INFINITY, rmsDb: Number.NEGATIVE_INFINITY });
+export const recSeconds = signal(0);
+export const recordSettingsOpen = signal(false);
+export const exportOpen = signal(false);
+export const exportBusy = signal(false);
+export const exportProgress = signal<number | null>(null);
+export const exportCancel = signal<{ cancelled: boolean } | null>(null);
 export const channelMutes = signal<[boolean, boolean]>([false, false]);
 export const channelsSwapped = signal(false);
 
