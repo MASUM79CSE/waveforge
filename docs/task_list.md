@@ -34,4 +34,27 @@
       §8.4 schedules Playwright from M4; M1 verified via live-server smoke of all
       modules + pure-math integration tests instead)
 
-## M2+ — see Build Plan §10 (roadmap)
+## M2 — Editing & History (complete)
+
+- [x] Pure edit kernel `engine/editOps.ts` — SliceOp (remove/insert/write),
+      region kernels (slice/remove/insert/write, gain/fade/reverse/invert),
+      normalizeRange (factor 1 when silent), silenceRanges, findZeroCross,
+      makeCut/makeInsert + composites makeOverwritePaste/makeTrim/makeRemoveSilence
+      (round-trip tested: redo replays original→edited, undo edited→original)
+- [x] `engine/history.ts` — byte-budgeted undo/redo stacks (256 MB, min-keep 10),
+      push clears redo + trims oldest; `engine/AudioEditor.ts` — adopt/reset/execute
+      stage-then-swap (new doc per edit, previous buffers untouched, ADR 002/004)
+- [x] Engine support: `AudioEngine` stereo channel routing (splitter→ch gains→
+      merger), setChannelMute/setChannelsSwapped; `WaveRenderer.setDocument`
+      keepView; shared AudioContext via `io/decode.getSharedContext`
+- [x] App wiring: `runtime.ts` installDoc/swapDoc/performEdit/runUndo/runRedo +
+      zero-cross selection snap (persisted toggle); `editActions.ts` clipboard +
+      13 edit ops with safeEdit recover-and-report; commands (Shift+X/C/V/N,
+      Shift+Z/Y, Del), Edit+Effects menus, keyboard map, gain/normalize prompt
+      dialogs, transport L/R mute + swap buttons, i18n block
+- [x] Review fixes: trim tail offset (was clamped no-op), removeSilence undo
+      order (ascending restore), insertSilence undo (was re-inserting shifted
+      audio), history cleared on document close, composites promoted from
+      untested app code into tested editOps
+
+## M3+ — see Build Plan §10 (roadmap)
