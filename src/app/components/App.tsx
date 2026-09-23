@@ -7,9 +7,11 @@ import { AboutDialog, WelcomeDialog } from './Dialogs';
 import { UrlDialog } from './UrlDialog';
 import { GainDialog, NormalizeDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
-import { exportOpen, recordSettingsOpen } from '../state';
+import { exportOpen, metadataOpen, recordSettingsOpen } from '../state';
 import { ExportDialog } from './ExportDialog';
 import { RecordSettingsDialog } from './RecordSettingsDialog';
+import { AnalysisPanel } from './AnalysisPanel';
+import { MetadataDialog } from './MetadataDialog';
 
 export function App() {
   return (
@@ -19,6 +21,7 @@ export function App() {
       <main class="workspace">
         <CanvasPane />
       </main>
+      <AnalysisPanel />
       <StatusBar />
       <Toasts />
       <WelcomeDialog />
@@ -29,6 +32,7 @@ export function App() {
       <EffectDialog />
       {exportOpen.value && <ExportDialog />}
       {recordSettingsOpen.value && <RecordSettingsDialog />}
+      {metadataOpen.value && <MetadataDialog />}
     </div>
   );
 }

@@ -208,6 +208,32 @@ export const en = {
   loopOn: 'Loop on',
   loopOff: 'Loop off',
 
+  // analysis (M5)
+  menuAnalyze: 'Analyze',
+  analyzeLoudness: 'Measure Loudness (LUFS)',
+  analyzeBpm: 'Detect Tempo (BPM)',
+  analyzeBeats: 'Show Beat Grid',
+  analyzePanel: 'Show Spectrum Panel',
+  analyzingLufs: 'Measuring loudness…',
+  analyzingBpm: 'Detecting tempo…',
+  lufsDone: (lufs: string) => `Integrated loudness: ${lufs} LUFS`,
+  bpmDone: (bpm: number, beats: number) => `Tempo ${bpm} BPM · ${beats} beats`,
+  bpmNotFound: 'No steady tempo detected',
+  analyzeFailed: 'Analysis failed',
+  analysisLufs: 'LUFS',
+  analysisIntegrated: 'Integrated',
+  analysisMomentary: 'Momentary max',
+  analysisShortterm: 'Short-term max',
+  analysisBpmLabel: 'Tempo',
+  analysisBeatsLabel: 'Beats',
+  analysisConfidence: 'Confidence',
+  analysisMeasure: 'Measure',
+  analysisDetect: 'Detect',
+  analysisIdle: '—',
+  metadataTitle: 'Song Info (ID3)',
+  metadataHint: 'Embedded in MP3 exports as an ID3v2.4 tag.',
+  metadataSongInfo: 'Song Info…',
+
   // toast helpers
   notYet: (feature: string, milestone: string) => `${feature} — arrives in ${milestone}`,
 

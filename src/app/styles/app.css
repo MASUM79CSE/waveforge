@@ -613,3 +613,73 @@
   background: var(--accent);
   transition: width 120ms linear;
 }
+
+/* ---- analysis panel (M5) ---- */
+
+.analysis-panel {
+  border-top: 1px solid #232b36;
+  background: #0c1117;
+  padding: 4px 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.analysis-spectrum {
+  display: block;
+  width: 100%;
+}
+
+.analysis-readouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  font-size: 11px;
+  color: #8b96a5;
+  align-items: center;
+}
+
+.analysis-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analysis-key {
+  color: #5c6773;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 10px;
+}
+
+.analysis-val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #d7dee8;
+  min-width: 34px;
+}
+
+.analysis-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ---- metadata dialog (M5) ---- */
+
+.meta-dialog {
+  min-width: 360px;
+}
+
+.meta-hint {
+  margin: 0 0 10px;
+  color: #8b96a5;
+  font-size: 12px;
+}
+
+.meta-error {
+  color: #ff7a7a;
+  font-size: 12px;
+  margin: 8px 0 0;
+}

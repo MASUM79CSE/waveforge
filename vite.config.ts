@@ -46,6 +46,11 @@ export default defineConfig({
         'src/fx/registry.ts',
         'src/fx/defs.ts',
         'src/fx/graphs.ts',
+        // M5 pure kernels
+        'src/engine/lufs.ts',
+        'src/engine/bpm.ts',
+        'src/engine/spectrum.ts',
+        'src/io/id3.ts',
         'src/io/wavEncoder.ts',
         'src/io/exportName.ts',
         'src/engine/recordBuffer.ts',

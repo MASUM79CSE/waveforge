@@ -7,6 +7,7 @@
 import { logger } from '../core/logger-instance';
 import { sanitizeFilename, estimateExportBytes, type ExportFormat } from '../io/exportName';
 import { runExport } from '../io/exportService';
+import { buildId3Tag } from '../io/id3';
 import { sliceRegion } from '../engine/editOps';
 import { t } from '../i18n';
 import { toastInfo, toastError } from './actions';
@@ -103,12 +104,21 @@ export async function performExport(
       return;
     }
 
+    // MP3 metadata: prepend the ID3v2.4 tag when song info is set
+    const tagBytes = Object.values(S.tags.value).some((v) => v !== '')
+      ? buildId3Tag(S.tags.value)
+      : null;
+    const blob =
+      tagBytes && format === 'mp3'
+        ? new Blob([tagBytes, result.blob], { type: MIME_BY_FORMAT[format] })
+        : result.blob;
+
     if (handle) {
       const writable = await handle.createWritable();
-      await writable.write(result.blob);
+      await writable.write(blob);
       await writable.close();
     } else {
-      const url = URL.createObjectURL(result.blob);
+      const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
       anchor.download = fullName;

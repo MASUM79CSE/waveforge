@@ -6,7 +6,14 @@ import {
   performExport,
 } from '../exportActions';
 import { closeExportDialog } from '../actions';
-import { docInfo, exportBusy, exportOpen, exportProgress, selection } from '../state';
+import {
+  docInfo,
+  exportBusy,
+  exportOpen,
+  exportProgress,
+  metadataOpen,
+  selection,
+} from '../state';
 import { t } from '../../i18n';
 import { Modal } from './Modal';
 import type { ExportFormat } from '../../io/exportName';
@@ -92,6 +99,18 @@ export function ExportDialog() {
                 </option>
               ))}
             </select>
+          </div>
+        )}
+        {format === 'mp3' && (
+          <div class="fx-row">
+            <span class="fx-label" />
+            <button
+              type="button"
+              class="btn-secondary"
+              onClick={() => { metadataOpen.value = true; }}
+            >
+              {t().metadataSongInfo}
+            </button>
           </div>
         )}
         {format === 'flac' && (
