@@ -79,4 +79,19 @@
       timeline infra landing with the analysers; deviation logged in ADR 005)
 - [ ] RNNoise denoise + pitch-preserving stretch remain parked (§11 v1 deltas)
 
+### Defects fixed (post-M3, user-reported)
+
+- [x] **Stereo playback silent** (M2 regression, critical): AudioEngine built
+      splitter → gains → merger but never wired splitter outputs INTO the
+      gains — every stereo file (incl. demo.wav) played silence with a moving
+      playhead; mono files were unaffected, so smoke tests missed it.
+      Fix: `splitter.connect(gain, ch, 0)` + regression note here (engine
+      routing stays browser-only/untested until a WebAudio harness exists).
+- [x] Shared AudioContext (decode/preview) was never resumed → silent effect
+      preview; added `resumeSharedContext()` + preview call.
+- [x] Blocked autoplay now degrades gracefully: resume raced with 400 ms
+      timeout, `engine.onBlocked` → WF-E301 toast once per episode, playback
+      still starts so a gesture unlock makes it audible; global
+      pointerdown/keydown unlock listeners in runtime.
+
 ## M4+ — see Build Plan §10 (roadmap)
