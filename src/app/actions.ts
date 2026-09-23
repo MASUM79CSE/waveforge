@@ -27,7 +27,7 @@ export function dismissToast(id: number): void {
   S.toasts.value = S.toasts.value.filter((toast) => toast.id !== id);
 }
 
-function toastInfo(message: string): void {
+export function toastInfo(message: string): void {
   pushToast('info', message);
 }
 
@@ -49,6 +49,10 @@ export function toastNotYet(feature: string, milestone: string): void {
 
 export function isFollowOn(): boolean {
   return S.followCursor.value;
+}
+
+export function isZeroCrossOn(): boolean {
+  return S.zeroCrossEnabled.value;
 }
 
 // ---- dialogs ----
@@ -75,6 +79,26 @@ export function openUrlDialog(): void {
 
 export function closeUrlDialog(): void {
   S.urlOpen.value = false;
+}
+
+export function openGainPrompt(): void {
+  S.gainPromptOpen.value = true;
+}
+
+export function closeGainPrompt(): void {
+  S.gainPromptOpen.value = false;
+}
+
+export function openNormalizePrompt(): void {
+  S.normalizePromptOpen.value = true;
+}
+
+export function closeNormalizePrompt(): void {
+  S.normalizePromptOpen.value = false;
+}
+
+export function toggleZeroCross(): void {
+  S.setZeroCrossEnabled(!S.zeroCrossEnabled.value);
 }
 
 // ---- loading ----

@@ -1,5 +1,6 @@
 import { t } from '../i18n';
 import * as A from './actions';
+import * as EA from './editActions';
 
 /**
  * Command registry — one place where menus and keyboard shortcuts meet.
@@ -30,8 +31,26 @@ export const commands: Command[] = [
   { id: 'file.draftOpen', label: () => t().fileDraftOpen, run: () => A.toastNotYet(t().fileDraftOpen, 'M6') },
 
   // Edit
-  { id: 'edit.undo', label: () => t().editUndo, kbd: 'Shift+Z', run: () => A.toastNotYet(t().editUndo, 'M2') },
-  { id: 'edit.redo', label: () => t().editRedo, kbd: 'Shift+Y', run: () => A.toastNotYet(t().editRedo, 'M2') },
+  { id: 'edit.undo', label: () => t().editUndo, kbd: 'Shift+Z', run: () => EA.undo() },
+  { id: 'edit.redo', label: () => t().editRedo, kbd: 'Shift+Y', run: () => EA.redo() },
+  { id: 'edit.cut', label: () => t().editCut, kbd: 'Shift+X', run: () => EA.cutSelection() },
+  { id: 'edit.copy', label: () => t().editCopy, kbd: 'Shift+C', run: () => EA.copySelection() },
+  { id: 'edit.paste', label: () => t().editPaste, kbd: 'Shift+V', run: () => EA.pasteFromClipboard() },
+  {
+    id: 'edit.delete',
+    label: () => t().editDelete,
+    kbd: 'Del',
+    run: () => EA.deleteSelection(),
+    sep: true,
+  },
+  { id: 'edit.trim', label: () => t().editTrim, run: () => EA.trimToSelection() },
+  {
+    id: 'edit.silence',
+    label: () => t().editInsertSilence,
+    kbd: 'Shift+N',
+    run: () => EA.insertSilence(),
+    sep: true,
+  },
   {
     id: 'edit.selectAll',
     label: () => t().editSelectAll,
@@ -40,6 +59,15 @@ export const commands: Command[] = [
     sep: true,
   },
   { id: 'edit.deselect', label: () => t().editDeselect, kbd: 'Q', run: () => A.edit.deselect() },
+
+  // Effects (sample ops; native-node effects arrive in M3)
+  { id: 'fx.gain', label: () => t().fxGain, run: () => A.openGainPrompt() },
+  { id: 'fx.fadeIn', label: () => t().fxFadeIn, run: () => EA.applyFadeIn() },
+  { id: 'fx.fadeOut', label: () => t().fxFadeOut, run: () => EA.applyFadeOut() },
+  { id: 'fx.normalize', label: () => t().fxNormalize, run: () => A.openNormalizePrompt(), sep: true },
+  { id: 'fx.reverse', label: () => t().fxReverse, run: () => EA.applyReverse() },
+  { id: 'fx.invert', label: () => t().fxInvert, run: () => EA.applyInvert(), sep: true },
+  { id: 'fx.removeSilence', label: () => t().fxRemoveSilence, run: () => EA.applyRemoveSilence() },
 
   // View
   { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: '+', run: () => A.view.zoomIn() },
@@ -64,6 +92,13 @@ export const commands: Command[] = [
     run: () => A.view.toggleFollow(),
     check: true,
     isChecked: () => A.isFollowOn(),
+  },
+  {
+    id: 'view.zerocross',
+    label: () => t().zeroCrossSnap,
+    run: () => A.toggleZeroCross(),
+    check: true,
+    isChecked: () => A.isZeroCrossOn(),
   },
 
   // Help

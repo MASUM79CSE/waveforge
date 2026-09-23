@@ -1,4 +1,5 @@
 import { signal } from '@preact/signals';
+import { STORAGE_PREFIX } from '../core/constants';
 
 /**
  * Central UI state (Preact Signals). The engine layer never imports this —
@@ -50,6 +51,38 @@ export const loadingProgress = signal<number | null>(null);
 export const welcomeOpen = signal(true);
 export const aboutOpen = signal(false);
 export const urlOpen = signal(false);
+export const gainPromptOpen = signal(false);
+export const normalizePromptOpen = signal(false);
+
+// editing
+export const canUndo = signal(false);
+export const canRedo = signal(false);
+export const channelMutes = signal<[boolean, boolean]>([false, false]);
+export const channelsSwapped = signal(false);
+
+function readStoredBool(key: string, fallback: boolean): boolean {
+  try {
+    return localStorage.getItem(`${STORAGE_PREFIX}.${key}`) === '1' ? true :
+      localStorage.getItem(`${STORAGE_PREFIX}.${key}`) === '0' ? false : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStoredBool(key: string, value: boolean): void {
+  try {
+    localStorage.setItem(`${STORAGE_PREFIX}.${key}`, value ? '1' : '0');
+  } catch {
+    /* private mode — preference simply is not persisted */
+  }
+}
+
+export const zeroCrossEnabled = signal(readStoredBool('zerocross', true));
+
+export function setZeroCrossEnabled(value: boolean): void {
+  zeroCrossEnabled.value = value;
+  writeStoredBool('zerocross', value);
+}
 
 // toasts
 export const toasts = signal<Toast[]>([]);

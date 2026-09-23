@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
-import { cursorPos, docInfo, looping, playing } from '../state';
+import { cursorPos, docInfo, looping, playing, channelMutes, channelsSwapped } from '../state';
 import { transport } from '../actions';
+import { toggleChannelMute, toggleChannelsSwapped } from '../editActions';
 import { engine } from '../runtime';
 import { fmtClock } from '../../core/format';
 import { t } from '../../i18n';
@@ -8,6 +9,7 @@ import { t } from '../../i18n';
 export function TransportBar() {
   const doc = docInfo.value;
   const [volume, setVolume] = useState(0.9);
+  const stereo = doc !== null && doc.channels >= 2;
 
   useEffect(() => {
     engine.setVolume(volume);
@@ -47,6 +49,32 @@ export function TransportBar() {
       </div>
 
       <div class="transport-spacer" />
+
+      {stereo && (
+        <div class="channel-controls" title="Channel mute / swap (playback)">
+          <button
+            class={`chbtn ${channelMutes.value[0] ? 'muted' : ''}`}
+            onClick={() => toggleChannelMute(0)}
+            title={t().channelLeft}
+          >
+            L
+          </button>
+          <button
+            class={`chbtn ${channelMutes.value[1] ? 'muted' : ''}`}
+            onClick={() => toggleChannelMute(1)}
+            title={t().channelRight}
+          >
+            R
+          </button>
+          <button
+            class={`chbtn ${channelsSwapped.value ? 'active' : ''}`}
+            onClick={() => toggleChannelsSwapped()}
+            title={t().channelSwap}
+          >
+            ⇄
+          </button>
+        </div>
+      )}
 
       <button class="tbtn" title="Record (M4)" disabled>
         <Svg d="M12 7a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0v-3a5 5 0 0 1 5-5zM8 21h8" />

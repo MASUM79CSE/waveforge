@@ -1,5 +1,6 @@
 import { runCommand } from './commands';
 import { edit, transport, view } from './actions';
+import * as EA from './editActions';
 import { aboutOpen, welcomeOpen, urlOpen } from './state';
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -70,6 +71,29 @@ export function bindKeyboard(): void {
         break;
       case 'A':
         if (event.shiftKey) edit.selectAll();
+        break;
+      case 'Z':
+        if (event.shiftKey) EA.undo();
+        break;
+      case 'Y':
+        if (event.shiftKey) EA.redo();
+        break;
+      case 'X':
+        if (event.shiftKey) EA.cutSelection();
+        break;
+      case 'C':
+        if (event.shiftKey) EA.copySelection();
+        break;
+      case 'V':
+        if (event.shiftKey) EA.pasteFromClipboard();
+        break;
+      case 'N':
+        if (event.shiftKey) EA.insertSilence();
+        break;
+      case 'Delete':
+      case 'Backspace':
+        event.preventDefault();
+        EA.deleteSelection();
         break;
       case 'q':
       case 'Q':

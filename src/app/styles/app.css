@@ -464,3 +464,38 @@
   max-width: 420px;
   text-align: center;
 }
+
+/* Channel controls (transport, stereo docs) */
+.channel-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chbtn {
+  min-width: 26px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.chbtn:hover {
+  border-color: var(--accent-line);
+  color: var(--text);
+}
+
+.chbtn.muted {
+  color: var(--danger);
+  border-color: var(--danger);
+  text-decoration: line-through;
+}
+
+.chbtn.active {
+  color: var(--accent);
+  border-color: var(--accent-line);
+  background: var(--accent-dim);
+}

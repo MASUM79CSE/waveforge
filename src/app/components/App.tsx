@@ -5,6 +5,7 @@ import { StatusBar } from './StatusBar';
 import { Toasts } from './Toasts';
 import { AboutDialog, WelcomeDialog } from './Dialogs';
 import { UrlDialog } from './UrlDialog';
+import { GainDialog, NormalizeDialog } from './PromptDialogs';
 
 export function App() {
   return (
@@ -19,6 +20,8 @@ export function App() {
       <WelcomeDialog />
       <AboutDialog />
       <UrlDialog />
+      <GainDialog />
+      <NormalizeDialog />
     </div>
   );
 }
