@@ -57,4 +57,26 @@
       audio), history cleared on document close, composites promoted from
       untested app code into tested editOps
 
-## M3+ — see Build Plan §10 (roadmap)
+## M3 — Effects system (complete; envelope editor → M5, logged)
+
+- [x] `src/fx` registry + UI-free effect definitions (ADR 005): 10 effects —
+      compressor, hard limiter, distortion, delay, reverb, parametric EQ,
+      graphic EQ 10/20, noise gate (NR fallback per §11), varispeed rate
+- [x] Two kinds, one apply path: pure sample kernels (limiter/gate/rate —
+      golden-tested) + native node graphs via `buildGraph(ctx, …)` rendered
+      in OfflineAudioContext for apply (construction-tested with fake ctx)
+- [x] Numeric boundaries seeded + pure (ADR 005 §4): distortion waveshaper
+      curve (x3 scale = unity at 0 drive), reverb IR (mulberry32), equal-power
+      mix; delay tail from feedback decay to −60 dB
+- [x] A/B preview: dual dry/wet sources + 30 ms gain crossfade (no transport
+      restart); params clamp before preview/apply; apply = makeOverwritePaste
+      → undoable stage-then-swap, keeps wet tail (region grows)
+- [x] Generic EffectDialog rendered from param specs (slider+number+bool),
+      Esc closes; Effects menu expanded; 10 fx.* commands
+- [x] Deltas from AudioMass logged in ADR 005 §5 (limiter algorithm, mix
+      law, tail retention, GEQ20 band layout, rate = varispeed)
+- [ ] **Automation envelope editor → scheduled with M5** (needs the canvas
+      timeline infra landing with the analysers; deviation logged in ADR 005)
+- [ ] RNNoise denoise + pitch-preserving stretch remain parked (§11 v1 deltas)
+
+## M4+ — see Build Plan §10 (roadmap)

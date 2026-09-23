@@ -34,6 +34,13 @@ export default defineConfig({
         'src/engine/editOps.ts',
         'src/engine/history.ts',
         'src/engine/AudioEditor.ts',
+        'src/fx/curves.ts',
+        'src/fx/limiter.ts',
+        'src/fx/gate.ts',
+        'src/fx/resample.ts',
+        'src/fx/registry.ts',
+        'src/fx/defs.ts',
+        'src/fx/graphs.ts',
       ],
       thresholds: {
         lines: 80,
