@@ -14,15 +14,21 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "validate:encoders": "node scripts/validate-encoders.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "@preact/signals": "^2.11.2",
+    "libflacjs": "^5.6.0",
     "preact": "^10.29.8",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@preact/preset-vite": "^2.10.6",
+    "@types/node": "^26.6.2",
     "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^10.11.0",
     "prettier": "^3.9.9",

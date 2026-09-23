@@ -94,4 +94,45 @@
       still starts so a gesture unlock makes it audible; global
       pointerdown/keydown unlock listeners in runtime.
 
-## M4+ — see Build Plan §10 (roadmap)
+## M4 — Recording & export (complete)
+
+- [x] Recording: `RecorderEngine` — getUserMedia (constraints UI: device pick,
+      echo-cancellation/noise-suppression/auto-gain toggles persisted) →
+      AudioWorklet `wf-recorder` (4096-frame transferable chunks) with
+      ScriptProcessor fallback; pure `RecordBuffer` accumulator; peak/RMS
+      meter (pure meterLevel) in the transport + duration guard (10 min);
+      stop installs the take as the active document
+- [x] Export: WAV (own writer — golden byte fixtures, 16/24-bit PCM +
+      32-bit float with fmt(18)+fact), MP3 (lamejs in a module worker,
+      128–320 kbps, progress/cancel/transferables), FLAC (vendored
+      libflac wasm build driven by a classic worker — the AudioMass
+      wiring; 16/24-bit, levels 0–8, progress/cancel)
+- [x] Export UX: dialog with format/quality/scope (selection or whole
+      file)/filename/size estimate/progress/cancel; File System Access
+      picker opened inside the click gesture, `<a download>` fallback with
+      revoked object URLs; filenames via pure sanitizer
+- [x] e2e (Playwright, chromium + fake media): flow #1 (load→play→select→
+      cut→undo — the M1 deferral), flow #3 (record a take), flow #4
+      (WAV RIFF bytes / MP3 frame sync / FLAC fLaC magic through the real
+      workers) — **5/5 green**
+- [x] Encoder validation: `npm run validate:encoders` — MP3 at all 4
+      bitrates in Node (frame sync + size bounds); FLAC validated in-browser
+      by the e2e suite (wasm only runs there; ADR 006 §5 revised)
+- [x] Security review (mandatory §10): no HTML-injection sinks, no data:
+      URLs, no eval; object URLs revoked; getUserMedia streams + nodes fully
+      torn down; worker messages validated (zod module worker / defensive
+      checks classic worker); no remote code in workers
+
+### Defects fixed during M4 e2e bring-up
+
+- [x] ExportDialog reset effect raced user input (could revert format after
+      open) → dialogs now mount fresh per open
+- [x] Shift-shortcuts missed synthesized key events (`z`+shift vs `Z`) →
+      shift cases now match both; MenuBar interactions unaffected
+- [x] FLAC worker: awaited `Flac.isReady()` before encoding; derived params
+      moved into the encode path; wasm served next to the worker script
+      (emscripten resolves it relative to the worker URL)
+- [x] lamejs pre-bundled (optimizeDeps) — first export no longer triggers a
+      mid-session vite re-optimization page reload
+
+## M5+ — see Build Plan §10 (roadmap)
