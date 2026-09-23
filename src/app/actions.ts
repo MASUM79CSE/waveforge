@@ -7,6 +7,7 @@ import { AudioDocument } from '../engine/AudioDocument';
 import type { LoopRegion } from '../engine/transportMath';
 import { clampSeek } from '../engine/transportMath';
 import { decodeBlob } from '../io/decode';
+import { parseId3 } from '../io/id3';
 import { t, tError } from '../i18n';
 import { installDoc, engine, renderer, getDoc } from './runtime';
 import { stopPreview } from './preview';
@@ -164,6 +165,24 @@ export async function openFileObject(file: File): Promise<void> {
 
   beginLoading(t().loadingFile(file.name));
   try {
+    // ID3 sniff (M5): prefill song info from a leading v2.3/v2.4 tag
+    try {
+      const head = new Uint8Array(await file.slice(0, 10).arrayBuffer());
+      if (head[0] === 0x49 && head[1] === 0x44 && head[2] === 0x33) {
+        const size =
+          ((head[6] ?? 0) << 21) | ((head[7] ?? 0) << 14) | ((head[8] ?? 0) << 7) | (head[9] ?? 0);
+        const full = new Uint8Array(await file.slice(0, 10 + size).arrayBuffer());
+        const meta = parseId3(full);
+        if (meta) {
+          S.tags.value = Object.fromEntries(
+            Object.entries(meta).filter(([, v]) => typeof v === 'string' && v !== ''),
+          ) as Record<string, string>;
+          toastInfo(t().metadataTitle);
+        }
+      }
+    } catch {
+      /* metadata is best-effort — decode proceeds regardless */
+    }
     const buffer = await decodeBlob(file);
     finishLoad(buffer, file.name, file.size, 'file');
   } catch (error: unknown) {
@@ -326,5 +345,14 @@ export const edit = {
     S.selection.value = null;
   },
 };
+
+export {
+  detectBpm,
+  isAnalysisPanelOn,
+  isBeatsShown,
+  measureLoudness,
+  toggleAnalysisPanel,
+  toggleBeatsShown,
+} from './analysisActions';
 
 export { Brand };

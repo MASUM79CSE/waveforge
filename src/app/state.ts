@@ -72,6 +72,38 @@ export const exportCancel = signal<{ cancelled: boolean } | null>(null);
 export const channelMutes = signal<[boolean, boolean]>([false, false]);
 export const channelsSwapped = signal(false);
 
+// analysis (M5)
+export interface BpmResult {
+  bpm: number;
+  beatCount: number;
+  confidence: number;
+}
+export interface LufsResult {
+  integrated: number;
+  momentaryMax: number;
+  shortTermMax: number;
+}
+export const bpmResult = signal<BpmResult | null>(null);
+export const lufsResult = signal<LufsResult | null>(null);
+export const beats = signal<number[]>([]); // seconds, ascending
+export const analysisBusy = signal<'bpm' | 'lufs' | null>(null);
+export const analysisPanelOpen = signal(readStoredBool('analysis', false));
+export const beatsShown = signal(readStoredBool('beats', true));
+
+export function setAnalysisPanelOpen(value: boolean): void {
+  analysisPanelOpen.value = value;
+  writeStoredBool('analysis', value);
+}
+
+export function setBeatsShown(value: boolean): void {
+  beatsShown.value = value;
+  writeStoredBool('beats', value);
+}
+
+// song metadata (M5, ID3 on MP3 export)
+export const metadataOpen = signal(false);
+export const tags = signal<Record<string, string>>({});
+
 function readStoredBool(key: string, fallback: boolean): boolean {
   try {
     return localStorage.getItem(`${STORAGE_PREFIX}.${key}`) === '1' ? true :

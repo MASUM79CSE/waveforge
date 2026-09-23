@@ -10,9 +10,14 @@ import { WaveRenderer } from '../engine/WaveRenderer';
 import { findZeroCross, type EditOutcome } from '../engine/editOps';
 import { toastInfo } from './actions';
 import { ZERO_CROSS_RADIUS_S } from '../core/constants';
+import { snapEdgeToBeat } from '../engine/bpm';
+
+/** Max distance (s) for a selection edge to snap onto a beat. */
+const BEAT_SNAP_RADIUS_S = 0.08;
 import { getSharedContext, resumeSharedContext } from '../io/decode';
 import { tError } from '../i18n';
 import * as S from './state';
+import { invalidateAnalysis } from './analysisActions';
 
 export const engine = new AudioEngine();
 export const renderer = new WaveRenderer();
@@ -46,6 +51,7 @@ function updateHistorySignals(): void {
 
 /** Fresh load: resets view, history and transport. */
 export function installDoc(doc: AudioDocument | null): void {
+  invalidateAnalysis();
   engine.setDocument(doc);
   peaks?.dispose();
   peaks = doc ? new PeakClient(doc.buffer) : null;
@@ -72,6 +78,7 @@ export function installDoc(doc: AudioDocument | null): void {
 
 /** Post-edit swap: keeps the view and (clamped) cursor, rebuilds peaks. */
 export function swapDoc(doc: AudioDocument, keepCursorSeconds: number): void {
+  invalidateAnalysis();
   engine.setDocument(doc);
   peaks?.dispose();
   peaks = new PeakClient(doc.buffer);
@@ -150,16 +157,27 @@ renderer.onViewChange = () => {
   S.viewStart.value = renderer.view.start;
 };
 
-/** Zero-crossing snap on selection commit (toggleable, AudioMass parity). */
+/** Selection snap: beats take priority over zero-crossings (ADR 007). */
 function snapSelection(sel: { start: number; end: number } | null): { start: number; end: number } | null {
   const doc = getDoc();
-  if (!sel || !S.zeroCrossEnabled.value || !doc) return sel;
+  if (!sel || !doc) return sel;
+  if (!S.zeroCrossEnabled.value && !S.beatsShown.value) return sel;
+  const beats = S.beats.value;
+  const beatRadius = Math.min(BEAT_SNAP_RADIUS_S, (beats.length > 1 ? (beats[1]! - beats[0]!) : 1) / 4);
   const radius = doc.sampleRate * ZERO_CROSS_RADIUS_S;
   const data = doc.channelData(0);
-  const s = findZeroCross(data, Math.round(sel.start * doc.sampleRate), radius);
-  const e = findZeroCross(data, Math.round(sel.end * doc.sampleRate), radius);
+  const snapEdge = (t: number): number => {
+    if (S.beatsShown.value && beats.length > 0) {
+      const snapped = snapEdgeToBeat(beats, t, beatRadius);
+      if (snapped !== t) return snapped; // beat wins
+    }
+    if (!S.zeroCrossEnabled.value) return t;
+    return findZeroCross(data, Math.round(t * doc.sampleRate), radius) / doc.sampleRate;
+  };
+  const s = snapEdge(sel.start);
+  const e = snapEdge(sel.end);
   return {
-    start: Math.min(s, e) / doc.sampleRate,
-    end: Math.max(s, e) / doc.sampleRate,
+    start: Math.min(s, e),
+    end: Math.max(s, e),
   };
 }

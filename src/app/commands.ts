@@ -116,6 +116,32 @@ export const commands: Command[] = [
     isChecked: () => A.isZeroCrossOn(),
   },
 
+  // Analyze (M5)
+  {
+    id: 'analyze.lufs',
+    label: () => t().analyzeLoudness,
+    run: () => A.measureLoudness(),
+  },
+  {
+    id: 'analyze.bpm',
+    label: () => t().analyzeBpm,
+    run: () => A.detectBpm(),
+  },
+  {
+    id: 'analyze.beats',
+    label: () => t().analyzeBeats,
+    run: () => A.toggleBeatsShown(),
+    check: true,
+    isChecked: () => A.isBeatsShown(),
+  },
+  {
+    id: 'analyze.panel',
+    label: () => t().analyzePanel,
+    run: () => A.toggleAnalysisPanel(),
+    check: true,
+    isChecked: () => A.isAnalysisPanelOn(),
+  },
+
   // Help
   { id: 'help.welcome', label: () => t().helpWelcome, run: () => A.openWelcome() },
   { id: 'help.about', label: () => t().helpAbout, run: () => A.openAbout() },

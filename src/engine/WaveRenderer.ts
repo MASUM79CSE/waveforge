@@ -27,6 +27,7 @@ interface Theme {
   selection: string;
   selectionBorder: string;
   pending: string;
+  beatLine: string;
 }
 
 const THEME: Theme = {
@@ -41,11 +42,13 @@ const THEME: Theme = {
   selection: 'rgba(61, 218, 208, 0.14)',
   selectionBorder: 'rgba(61, 218, 208, 0.55)',
   pending: '#151d27',
+  beatLine: 'rgba(90, 200, 250, 0.25)',
 };
 
 export class WaveRenderer {
   view: V.ViewState = { spp: 1024, start: 0 };
   cursor = 0;
+  private beats: number[] = [];
   selection: { start: number; end: number } | null = null;
 
   onSeek: ((t: number) => void) | null = null;
@@ -79,6 +82,12 @@ export class WaveRenderer {
     this.resizeObs = null;
     this.canvas = null;
     this.g = null;
+  }
+
+  /** Beat marker positions (seconds) drawn as faint vertical lines. */
+  setBeats(beats: number[]): void {
+    this.beats = beats;
+    this.requestDraw();
   }
 
   setDocument(doc: AudioDocument | null, peaks: PeakClient | null, opts?: { keepView?: boolean }): void {
@@ -194,8 +203,21 @@ export class WaveRenderer {
     if (doc && this.peaks && this.cssW > 0) {
       this.drawLanes(g, W, H - RULER_H);
     }
+    this.drawBeats(g, W, H);
     this.drawSelection(g, H);
     this.drawPlayhead(g, H);
+  }
+
+  private drawBeats(g: CanvasRenderingContext2D, W: number, H: number): void {
+    const doc = this.doc;
+    const env = this.env();
+    if (!doc || !env || this.beats.length === 0) return;
+    g.fillStyle = THEME.beatLine ?? 'rgba(90, 200, 250, 0.25)';
+    for (const t of this.beats) {
+      const x = Math.round(V.xAtTime(this.view, env, t)) + 0.5;
+      if (x < 0 || x > W) continue;
+      g.fillRect(x, RULER_H, 1, H - RULER_H);
+    }
   }
 
   private drawRuler(g: CanvasRenderingContext2D, W: number): void {

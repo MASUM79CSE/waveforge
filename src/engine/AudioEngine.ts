@@ -15,6 +15,7 @@ const STEREO = 2;
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  private analyser: AnalyserNode | null = null;
   private splitter: ChannelSplitterNode | null = null;
   private merger: ChannelMergerNode | null = null;
   private chGains: GainNode[] = [];
@@ -44,6 +45,11 @@ export class AudioEngine {
       this.ctx = new AudioContext();
       this.master = this.ctx.createGain();
       this.master.connect(this.ctx.destination);
+      // spectrum tap: master → analyser (parallel branch, never muted)
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 2048;
+      this.analyser.smoothingTimeConstant = 0.75;
+      this.master.connect(this.analyser);
 
       // per-channel routing: splitter → per-channel gain → merger → master
       this.splitter = this.ctx.createChannelSplitter(STEREO);
@@ -131,6 +137,11 @@ export class AudioEngine {
     this.loop = false;
     this.loopRegion = null;
     this.onPlayingChange?.(false);
+  }
+
+  /** Spectrum tap for the analysis panel (null until the context exists). */
+  getAnalyser(): AnalyserNode | null {
+    return this.analyser;
   }
 
   setVolume(v: number): void {
