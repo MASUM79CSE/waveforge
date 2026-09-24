@@ -62,6 +62,8 @@ export interface CreateTrackOptions {
   clips?: AudioClip[];
   /** Alternate PCM for the backing asset (draft loading; default = channels). */
   assetChannels?: Float32Array[];
+  /** A5: per-param envelope curves (draft loading; default = none). */
+  automation?: Record<string, AutomationCurve>;
 }
 
 /** Wrap channel arrays as a single-clip lane (mono stays mono; defaults sane). */
@@ -94,6 +96,7 @@ export function createTrack(
     mute: opts.mute ?? false,
     solo: opts.solo ?? false,
     clips,
+    ...(opts.automation && Object.keys(opts.automation).length > 0 ? { automation: opts.automation } : {}),
   };
 }
 

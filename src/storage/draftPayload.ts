@@ -12,6 +12,16 @@ import { makeError } from '../core/errors';
 import { renderClipTrack } from '../engine/clips';
 
 /** M9f: one clip of a lane's arrangement (sample domain, asset-referencing). */
+/** A5: one automation curve — ≤4096 sample-domain breakpoints, `at` integral. */
+export const draftAutomationPointSchema = z.object({
+  at: z.number().int().nonnegative(),
+  value: z.number().min(-4).max(4),
+});
+
+export const draftAutomationSchema = z
+  .record(z.string().max(64), z.array(draftAutomationPointSchema).max(4096))
+  .optional();
+
 export const draftClipSchema = z.object({
   id: z.string().min(1).max(128),
   assetId: z.string().min(1).max(256),
@@ -20,8 +30,6 @@ export const draftClipSchema = z.object({
   duration: z.number().int().positive(),
 });
 
-/** M8e: one lane's mixer state (audio rides in the PCM block sequence).
- * M9f: v3 lanes carry their clip arrangement (channels render from clips). */
 export const draftTrackSchema = z.object({
   id: z.string().min(1).max(64),
   name: z.string().max(200),
@@ -32,6 +40,8 @@ export const draftTrackSchema = z.object({
   channels: z.union([z.literal(1), z.literal(2)]),
   length: z.number().int().nonnegative(),
   clips: z.array(draftClipSchema).max(4096).optional(),
+  /** A5: per-param envelope curves — OPTIONAL in v2/v3 (no version bump). */
+  automation: draftAutomationSchema,
 });
 
 /** M9f: one shared immutable take (PCM block; deduped by id). */

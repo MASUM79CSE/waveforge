@@ -264,6 +264,8 @@ export interface ProjectTrackExport {
     solo: boolean;
     channels: 1 | 2;
     length: number;
+    /** A5: per-param envelope curves (optional; drafts v2/v3 keep them). */
+    automation?: Record<string, import('../engine/automation').AutomationCurve>;
   };
   channels: Float32Array[];
 }
@@ -282,6 +284,7 @@ export function exportProjectTracks(): ProjectTrackExport[] | null {
         solo: t.solo,
         channels: proj!.project.assets[t.clips[0]?.assetId ?? '']?.channels.length === 1 ? 1 : 2,
         length: channels[0]?.length ?? 0,
+        ...(t.automation ? { automation: t.automation } : {}),
       },
       channels,
     };
@@ -311,6 +314,7 @@ export function restoreProjectTracks(
       mute: p.meta.mute,
       solo: p.meta.solo,
       sampleRate,
+      automation: p.meta.automation,
     });
     fresh.assets[`asset_${track.id}`] = laneAsset(track.id, channels, sampleRate);
     fresh.tracks.push(track);
@@ -326,6 +330,7 @@ export interface ClipProjectExport {
   tracks: Array<{
     meta: ProjectTrackExport['meta'] & {
       clips?: Array<{ id: string; assetId: string; start: number; offset: number; duration: number }>;
+      automation?: Record<string, import('../engine/automation').AutomationCurve>;
     };
     clips?: Array<{ id: string; assetId: string; start: number; offset: number; duration: number }>;
     channels: Float32Array[];
@@ -359,6 +364,7 @@ export function exportProjectClips(source?: ProjectState): ClipProjectExport | n
           offset: c.offset,
           duration: c.duration,
         })),
+        ...(t.automation ? { automation: t.automation } : {}),
       },
       clips: t.clips.map((c) => ({
         id: c.id,
@@ -405,6 +411,7 @@ export type ClipProjectPayload = {
   tracks?: Array<{
     meta: ProjectTrackExport['meta'] & {
       clips?: Array<{ id: string; assetId: string; start: number; offset: number; duration: number }>;
+      automation?: Record<string, import('../engine/automation').AutomationCurve>;
     };
     channels: Float32Array[];
   }>;
@@ -431,7 +438,7 @@ export function buildClipProject(
   for (const [i, p] of rows.entries()) {
     if (i === 0 && docChannels) {
       // doc mirror: one full clip over the live document
-      const track = createTrack(docChannels, { id: p.meta.id, name: p.meta.name, gain: p.meta.gain, pan: p.meta.pan, mute: p.meta.mute, solo: p.meta.solo, sampleRate });
+      const track = createTrack(docChannels, { id: p.meta.id, name: p.meta.name, gain: p.meta.gain, pan: p.meta.pan, mute: p.meta.mute, solo: p.meta.solo, sampleRate, automation: p.meta.automation });
       fresh.assets[`asset_${track.id}`] = laneAsset(track.id, docChannels, sampleRate);
       fresh.tracks.push(track);
       continue;
@@ -465,6 +472,7 @@ export function buildClipProject(
       solo: p.meta.solo,
       sampleRate,
       clips: arrangement,
+      automation: p.meta.automation,
     });
     if (clips.length === 0) {
       fresh.assets[`asset_${track.id}`] = laneAsset(track.id, p.channels, sampleRate);

@@ -62,6 +62,7 @@ interface Snap {
   mute: boolean;
   solo: boolean;
   channelCount: number;
+  automation?: Record<string, { at: number; value: number }[]>;
 }
 
 function Lane({ snap, active }: { snap: Snap; active: boolean }) {
@@ -173,6 +174,9 @@ function Lane({ snap, active }: { snap: Snap; active: boolean }) {
       )}
       <LaneCanvas trackId={snap.id} />
       <span class="visually-hidden" data-testid={`clips-${snap.name}`}>{clipCount}</span>
+      <span class="visually-hidden" data-testid={`automation-${snap.name}`}>
+        {snap.automation?.[automationParamFor(snap.id)]?.length ?? 0}
+      </span>
     </div>
   );
 }
