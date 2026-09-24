@@ -407,4 +407,48 @@ pending — record with the E2 phase.
   the ±5 % RT60 gate → parallel combs, each individually carrying the full
   RT60 (per-iteration feedback `c = 10^(−3·D_sec/RT60)`).
 
+### E6 — spectral repair (noise-print NR v2 + de-esser)
+
+- [x] **E6a noise-print NR** (`src/fx/nrPrint.ts`, pure STFT): 2048 frame /
+      512 hop, Hann analysis + Hann² synthesis (WOLA, exact per-sample
+      window-sum denominator), zero padding ×2 (4096-point FFT) to bound
+      circularity; learn = per-frame magnitudes averaged across CHANNELS
+      IN THE MAGNITUDE DOMAIN (a time-domain channel mix cancels
+      independent noise and biases the print √2 low — caught by the stereo
+      anchor) with EMA 0.3 across frames; apply = per-bin
+      `|Ŝ(k)| = max(|Y(k)| − α·|N̂(k)|, β·|Y(k)|)`, phase = noisy phase;
+      print routed via `EffectRunContext.noisePrint`; empty/missing print
+      = bit-exact identity. α 1–4 (2), β 0.01–0.2 (0.05). In-session hold
+      ships; draft-store persistence deferred to M7 (schema change).
+- [x] **E6a anchors**: α=0 WOLA reconstruction ≤1e-6 (sample 1..n−1 —
+      Hann(0)=0 by definition); +6 dB SNR tone+noise → SNR gain ≥10 dB;
+      tone-peak loss ≤1 dB; musical-noise frame-energy variance ratio
+      ≤2.5; learn/process determinism bit-identical; stereo honesty (both
+      channels ≥10 dB with a shared print); `[profile]` **3591 ms**
+      / 60 s stereo uninstrumented (budget 4 s ✓ — `Math.hypot`→`sqrt` in
+      the bin loops took it from 4492 ms; no B1 worker route needed).
+- [x] **E6b de-esser** (`src/fx/deesser.ts`, pure): Linkwitz-Riley 4th-order
+      2-way crossover — **Butterworth-2 squared (Q = √½ per section)**,
+      sine-peak-calibrated HF RMS detector (20·log10(rms·√2), 10 ms
+      one-pole, denormal flush), static downward ratio on the HF band
+      only, bands re-summed; ratio ≤1 = bit-exact bypass.
+      *Plan correction: "−3.01 ± 0.2 dB both bands" contradicts the plan's
+      own "two cascaded Butterworth per way" — the squared-Butterworth LR4
+      puts each band at −6.02 dB at fc with an exactly flat complement
+      ([0.5412, 1.3066] is the 4th-order Butterworth prototype: bands at
+      −3.01 dB IN PHASE, sum +3 dB hot). Gate corrected to −6.02 ± 0.2 +
+      flat-sum ±0.2 at fc/2, fc, 2fc.*
+- [x] **E6b anchors**: band/sum crossover gates above; 6.5 kHz tone @
+      −10 dBFS into threshold −20 ratio 4 (crossover 2500 — at 4000 the
+      LP-band leak masks ~0.3 dB of the reduction) → 7.5 ± 0.5 dB;
+      300 Hz tone untouched ±0.1 dB; level-below-threshold no-op; 30 s
+      worst-case pink + impulse bounded ≤4, no NaN, mono + stereo.
+- [x] **Wiring**: `fx.deesser` (generic dialog: crossover 3–9 kHz,
+      threshold −60…0 dB, ratio 1–12) + `fx.nrPrint` (custom dialog:
+      α/β rows + "Learn print from selection" → ctx) after Noise Gate in
+      the Effects menu; commands, i18n, registry order/kinds, coverage.
+- [x] **e2e**: De-esser applies via the generic dialog (duration
+      preserved, Ctrl+Z/Ctrl+Y); Noise Reduction learns the print from the
+      selection, applies, undoes (suite 16 → 18).
+
 ## M7+ — see Build Plan §10 (roadmap)
