@@ -142,7 +142,7 @@ tested, then canvas/DOM) → M9d3 (e2e).
 ### assertability; geometry lesson: clips need ≥ seconds of view width to
 ### grab (edge zones are ±6 px).
 
-## M9e — history + commands
+## M9e — history + commands — DONE
 
 Clip ops ride `ProjectHistoryOp` (timeline payloads, byte-light); bounce
 entries charge new-asset bytes; unified undo unchanged. Split/duplicate/
@@ -150,6 +150,16 @@ trim/move commands wired into commands.ts + menus + shortcuts.
 
 Gates: interleaved clip-op undo/redo (incl. bounce entries) restores the
 rendered timeline bit-exactly at every step.
+
+**Landed** (M9d1/d2 + this polish): setClips op + clipAssets retention;
+commands + shortcuts. This pass: Edit menu arrangement cluster (split/
+duplicate/delete after the clipboard group), keyboard Delete/Backspace
+case removed (routed via the single-source resolver), menu⇄command
+consistency unit, and the FORMAL GATE — 10 interleaved ops (split, move,
+trim, bounce+sweep, trim, move, duplicate, delete, removeTrack, addTrack)
+with the lane render bit-exact at EVERY undo and redo step, bounce byte
+charging verified (≥ region PCM), move/trim entries charge 0 bytes,
+deterministic re-split ids after undo.
 
 ## M9f — persistence + export
 
