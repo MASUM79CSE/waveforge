@@ -85,6 +85,7 @@ export const commands: Command[] = [
   { id: 'fx.geq20', label: () => t().fxGEQ20, run: () => A.openEffectDialog('fx.geq20') },
   { id: 'fx.delay', label: () => t().fxDelay, run: () => A.openEffectDialog('fx.delay') },
   { id: 'fx.reverb', label: () => t().fxReverb, run: () => A.openEffectDialog('fx.reverb') },
+  { id: 'fx.reverb2', label: () => t().fxReverb2, run: () => A.openEffectDialog('fx.reverb2') },
   { id: 'fx.chorus', label: () => t().fxChorus, run: () => A.openEffectDialog('fx.chorus') },
   { id: 'fx.flanger', label: () => t().fxFlanger, run: () => A.openEffectDialog('fx.flanger') },
   { id: 'fx.phaser', label: () => t().fxPhaser, run: () => A.openEffectDialog('fx.phaser') },

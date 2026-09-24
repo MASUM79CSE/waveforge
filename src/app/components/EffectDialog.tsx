@@ -76,7 +76,7 @@ export function EffectDialog() {
   );
 }
 
-function ParamRow({
+export function ParamRow({
   spec,
   value,
   onChange,

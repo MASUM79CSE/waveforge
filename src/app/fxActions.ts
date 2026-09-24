@@ -10,7 +10,7 @@
 // the E1 e2e: unit tests import defs directly and never saw it)
 import '../fx/defs';
 import { makeOverwritePaste, sliceRegion } from '../engine/editOps';
-import type { EffectDef, KernelEffectDef, Params } from '../fx/types';
+import type { EffectDef, EffectRunContext, KernelEffectDef, Params } from '../fx/types';
 import { getEffect, validateParams } from '../fx/registry';
 import { renderEffectOffline } from '../fx/offlineRender';
 import { logger } from '../core/logger-instance';
@@ -31,7 +31,11 @@ export function effectLabel(def: EffectDef): string {
  * Kernel wet buffers are computed here (pure process on the region —
  * fast enough on the main thread for typical regions).
  */
-export function preparePreview(id: string, params: Params): PreviewPlan | null {
+export function preparePreview(
+  id: string,
+  params: Params,
+  ctx?: EffectRunContext,
+): PreviewPlan | null {
   const doc = getDoc();
   const def = getEffect(id);
   const range = targetRange();
@@ -53,15 +57,26 @@ export function preparePreview(id: string, params: Params): PreviewPlan | null {
   };
 
   if (def.kind === 'kernel') {
-    const region = sliceRegion(currentChannels(), range.start, range.len);
-    const wet = def.process(region, doc.sampleRate, safeParams);
+    const wet = kernelProcess(
+      def,
+      currentChannels(),
+      range.start,
+      range.len,
+      doc.sampleRate,
+      safeParams,
+      ctx,
+    );
     base.wetBuffer = bufferFactory(wet, doc.sampleRate) as unknown as AudioBuffer;
   }
   return base;
 }
 
 /** Apply an effect to the selection (or whole document). Undoable. */
-export async function applyEffect(id: string, rawParams: Params): Promise<void> {
+export async function applyEffect(
+  id: string,
+  rawParams: Params,
+  ctx?: EffectRunContext,
+): Promise<void> {
   const doc = getDoc();
   const def = getEffect(id);
   if (!doc || !def) {
@@ -75,7 +90,15 @@ export async function applyEffect(id: string, rawParams: Params): Promise<void> 
   try {
     let wet: Float32Array[];
     if (def.kind === 'kernel') {
-      wet = kernelProcess(def, currentChannels(), range.start, range.len, doc.sampleRate, params);
+      wet = kernelProcess(
+        def,
+        currentChannels(),
+        range.start,
+        range.len,
+        doc.sampleRate,
+        params,
+        ctx,
+      );
     } else {
       const before = doc;
       wet = await renderEffectOffline(
@@ -108,6 +131,24 @@ function kernelProcess(
   len: number,
   sampleRate: number,
   params: Params,
+  ctx?: EffectRunContext,
 ): Float32Array[] {
-  return def.process(sliceRegion(channels, start, len), sampleRate, params);
+  // tail mechanism (effects v2 §0): process len + tail·sr frames — the
+  // post-region context absorbs the wet tail where audio follows; zeros
+  // are appended past doc end, and the overwrite paste grows the doc by
+  // the padding, exactly like graph tailSeconds region growth.
+  const tailLen = Math.max(0, Math.round((def.tail?.(params, ctx) ?? 0) * sampleRate));
+  const total = len + tailLen;
+  const region = sliceRegion(channels, start, total);
+  const have = region[0]?.length ?? 0;
+  const pad = total - have;
+  const input =
+    pad > 0
+      ? region.map((ch) => {
+          const out = new Float32Array(total);
+          out.set(ch, 0);
+          return out;
+        })
+      : region;
+  return def.process(input, sampleRate, params, ctx);
 }

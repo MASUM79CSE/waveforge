@@ -836,3 +836,21 @@
 .eq-cell select {
   width: 70px;
 }
+
+/* E4 Studio Reverb: IR import row */
+.fx-ir-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 2px;
+}
+.fx-ir-row .fx-ir-status {
+  color: var(--text-dim, #8fa3b0);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fx-ir-file {
+  display: none;
+}

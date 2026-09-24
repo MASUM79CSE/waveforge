@@ -11,6 +11,7 @@ const EXPECTED_ORDER = [
   'fx.distortion',
   'fx.delay',
   'fx.reverb',
+  'fx.reverb2',
   'fx.chorus',
   'fx.flanger',
   'fx.phaser',
@@ -74,6 +75,7 @@ describe('fx definitions hygiene', () => {
       'fx.distortion': 'graph',
       'fx.delay': 'graph',
       'fx.reverb': 'graph',
+      'fx.reverb2': 'kernel',
       'fx.chorus': 'kernel',
       'fx.flanger': 'kernel',
       'fx.phaser': 'kernel',
@@ -106,6 +108,17 @@ describe('fx definitions hygiene', () => {
       1.8,
       6,
     );
+  });
+
+  test('reverb2 kernel tail = decay + predelay + settle; imported IR uses its length', () => {
+    const reverb2 = getEffect('fx.reverb2') as Extract<EffectDef, { kind: 'kernel' }>;
+    const synthesized = reverb2.tail?.({ rt60Sec: 2, predelayMs: 20, useImported: false }) ?? -1;
+    expect(synthesized).toBeCloseTo(2 + 0.02 + 0.02, 6);
+    const imported = reverb2.tail?.(
+      { rt60Sec: 2, predelayMs: 20, useImported: true },
+      { irChannels: [new Float32Array(44100)], irSampleRate: 44100 },
+    ) ?? -1;
+    expect(imported).toBeCloseTo(1 + 0.02 + 0.02, 6);
   });
 
   test('kernel processes smoke-run: correct shapes', () => {

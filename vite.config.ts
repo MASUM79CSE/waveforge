@@ -80,6 +80,11 @@ export default defineConfig({
         'src/fx/paramEq.ts',
         // E3 modulation (effects v2)
         'src/fx/modulation.ts',
+        // E4 reverb v2 (effects v2)
+        'src/fx/fft.ts',
+        'src/fx/reverbIr.ts',
+        'src/fx/convolver.ts',
+        'src/fx/reverb2.ts',
         // M5 pure kernels
         'src/engine/lufs.ts',
         'src/engine/bpm.ts',

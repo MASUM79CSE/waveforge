@@ -13,6 +13,7 @@ import {
   vibratoProcess,
 } from './modulation';
 import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq } from './paramEq';
+import { reverb2Process } from './reverb2';
 import { registerEffect } from './registry';
 import { compressKernel } from './compressor';
 import { noiseGate } from './gate';
@@ -140,6 +141,41 @@ const DEFS: EffectDef[] = [
       num('decay', 'paramDecay', 0.5, 10, 0.1, 2.5),
       num('mix', 'paramMix', 0, 1, 0.01, 0.35),
       bool('reverse', 'paramReverse', false),
+    ],
+  },
+  {
+    id: 'fx.reverb2',
+    labelKey: 'fxReverb2',
+    kind: 'kernel',
+    process: (channels, sampleRate, params, ctx) =>
+      reverb2Process(channels, sampleRate, {
+        type: Number(params.type) as 0 | 1 | 2 | 3,
+        rt60Sec: Number(params.rt60Sec),
+        damping: Number(params.damping),
+        predelayMs: Number(params.predelayMs),
+        mix: Number(params.mix),
+        seed: Number(params.seed),
+      }, ctx),
+    // wet tail beyond the region: the full decay plus predelay and a
+    // short settle margin; an imported IR uses its own length instead
+    tail: (params, ctx) => {
+      const predelay = (Number(params.predelayMs) || 0) / 1000;
+      const settle = 0.02;
+      const ir0 = ctx?.irChannels?.[0];
+      const irSec =
+        params.useImported === true && ir0 && ctx?.irSampleRate
+          ? ir0.length / ctx.irSampleRate
+          : Number(params.rt60Sec) || 0;
+      return irSec + predelay + settle;
+    },
+    specs: [
+      num('type', 'paramReverbType', 0, 3, 1, 0),
+      bool('useImported', 'paramUseImported', false),
+      num('rt60Sec', 'paramRt60', 0.2, 12, 0.1, 1.8),
+      num('damping', 'paramDamping', 0, 100, 1, 30),
+      num('predelayMs', 'paramPredelay', 0, 120, 1, 20),
+      num('mix', 'paramMix', 0, 1, 0.01, 0.25),
+      num('seed', 'paramSeed', 0, 9999, 1, 1234),
     ],
   },
   {

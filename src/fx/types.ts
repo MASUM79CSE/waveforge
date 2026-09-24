@@ -21,13 +21,30 @@ export interface ParamSpec {
 
 export type Params = Record<string, number | boolean>;
 
+/** Optional side-channel for effects that carry bulk data (imported IRs). */
+export interface EffectRunContext {
+  irChannels?: Float32Array[];
+  irSampleRate?: number;
+}
+
 export interface KernelEffectDef {
   id: string;
   labelKey: string;
   kind: 'kernel';
   specs: ParamSpec[];
   /** Pure sample DSP: region channels in, region channels out. */
-  process: (channels: Float32Array[], sampleRate: number, params: Params) => Float32Array[];
+  process: (
+    channels: Float32Array[],
+    sampleRate: number,
+    params: Params,
+    ctx?: EffectRunContext,
+  ) => Float32Array[];
+  /**
+   * Wet-tail seconds the pipeline must append after the region
+   * (post-region context where it exists, zeros past doc end) so pure
+   * kernels can produce tails exactly like graph tailSeconds (E4 §0).
+   */
+  tail?: (params: Params, ctx?: EffectRunContext) => number;
 }
 
 export interface GraphEffectDef {

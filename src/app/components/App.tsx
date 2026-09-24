@@ -8,6 +8,7 @@ import { UrlDialog } from './UrlDialog';
 import { GainDialog, NormalizeDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
 import { Pgeq8Dialog } from './Pgeq8Dialog';
+import { Reverb2Dialog } from './Reverb2Dialog';
 import {
   draftSaveOpen,
   effectDialogId,
@@ -41,7 +42,13 @@ export function App() {
       <UrlDialog />
       <GainDialog />
       <NormalizeDialog />
-      {effectDialogId.value === 'fx.pgeq8' ? <Pgeq8Dialog /> : <EffectDialog />}
+      {effectDialogId.value === 'fx.pgeq8' ? (
+        <Pgeq8Dialog />
+      ) : effectDialogId.value === 'fx.reverb2' ? (
+        <Reverb2Dialog />
+      ) : (
+        <EffectDialog />
+      )}
       {exportOpen.value && <ExportDialog />}
       {recordSettingsOpen.value && <RecordSettingsDialog />}
       {metadataOpen.value && <MetadataDialog />}

@@ -96,3 +96,20 @@ test('effects: Chorus (E3 modulation) applies via generic dialog and undoes', as
   await page.keyboard.press('Control+y');
   await expect(page.locator('.toast-msg').last()).toContainText(/Redid/i, { timeout: 8000 });
 });
+
+test('effects: Studio Reverb grows the region by its wet tail (E4) and undoes', async ({
+  page,
+}) => {
+  await loadSample(page);
+  await applyEffect(page, /^Studio Reverb/);
+  await expect(page.locator('.toast-msg').last()).toContainText(/Applied: Studio Reverb/i, {
+    timeout: 30_000,
+  });
+  // tail mechanism: RT60 1.8 s + predelay 20 ms + settle 20 ms extend the
+  // selection → 9.27 s + 1.84 s ≈ 11.11 s in the status bar
+  await expect(page.getByText(/11\.1\d s/)).toBeVisible({ timeout: 15_000 });
+  // undo restores the original duration exactly
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+  await expect(page.getByText(/9\.27 s/)).toBeVisible({ timeout: 15_000 });
+});

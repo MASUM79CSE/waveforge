@@ -56,6 +56,7 @@ export const menus: MenuDef[] = [
       '-',
       'fx.delay',
       'fx.reverb',
+      'fx.reverb2',
       '-',
       'fx.chorus',
       'fx.flanger',
