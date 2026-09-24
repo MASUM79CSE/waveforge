@@ -542,6 +542,16 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
 - [x] **D6** welcome tips line (Shift-key note, AM parity) + Help →
       Keyboard Shortcuts overlay (4 groups from `shortcutCatalog.ts`,
       unit-pinned; Escape closes; e2e-verified)
-- [ ] **D7** hardening: Lighthouse ≥95/95/100/100 holds, screenshots, docs
+- [x] **D7** hardening: Lighthouse re-run with the converged skin —
+      **99/100/100/100** (`docs/perf/lighthouse-d7.json`); final screenshot
+      set in `docs/design/`; all gates green (424 unit @ 96.09/75.06,
+      25 e2e, build, lint)
+
+**D-series complete.** WaveForge now wears the AudioMass design system
+(tokens, control row, canvas, zoom/beat bars, shortcuts overlay) on the
+WaveForge engine — with the effects/UX advances retained (21 effects,
+LUFS, drafts+autosave, PWA, doctor, focus traps). Backlog beyond D7:
+per-channel pan strips (engine pan node), richer custom tooltips,
+light-theme token variant, selectable accent.
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)
