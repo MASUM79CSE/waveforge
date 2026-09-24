@@ -661,6 +661,13 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
 - [x] **M9c** clip playback: pure pass expansion (`clipPlayback.ts`) +
       `startClips` (one source per audible clip, restart-on-loop, shared
       gain kernels + position math). 11 anchors; channels path untouched
+- [x] **M9d** arrangement: M9d1 doc-model flip (channels → clips+assets,
+      lanePcm fast path, setClips history, COW bounce routing) · M9d2
+      interactions (select/move/trim/split S/Ctrl+D/Del, per-asset
+      envelopes, drag preview → one history entry per gesture) · M9d3
+      gate e2e (split→drag→undo×2→dup→play). 35 e2e total
+- [ ] M9e history/commands polish (interleave anchor) → M9f drafts v3 +
+      export parity
 - [x] **M9a** clip core (`src/engine/clips.ts`): placement kernels
       (sorted insert w/ overlap refusal, split w/ offset accumulation,
       neighbour-clamped move/trim, duplicate, remove) + render kernels
