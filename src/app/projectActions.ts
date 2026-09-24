@@ -38,6 +38,8 @@ export interface TrackSnapshot {
   solo: boolean;
   channelCount: number;
   length: number;
+  /** A4: per-param automation curves (read-only view for the UI). */
+  automation?: Record<string, import('../engine/automation').AutomationCurve>;
 }
 
 let proj: AudioProjectEditor | null = null;
@@ -61,6 +63,7 @@ function snapshotOf(project: ProjectState, t: TrackState): TrackSnapshot {
     solo: t.solo,
     channelCount: asset?.channels.length ?? 1,
     length,
+    automation: t.automation,
   };
 }
 

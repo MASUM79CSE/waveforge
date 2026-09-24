@@ -28,7 +28,8 @@ export type ShortcutCommand =
   | 'edit.insertSilence'
   | 'clip.split'
   | 'clip.delete'
-  | 'clip.duplicate';
+  | 'clip.duplicate'
+  | 'automation.toggle';
 
 function isMacLike(): boolean {
   return typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform ?? '');
@@ -76,6 +77,8 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
     switch (key) {
       case 's':
         return 'clip.split';
+      case 'a':
+        return 'automation.toggle';
       case 'delete':
       case 'backspace':
         return 'clip.delete';
@@ -106,6 +109,7 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
 export interface KbdHints {
   open: string;
   duplicateClip?: string;
+  automation?: string;
   undo: string;
   redo: string;
   cut: string;
@@ -124,6 +128,7 @@ export function kbdHints(mac = isMacLike()): KbdHints {
     return {
       open: '⌘O',
       duplicateClip: '⌘D',
+      automation: 'A',
       undo: '⌘Z',
       redo: '⇧⌘Z',
       cut: '⌘X',
@@ -136,6 +141,7 @@ export function kbdHints(mac = isMacLike()): KbdHints {
   return {
     open: 'Ctrl+O',
     duplicateClip: 'Ctrl+D',
+    automation: 'A',
     undo: 'Ctrl+Z',
     redo: 'Ctrl+Y',
     cut: 'Ctrl+X',

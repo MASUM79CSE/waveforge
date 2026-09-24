@@ -1,5 +1,6 @@
 import { useRef, useState } from 'preact/hooks';
 import { activeTrackId, projectOpen, projectTracks } from '../state';
+import { automationMode, automationParamFor, setAutomationParamFor, type AutomationParam } from '../automationUi';
 import {
   importToTrack,
   removeTrack,
@@ -154,6 +155,22 @@ function Lane({ snap, active }: { snap: Snap; active: boolean }) {
           </button>
         </span>
       </div>
+      {automationMode.value && (
+        <span class="lane-automation" role="group" aria-label={`${snap.name} ${t().automationParamAria}`}>
+          {(['volume', 'pan'] as AutomationParam[]).map((param) => (
+            <button
+              key={param}
+              class={`chbtn lane-param ${automationParamFor(snap.id) === param ? 'soloed' : ''}`}
+              aria-pressed={automationParamFor(snap.id) === param}
+              aria-label={`${snap.name} ${t().automationParamAria} ${param === 'volume' ? t().automationVolume : t().automationPan}`}
+              title={param === 'volume' ? t().automationVolume : t().automationPan}
+              onClick={() => setAutomationParamFor(snap.id, param)}
+            >
+              {param === 'volume' ? t().automationVolume.slice(0, 3).toUpperCase() : t().automationPan.slice(0, 3).toUpperCase()}
+            </button>
+          ))}
+        </span>
+      )}
       <LaneCanvas trackId={snap.id} />
       <span class="visually-hidden" data-testid={`clips-${snap.name}`}>{clipCount}</span>
     </div>

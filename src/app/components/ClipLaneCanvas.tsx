@@ -28,6 +28,8 @@ import {
   type DragMode,
 } from '../clipActions';
 import { assetPcm, clipArrangement, projectEditor, syncProject } from '../projectActions';
+import { automationMode, automationPreview, drawAutomationOverlay } from '../automationUi';
+import { automationCurveNow, wireAutomationLane } from './automationLane';
 import { laneBuckets, lanePeaksFromBuckets, type LaneBuckets } from '../../engine/lanePeaks';
 
 /** Bucket envelope cache per ASSET (clips share their asset's envelope). */
@@ -173,6 +175,11 @@ export function LaneCanvas({ trackId }: { trackId: string }) {
           if (bx1 - bx0 > 24) ctx2d.fillText(assetName.slice(0, 24), bx0 + EDGE_PX + 2, 11);
         }
       }
+      // A4: envelope overlay claims the lane while automation mode is on
+      if (automationMode.value && !cursorOnly) {
+        const curve = automationCurveNow(trackId);
+        drawAutomationOverlay(ctx2d, curve.points, curve.param, { width: w, height: h, spp, viewStart: start, sampleRate: sr }, theme, curve.baseline);
+      }
       // playhead (shared timeline; x from the viewState convention)
       const x = xAtTimePx(cursorPos.value, start, sr, spp);
       ctx2d.strokeStyle = theme.playhead;
@@ -191,7 +198,7 @@ export function LaneCanvas({ trackId }: { trackId: string }) {
     };
 
     const onPointerDown = (e: PointerEvent): void => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || automationMode.value) return; // A4: envelope owns the pointer
       const { sample, spp } = sampleAt(e.clientX);
       const clips = clipArrangement(trackId) ?? [];
       const hit = dragModeAt(clips, sample, spp, EDGE_PX);
@@ -212,10 +219,11 @@ export function LaneCanvas({ trackId }: { trackId: string }) {
     };
 
     const onPointerMove = (e: PointerEvent): void => {
+      if (automationMode.value) return; // A4: envelope owns the pointer
       const g = gesture.current;
       const { sample, spp, sr } = sampleAt(e.clientX);
       if (!g) {
-        // hover cursor hint
+        // hover cursor hint (mode → automationLane paints crosshair)
         const hit = dragModeAt(clipArrangement(trackId) ?? [], sample, spp, EDGE_PX);
         canvas.style.cursor = hit ? (hit.kind === 'move' ? 'grab' : 'ew-resize') : 'default';
         return;
@@ -260,6 +268,7 @@ export function LaneCanvas({ trackId }: { trackId: string }) {
     };
 
     const onPointerUp = (e: PointerEvent): void => {
+      if (automationMode.value) return; // A4: envelope owns the pointer
       const g = gesture.current;
       gesture.current = null;
       canvas.style.cursor = 'default';
@@ -298,18 +307,30 @@ export function LaneCanvas({ trackId }: { trackId: string }) {
       accent.subscribe(full),
       activeClip.subscribe(full),
       dragPreview.subscribe(full),
+      automationMode.subscribe(full),
+      automationPreview.subscribe(full),
     ];
     const onResize = (): void => full();
     window.addEventListener('resize', onResize);
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
+    const detachAutomation = wireAutomationLane(trackId, canvas, {
+      geomNow: (): import('../automationUi').OverlayGeom => ({
+        width: canvas.clientWidth,
+        height: canvas.clientHeight,
+        spp: viewSpp.value,
+        viewStart: viewStart.value,
+        sampleRate: docInfo.value?.sampleRate ?? 44100,
+      }),
+    });
     return () => {
       for (const un of subs) un();
       window.removeEventListener('resize', onResize);
       canvas.removeEventListener('pointerdown', onPointerDown);
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUp);
+      detachAutomation();
     };
   }, [trackId]);
 

@@ -1341,6 +1341,16 @@
   border-radius: 2px;
 }
 
+.lane-automation {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 4px;
+}
+.lane-param {
+  font-size: 9px;
+  padding: 1px 4px;
+}
+
 .lane-empty {
   cursor: default;
   justify-content: center;

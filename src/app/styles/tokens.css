@@ -98,6 +98,8 @@
   --cv-clip-border: rgba(255, 255, 255, 0.28);
   --cv-clip-edge: rgba(90, 242, 255, 0.5);
   --cv-clip-selected: rgba(90, 242, 255, 0.9);
+  --cv-automation: #ffb84a; /* A4 envelope point fill */
+  --cv-automation-line: rgba(255, 184, 74, 0.85); /* A4 envelope line */
 
   /* layout */
   --menubar-h: 38px;

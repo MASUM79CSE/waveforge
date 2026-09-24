@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import * as AU from './automationUi';
 import * as A from './actions';
 import { kbdHints } from './shortcuts';
 
@@ -215,6 +216,15 @@ export const commands: Command[] = [
       // doc fallback: with no clip selected, Delete keeps its M1 meaning
       if (!CA.deleteSelectedClip()) EA.deleteSelection();
     },
+  },
+  // Automation envelopes (A4) — per-lane overlay + gestures
+  {
+    id: 'automation.toggle',
+    label: () => t().automationToggle,
+    kbd: () => 'A',
+    check: true,
+    isChecked: () => AU.automationMode.value,
+    run: () => AU.toggleAutomationMode(),
   },
   { id: 'help.about', label: () => t().helpAbout, run: () => A.openAbout() },
   { id: 'help.doctor', label: () => t().helpDoctor, run: () => A.openDoctor() },

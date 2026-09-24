@@ -36,6 +36,8 @@ interface Theme {
   clipBorder: string;
   clipEdge: string;
   clipSelected: string;
+  automationLine: string;
+  automationPoint: string;
 }
 
 const THEME_FALLBACK: Theme = {
@@ -55,6 +57,8 @@ const THEME_FALLBACK: Theme = {
   clipBorder: 'rgba(255, 255, 255, 0.28)',
   clipEdge: 'rgba(90, 242, 255, 0.5)',
   clipSelected: 'rgba(90, 242, 255, 0.9)',
+  automationLine: 'rgba(255, 184, 74, 0.85)',
+  automationPoint: '#ffb84a',
 };
 
 // D9: the palette lives in tokens.css (--cv-*) so themes apply everywhere;
@@ -76,6 +80,8 @@ const CV_KEYS: Array<[keyof Theme, string]> = [
   ['clipBorder', '--cv-clip-border'],
   ['clipEdge', '--cv-clip-edge'],
   ['clipSelected', '--cv-clip-selected'],
+  ['automationLine', '--cv-automation-line'],
+  ['automationPoint', '--cv-automation'],
 ];
 
 let cachedTheme = THEME_FALLBACK;
