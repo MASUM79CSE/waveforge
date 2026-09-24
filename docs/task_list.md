@@ -692,3 +692,14 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
 - LH recipe re-verified after restore: /tmp/lh-server.cjs regenerated
   (br q5, 404 non-nav, immutable /assets); ALWAYS verify br transfer
   via curl (~96.5 KiB this run) before trusting a number.
+
+## 2026-09-25 (later) — A6 effect-param automation SHIPPED
+
+- A6a graph-kind `5ebc9f2` (BuiltGraph.auto + scheduleFxAuto +
+  renderEffectOffline curves) · A6b kernel-kind `7db91b6`+`4ec6967`
+  (paramCurves → swept biquad bands, pgeq8 first).
+- Gates: 614/614 unit (73 files), 37/37 e2e, lint 0, build 0.96 s.
+- LESSON: per-sample cascaded biquads must fround at SECTION boundaries
+  to stay bit-identical with the static whole-array path (array stores
+  round; f64 locals don't). Automation package COMPLETE incl. A6;
+  follow-ups: per-kernel curves (dynamics/modulation), FX envelope UI.

@@ -198,3 +198,20 @@ A6 lesson stamped for the follow-up: the A2 bit-identity pattern
 (constant curve == no-automation, byte-for-byte) transfers directly to
 graph-kind FX params; per-kernel literal anchors follow §8 of
 `docs/effects-v2-plan.md`.
+
+## Status stamp (A6 SHIPPED, 2026-09-25)
+
+| Part | State | Evidence |
+| --- | --- | --- |
+| A6a graph-kind | ✅ `5ebc9f2` | BuiltGraph.auto (delay/reverb/pgeq/geq; distortion none), scheduleFxAuto (zero calls / constant==static / law-per-knot / window clamp), renderEffectOffline curves param — 12 unit anchors |
+| A6b kernel-kind | ✅ `7db91b6`/`4ec6967` | paramCurves on EffectRunContext; processParamEqSwept (per-sample designBiquad, TDF state continuity, f32 section discipline → constant==static BIT-IDENTICAL); fx.pgeq8 wired — 9 anchors incl. per-sample reference + cascade + physics |
+
+Gates at A6: **614/614 unit (73 files), 37/37 e2e, lint 0, build
+0.96 s**. The constant-curve==static gate holds at BOTH levels
+(schedule-level for graphs, bit-for-bit audio for kernels).
+
+Next per-kernel follow-ups (each with its own anchors, in rough
+demand order): dynamics (compressor/limiter/gate gain computer),
+modulation (chorus/flanger/phaser LFO depth+rate), tremolo/vibrato,
+reverb2 mix. UI: an FX-envelope lane in the A4 overlay can now drive
+`paramCurves` / `renderEffectOffline(curves)` — no renderer work left.
