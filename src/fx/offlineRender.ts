@@ -5,6 +5,7 @@
  * Browser-only (OfflineAudioContext) — excluded from unit coverage.
  */
 import { buildGraph } from './graphs';
+import { scheduleFxAuto, type FxCurves } from './fxCurves';
 import type { EffectDef, Params } from './types';
 
 export async function renderEffectOffline(
@@ -14,6 +15,7 @@ export async function renderEffectOffline(
   len: number,
   def: Extract<EffectDef, { kind: 'graph' }>,
   params: Params,
+  curves: FxCurves = {},
 ): Promise<Float32Array[]> {
   const sampleRate = buffer.sampleRate;
   const tailFrames = Math.ceil(((def.tailSeconds?.(params) ?? 0) * sampleRate) / 1);
@@ -23,6 +25,9 @@ export async function renderEffectOffline(
   const source = offline.createBufferSource();
   source.buffer = buffer;
   const graph = buildGraph(offline, def.graphId, params, { channels });
+  // A6a: region-relative param curves → ramps on the exposed AudioParams.
+  // No curves → zero calls → the render is exactly today's.
+  scheduleFxAuto(graph.auto ?? {}, curves, sampleRate, frames);
   source.connect(graph.input);
   graph.output.connect(offline.destination);
   source.start(0, start / sampleRate, len / sampleRate);

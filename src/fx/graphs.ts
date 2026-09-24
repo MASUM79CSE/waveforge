@@ -17,11 +17,41 @@ import {
   PG_EQ_LOW_HZ,
 } from '../core/constants';
 import { distortionCurve, equalPowerMix, reverbImpulse } from './curves';
+import type { GraphAutoParam, GraphAutoTarget } from './fxCurves';
 import type { GraphOpts, Params } from './types';
+import { FX_MAX_FEEDBACK } from '../core/constants';
 
 export interface BuiltGraph {
   input: AudioNode;
   output: AudioNode;
+  /**
+   * A6a: automatable AudioParams keyed by the effect's param keys. Absent /
+   * empty for graphs without a-rate params (distortion). The scheduler in
+   * fxCurves.ts writes ramps here; static builds never touch these.
+   */
+  auto?: Record<string, GraphAutoTarget>;
+}
+
+/** Identity-law handle helper (value passes straight to the AudioParam). */
+function autoDirect(param: AudioParam): GraphAutoParam {
+  return { param: param as unknown as import('./fxCurves').AudioParamSched, apply: (v) => v };
+}
+
+/** Equal-power mix law: wet = sin(m·π/2), dry = sin((1−m)·π/2) (exact ends). */
+function autoMix(wet: AudioParam, dry: AudioParam): GraphAutoTarget {
+  return {
+    params: [
+      { param: wet as unknown as import('./fxCurves').AudioParamSched, apply: (v) => equalPowerMix(v).wet },
+      { param: dry as unknown as import('./fxCurves').AudioParamSched, apply: (v) => equalPowerMix(v).dry },
+    ],
+    min: 0,
+    max: 1,
+  };
+}
+
+/** Domain-clamped direct handle. */
+function autoRanged(param: AudioParam, min: number, max: number): GraphAutoTarget {
+  return { params: [autoDirect(param)], min, max };
 }
 
 /** Build the live/offline graph for a graphId. Unknown ids throw. */
@@ -78,7 +108,15 @@ function buildDelay(ctx: BaseAudioContext, params: Params): BuiltGraph {
   delay.connect(feedback);
   feedback.connect(delay);
 
-  return { input, output };
+  return {
+    input,
+    output,
+    auto: {
+      time: autoRanged(delay.delayTime, 0.01, 2),
+      feedback: autoRanged(feedback.gain, 0, FX_MAX_FEEDBACK),
+      mix: autoMix(wet.gain, dry.gain),
+    },
+  };
 }
 
 function buildReverb(ctx: BaseAudioContext, params: Params, channels: number): BuiltGraph {
@@ -112,7 +150,7 @@ function buildReverb(ctx: BaseAudioContext, params: Params, channels: number): B
   convolver.connect(wet);
   wet.connect(output);
 
-  return { input, output };
+  return { input, output, auto: { mix: autoMix(wet.gain, dry.gain) } };
 }
 
 function buildParametricEQ(ctx: BaseAudioContext, params: Params): BuiltGraph {
@@ -134,7 +172,17 @@ function buildParametricEQ(ctx: BaseAudioContext, params: Params): BuiltGraph {
 
   low.connect(mid);
   mid.connect(high);
-  return { input: low, output: high };
+  return {
+    input: low,
+    output: high,
+    auto: {
+      lowGainDb: autoRanged(low.gain, -15, 15),
+      midGainDb: autoRanged(mid.gain, -15, 15),
+      midFreq: autoRanged(mid.frequency, 200, 5000),
+      midQ: autoRanged(mid.Q, 0.3, 8),
+      highGainDb: autoRanged(high.gain, -15, 15),
+    },
+  };
 }
 
 function buildGraphicEQ(
@@ -159,7 +207,11 @@ function buildGraphicEQ(
   const first = bands[0];
   const last = bands[bands.length - 1];
   if (!first || !last) return { input: ctx.createGain(), output: ctx.createGain() };
-  return { input: first, output: last };
+  const auto: Record<string, GraphAutoTarget> = {};
+  bands.forEach((band, i) => {
+    auto[`band${i}`] = autoRanged(band.gain, -12, 12);
+  });
+  return { input: first, output: last, auto };
 }
 
 function octaveCenters(): readonly number[] {
