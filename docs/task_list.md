@@ -239,6 +239,36 @@ Repository pattern; the browser bridge lives in `draftActions`.
 - localStorage access is centralised (`settings.ts` namespaced + validated;
   M4 record settings keep their own reviewed namespace).
 
+## Effects v2 — E2 8-band parametric EQ (complete)
+
+Per `docs/effects-v2-plan.md` §E2 with ADR 009 (effects v2 architecture).
+
+- [x] **`src/fx/biquad.ts`** (pure, 100% line coverage): RBJ cookbook
+      designs (peaking/low-shelf/high-shelf/notch/HPF/LPF) in float64,
+      DF2T recurrence, analytic `biquadMagnitudeDb` — the same function
+      draws the dialog curve and anchors the tests.
+- [x] **`src/fx/paramEq.ts`**: 8-band model; flat-param bridge
+      (`eqBandsFromParams`/`bandsToParams`) keeps the generic registry
+      validation + apply + preview plumbing (ADR 009 D2); HPF/LPF 12/24
+      dB-oct (Butterworth Qs 0.5412/1.3066 cascaded); bit-exact bypass by
+      skipping inert bands (ADR 009 D4).
+- [x] **Gates met**: peaking 1 kHz +12 dB Q4 → centre 12 ± 0.25, octave
+      leak ≤ 0.5 dB (Q1 skirt pinned at 3.9–4.1 dB = bandwidth behaviour);
+      shelves ±0.25 dB at the stop, ≤ 0.5 dB at the far band; notch Q8
+      ≥ 40 dB; HPF 4th-order −6 dB at cutoff, ≤ −40 dB at −2 oct, 12/24
+      dB-oct separated ≥ 15 dB; analytic-vs-audio ± 0.3 dB; bypass
+      bit-exact; 10 s worst-case stack bounded/NaN-free; clamping through
+      registry specs; **[profile] E2: 219 ms / 60 s stereo** (budget
+      600 ms ✓, no B1 trigger).
+- [x] **`Pgeq8Dialog`**: live analytic response canvas (log axis, grid,
+      redraw on every param change), 8 compact band rows (type/freq/gain/Q
+      + slope for filters), A/B preview + apply through the shared kernel
+      plumbing; mounted from App on the `fx.pgeq8` dialog id.
+- [x] **Registry/menu**: `fx.pgeq8` (kernel, 32 specs) + command + menu
+      row; registry-order test updated (the intentional review gate).
+- [x] **e2e**: EQ dialog renders curve + 8 rows, band edit applies,
+      length preserved, Ctrl+Z undo (14/14 total).
+
 ## Effects v2 — E1 Precision mastering (complete)
 
 Per `docs/effects-v2-plan.md` §E1 (RED → green, analytic gates). ADR 009
