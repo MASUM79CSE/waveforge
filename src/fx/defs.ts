@@ -14,6 +14,7 @@ import {
 } from './modulation';
 import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq } from './paramEq';
 import { reverb2Process } from './reverb2';
+import { nr3Process } from './nr3';
 import { nrProcess } from './nrPrint';
 import { deesserProcess } from './deesser';
 import { wsolaStretch } from './wsola';
@@ -336,6 +337,24 @@ const DEFS: EffectDef[] = [
       num('crossoverHz', 'paramCrossover', 3000, 9000, 100, 5500),
       num('thresholdDb', 'paramThreshold', -60, 0, 1, -30),
       num('ratio', 'paramRatio', 1, 12, 0.5, 4),
+    ],
+  },
+  {
+    id: 'fx.nr3',
+    labelKey: 'fxNr3',
+    kind: 'kernel',
+    process: (channels, _sampleRate, params, ctx) =>
+      nr3Process(
+        channels,
+        {
+          reduction: Number(params.reduction),
+          adapt: Number(params.adapt),
+        },
+        ctx?.noisePrint,
+      ),
+    specs: [
+      num('reduction', 'paramReduction', 0, 30, 1, 15),
+      num('adapt', 'paramAdapt', 0, 1, 0.05, 0.5),
     ],
   },
   {

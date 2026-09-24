@@ -65,7 +65,7 @@ test('flow #5c: the NR noise print survives a draft save / reload / reopen', asy
   await page.mouse.up();
 
   await page.getByRole('button', { name: 'Effects', exact: true }).click();
-  await page.getByRole('menuitem', { name: /^Noise Reduction/ }).click();
+  await page.getByRole('menuitem', { name: /^Noise Reduction \(print\)/ }).click();
   const nr = page.getByRole('dialog');
   await expect(nr).toBeVisible();
   await nr.getByRole('button', { name: /learn print from selection/i }).click();
@@ -98,7 +98,7 @@ test('flow #5c: the NR noise print survives a draft save / reload / reopen', asy
 
   // the print came back with the document
   await page.getByRole('button', { name: 'Effects', exact: true }).click();
-  await page.getByRole('menuitem', { name: /^Noise Reduction/ }).click();
+  await page.getByRole('menuitem', { name: /^Noise Reduction \(print\)/ }).click();
   const nr2 = page.getByRole('dialog');
   await expect(nr2).toBeVisible();
   await expect(nr2.getByText(/print restored from draft/i)).toBeVisible({ timeout: 15_000 });

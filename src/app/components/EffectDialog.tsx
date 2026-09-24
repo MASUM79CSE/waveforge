@@ -4,7 +4,7 @@ import type { Params, ParamSpec } from '../../fx/types';
 import { applyEffect, effectLabel, preparePreview } from '../fxActions';
 import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { closeEffectDialog } from '../actions';
-import { effectDialogId, previewActive } from '../state';
+import { effectDialogId, previewActive, sessionNoisePrint } from '../state';
 import { t } from '../../i18n';
 import { Modal } from './Modal';
 
@@ -20,10 +20,14 @@ export function EffectDialog() {
 
   if (!def) return null;
 
+  // Learned noise print rides along as an optional seed (E7: used by
+  // fx.nr3; other effects ignore it).
+  const runCtx = { noisePrint: sessionNoisePrint.value ?? undefined };
+
   const restartPreview = (next: Params): void => {
     if (!previewActive.value) return;
     stopPreview();
-    const plan = preparePreview(def.id, next);
+    const plan = preparePreview(def.id, next, runCtx);
     if (plan) startPreview(plan);
   };
 
@@ -38,14 +42,14 @@ export function EffectDialog() {
       stopPreview();
       return;
     }
-    const plan = preparePreview(def.id, params);
+    const plan = preparePreview(def.id, params, runCtx);
     if (plan) startPreview(plan);
   };
 
   const onApply = (): void => {
     stopPreview();
     closeEffectDialog();
-    void applyEffect(def.id, params);
+    void applyEffect(def.id, params, runCtx);
   };
 
   return (

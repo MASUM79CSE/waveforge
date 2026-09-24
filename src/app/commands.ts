@@ -96,6 +96,7 @@ export const commands: Command[] = [
   { id: 'fx.distortion', label: () => t().fxDistortion, run: () => A.openEffectDialog('fx.distortion') },
   { id: 'fx.gate', label: () => t().fxGate, run: () => A.openEffectDialog('fx.gate') },
   { id: 'fx.deesser', label: () => t().fxDeesser, run: () => A.openEffectDialog('fx.deesser') },
+  { id: 'fx.nr3', label: () => t().fxNr3, run: () => A.openEffectDialog('fx.nr3') },
   { id: 'fx.nrPrint', label: () => t().fxNrPrint, run: () => A.openEffectDialog('fx.nrPrint') },
   { id: 'fx.rate', label: () => t().fxRate, run: () => A.openEffectDialog('fx.rate') },
   { id: 'fx.stretch', label: () => t().fxStretch, run: () => A.openEffectDialog('fx.stretch'), experimental: true },

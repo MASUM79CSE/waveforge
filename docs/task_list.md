@@ -572,4 +572,22 @@ shortcuts overlay, drop overlay, tooltips — on the stronger engine
 Remaining backlog is post-v1 roadmap (M8 multitrack, automation
 package ADR 007, RNNoise).
 
+## E-series — effect-engine advancement
+
+- [x] **E7 NR v3 "natural voice"** (`docs/effects-nr-v3-plan.md`, grounded in
+      the 2026 market analysis + estimation theory): new `fx.nr3` —
+      IMCRA-lite adaptive noise tracking (speech-presence-gated λ) +
+      Ephraim–Malah decision-directed a priori SNR (α=0.98) + floored
+      Wiener gain with asymmetric temporal smoothing. **Narrowband
+      protection** keeps the estimate out of speech/music: init
+      tonality latch (>30× ±8-bin median minimum) + per-frame 4-tap
+      (±6/±10-bin) local-median guard every 2nd frame. Print demoted to
+      optional seed (auto mode needs no selection); `reduction` 0 = bit-
+      exact bypass. Anchors: auto +6 dB SNR → ≥ +10; tone loss ≤ 1 dB;
+      per-bin dB-flicker ratio ≤ 2.5; ≤4 dB frame jumps; gap floor held;
+      stereo per-channel; determinism; 60 s stereo profile **2974 ms**
+      (half-complex real-FFT pair). 11 kernel tests; legacy `fx.nrPrint`
+      retained. E7b RNNoise "AI Voice" mode parked (`@echogarden/
+      rnnoise-wasm`, BSD-3-Clause — sole license-clean vendor).
+
 ## M8+ — post-v1 (see Build Plan §10 roadmap)

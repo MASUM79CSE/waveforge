@@ -77,19 +77,23 @@ export class Fft {
     for (let span = 2; span <= size; span <<= 1) {
       const half = span >> 1;
       const step = size / span;
+      const sgn = inverse ? 1 : -1;
       for (let start = 0; start < size; start += span) {
         for (let k = 0, w = 0; k < half; ++k, w += step) {
           const i = start + k;
           const j = i + half;
           const wr = cos[w]!;
-          // inverse uses the conjugate twiddle
-          const wi = inverse ? sin[w]! : -sin[w]!;
-          const xr = re[j]! * wr - im[j]! * wi;
-          const xi = re[j]! * wi + im[j]! * wr;
-          re[j] = re[i]! - xr;
-          im[j] = im[i]! - xi;
-          re[i] = re[i]! + xr;
-          im[i] = im[i]! + xi;
+          const wi = sgn * sin[w]!;
+          const jr = re[j]!;
+          const ji = im[j]!;
+          const xr = jr * wr - ji * wi;
+          const xi = jr * wi + ji * wr;
+          const ur = re[i]!;
+          const ui = im[i]!;
+          re[j] = ur - xr;
+          im[j] = ui - xi;
+          re[i] = ur + xr;
+          im[i] = ui + xi;
         }
       }
     }

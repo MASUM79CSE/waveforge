@@ -132,7 +132,7 @@ test('effects: Noise Reduction learns a print from the selection, applies, undoe
 }) => {
   await loadSample(page);
   await page.getByRole('button', { name: 'Effects', exact: true }).click();
-  await page.getByRole('menuitem', { name: /^Noise Reduction/ }).click();
+  await page.getByRole('menuitem', { name: /^Noise Reduction \(print\)/ }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();
   await expect(panel.getByText(/no print learned/i)).toBeVisible();
@@ -142,6 +142,27 @@ test('effects: Noise Reduction learns a print from the selection, applies, undoe
   await expect(page.locator('.toast-msg').last()).toContainText(/Applied: Noise Reduction/i, {
     timeout: 30_000,
   });
+  await expect(page.getByText(/9\.27 s/)).toBeVisible(); // length preserving
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+});
+
+test('effects: Noise Reduction v3 applies with no print (auto mode) and undoes (E7)', async ({
+  page,
+}) => {
+  await loadSample(page);
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^Noise Reduction v3/ }).click();
+  const panel = page.getByRole('dialog');
+  await expect(panel).toBeVisible();
+  // generic dialog: reduction + adaptation params, no learn button needed
+  await expect(panel.getByText(/Reduction \(dB\)/)).toBeVisible();
+  await expect(panel.getByText(/Adaptation/)).toBeVisible();
+  await panel.getByRole('button', { name: 'Apply' }).click();
+  await expect(page.locator('.toast-msg').last()).toContainText(
+    /Applied: Noise Reduction v3/i,
+    { timeout: 60_000 },
+  );
   await expect(page.getByText(/9\.27 s/)).toBeVisible(); // length preserving
   await page.keyboard.press('Control+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
