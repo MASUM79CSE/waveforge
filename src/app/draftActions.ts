@@ -11,10 +11,11 @@ import { AudioDocument } from '../engine/AudioDocument';
 import { t } from '../i18n';
 import { AutosaveController } from '../storage/autosave';
 import { openDraftDb } from '../storage/db';
-import { encodeDraft } from '../storage/draftPayload';
+import { encodeDraft, encodeDraftTracks } from '../storage/draftPayload';
 import { IdbDraftRepository } from '../storage/DraftRepository';
 import type { DraftSummary } from '../storage/DraftRepository';
 import { toastError, toastInfo } from './actions';
+import { exportProjectTracks, restoreProjectTracks } from './projectActions';
 import { currentChannels } from './editActions';
 import { bufferFactory, getDoc, installDoc, engine } from './runtime';
 import * as S from './state';
@@ -102,6 +103,7 @@ export async function confirmSaveDraft(name: string): Promise<void> {
       noisePrint: S.sessionNoisePrint.value
         ? Array.from(S.sessionNoisePrint.value)
         : undefined,
+      tracks: exportProjectTracks() ?? undefined,
     });
     toastInfo(t().draftSaved(trimmed));
     S.draftSaveOpen.value = false;
@@ -126,6 +128,9 @@ export async function openDraft(id: string): Promise<void> {
         source: 'draft',
       }),
     );
+    if (record.tracks && record.tracks.length > 0) {
+      restoreProjectTracks(record.tracks); // M8e: lanes ride the draft
+    }
     if (record.header.cursor !== undefined) engine.seek(record.header.cursor);
     S.sessionNoisePrint.value = record.header.noisePrint
       ? Float32Array.from(record.header.noisePrint)
@@ -177,6 +182,7 @@ export const autosave = new AutosaveController({
       noisePrint: S.sessionNoisePrint.value
         ? Array.from(S.sessionNoisePrint.value)
         : undefined,
+      tracks: exportProjectTracks() ?? undefined,
     });
   },
   clear: async () => {
@@ -186,6 +192,9 @@ export const autosave = new AutosaveController({
     const record = await (await repo()).readAutosave();
     if (!record) return null;
     // payload already validated by decode; encode back for the generic read
+    if (record.tracks) {
+      return encodeDraftTracks(record.header, record.tracks, { compress: false });
+    }
     return encodeDraft(record.header, record.channels, { compress: false });
   },
 });
@@ -212,6 +221,9 @@ export async function restoreAutosave(): Promise<void> {
       source: 'draft',
     }),
   );
+  if (record.tracks && record.tracks.length > 0) {
+    restoreProjectTracks(record.tracks); // M8e: lanes ride the autosave
+  }
   if (record.header.cursor !== undefined) engine.seek(record.header.cursor);
   S.sessionNoisePrint.value = record.header.noisePrint
     ? Float32Array.from(record.header.noisePrint)

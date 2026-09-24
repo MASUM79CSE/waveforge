@@ -1355,6 +1355,12 @@
   pointer-events: none;
 }
 
+.lane-export-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  align-self: center;
+}
+
 .chbtn.addtrack {
   font-size: 13px;
   min-width: 22px;

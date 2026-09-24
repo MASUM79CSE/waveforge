@@ -10,8 +10,20 @@
 import { z } from 'zod';
 import { makeError } from '../core/errors';
 
+/** M8e: one lane's mixer state (audio rides in the PCM block sequence). */
+export const draftTrackSchema = z.object({
+  id: z.string().min(1).max(64),
+  name: z.string().max(200),
+  gain: z.number().min(0).max(4),
+  pan: z.number().min(-1).max(1),
+  mute: z.boolean(),
+  solo: z.boolean(),
+  channels: z.union([z.literal(1), z.literal(2)]),
+  length: z.number().int().nonnegative(),
+});
+
 export const draftHeaderSchema = z.object({
-  v: z.literal(1),
+  v: z.union([z.literal(1), z.literal(2)]),
   name: z.string().min(1).max(200),
   sampleRate: z.number().int().positive().max(384_000),
   channels: z.union([z.literal(1), z.literal(2)]),
@@ -21,6 +33,8 @@ export const draftHeaderSchema = z.object({
   selection: z.object({ start: z.number(), end: z.number() }).optional(),
   /** E6a noise-reduction print (per-bin magnitudes) — survives drafts (M7). */
   noisePrint: z.array(z.number()).max(8192).optional(),
+  /** M8e: v2 lanes; PCM = per-track blocks in this order. */
+  tracks: z.array(draftTrackSchema).max(64).optional(),
 });
 
 export type DraftHeader = z.infer<typeof draftHeaderSchema>;
@@ -93,10 +107,50 @@ export async function encodeDraft(
   return raw;
 }
 
+/** Per-lane audio + meta (M8e). */
+export interface DraftTrackPayload {
+  meta: DraftTrack;
+  channels: Float32Array[];
+}
+
+/**
+ * Encode a v2 multitrack snapshot: PCM = each track's interleaved block,
+ * concatenated in `tracks` order. `header.tracks` MUST match the array
+ * (the decoder splits on those metas).
+ */
+export async function encodeDraftTracks(
+  header: DraftHeader,
+  tracks: DraftTrackPayload[],
+  opts: { compress: boolean },
+): Promise<Uint8Array> {
+  const parsed = draftHeaderSchema.parse({ ...header, v: 2, tracks: tracks.map((t) => t.meta) });
+  if (parsed.v !== 2 || !parsed.tracks) throw corrupt('v2 encode without tracks');
+  const parts: Float32Array[] = [];
+  let total = 0;
+  for (const t of tracks) {
+    const block = interleave(t.channels);
+    total += block.length;
+    parts.push(block);
+  }
+  const pcm = new Float32Array(total);
+  let at = 0;
+  for (const block of parts) {
+    pcm.set(block, at);
+    at += block.length;
+  }
+  const raw = writeRawRecord(parsed, pcm);
+  if (opts.compress && supportsCompression()) return gzip(raw);
+  new DataView(raw.buffer).setUint32(0, MAGIC_RAW, false);
+  return raw;
+}
+
 /** Decode a snapshot; every structural problem throws WF-E402. */
+export type DraftTrack = z.infer<typeof draftTrackSchema>;
+
 export async function decodeDraft(bytes: Uint8Array): Promise<{
   header: DraftHeader;
   channels: Float32Array[];
+  tracks?: DraftTrackPayload[];
 }> {
   let raw = bytes;
   if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
@@ -121,12 +175,16 @@ export async function decodeDraft(bytes: Uint8Array): Promise<{
     throw corrupt(error);
   }
 
-  const expected = header.length * header.channels * 4;
+  const trackMetas = header.v === 2 ? header.tracks : undefined;
+  const totalFloats =
+    trackMetas?.reduce((acc, t) => acc + t.length * t.channels, 0) ??
+    header.length * header.channels;
+  const expected = totalFloats * 4;
   const pcm = raw.subarray(8 + headerLen);
   if (pcm.length < expected) throw corrupt(`pcm truncated: ${pcm.length} < ${expected}`);
 
   // float view over the payload bytes, then de-interleave into per-channel copies
-  const interleaved = new Float32Array(header.length * header.channels);
+  const interleaved = new Float32Array(totalFloats);
   new Uint8Array(interleaved.buffer).set(pcm.subarray(0, expected));
   const channels: Float32Array[] = [];
   for (let ch = 0; ch < header.channels; ++ch) {
@@ -134,7 +192,24 @@ export async function decodeDraft(bytes: Uint8Array): Promise<{
     for (let i = 0; i < header.length; ++i) data[i] = interleaved[i * header.channels + ch] ?? 0;
     channels.push(data);
   }
-  return { header, channels };
+  if (!trackMetas) return { header, channels };
+
+  // v2: split the block sequence per track; `channels` mirrors track 1
+  const tracks: DraftTrackPayload[] = [];
+  let at = 0;
+  for (const meta of trackMetas) {
+    const per = meta.length * meta.channels;
+    const block = interleaved.subarray(at, at + per);
+    at += per;
+    const chans: Float32Array[] = [];
+    for (let ch = 0; ch < meta.channels; ++ch) {
+      const data = new Float32Array(meta.length);
+      for (let i = 0; i < meta.length; ++i) data[i] = block[i * meta.channels + ch] ?? 0;
+      chans.push(data);
+    }
+    tracks.push({ meta, channels: chans });
+  }
+  return { header, channels: tracks[0]?.channels ?? channels, tracks };
 }
 
 /** SHA-256 hex over interleaved PCM (FNV-1a fallback without WebCrypto). */

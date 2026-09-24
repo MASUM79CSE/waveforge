@@ -6,7 +6,9 @@ import { describe, expect, test } from 'vitest';
 import {
   decodeDraft,
   encodeDraft,
+  encodeDraftTracks,
   hashPcm,
+  type DraftTrackPayload,
 } from '../../src/storage/draftPayload';
 
 const HEADER = {
@@ -161,5 +163,48 @@ describe('hashPcm identity anchor (e2e flow #5)', () => {
         value: original,
       });
     }
+  });
+});
+
+describe('M8e draft v2 — multitrack payload', () => {
+  const base = { ...HEADER, v: 2 as const };
+
+  function trackPayloads(): DraftTrackPayload[] {
+    const a: DraftTrackPayload = {
+      meta: { id: 't1', name: 'Voice', gain: 1, pan: 0, mute: false, solo: false, channels: 2, length: 4 },
+      channels: pcm(2, 4),
+    };
+    const bl = new Float32Array(6).fill(-0.5);
+    const b: DraftTrackPayload = {
+      meta: { id: 't2', name: 'Guitar', gain: 0.5, pan: -1, mute: true, solo: true, channels: 1, length: 6 },
+      channels: [bl],
+    };
+    return [a, b];
+  }
+
+  test('v2 round-trip: lanes + mixer state bit-exact; channels mirrors track 1', async () => {
+    const tracks = trackPayloads();
+    const encoded = await encodeDraftTracks(base, tracks, { compress: true });
+    const decoded = await decodeDraft(encoded);
+    expect(decoded.header.v).toBe(2);
+    expect(decoded.tracks).toHaveLength(2);
+    expect(decoded.channels).toEqual(tracks[0]!.channels);
+    expect(decoded.tracks![0]!.meta).toEqual(tracks[0]!.meta);
+    expect(decoded.tracks![1]!.meta).toEqual(tracks[1]!.meta);
+    expect(decoded.tracks![1]!.channels[0]).toEqual(tracks[1]!.channels[0]);
+  });
+
+  test('v2 works through the raw (uncompressed) magic too', async () => {
+    const encoded = await encodeDraftTracks(base, trackPayloads(), { compress: false });
+    const decoded = await decodeDraft(encoded);
+    expect(decoded.tracks).toHaveLength(2);
+  });
+
+  test('v1 payload still decodes without tracks (back-compat forever)', async () => {
+    const encoded = await encodeDraft(HEADER, pcm(2, 4), { compress: true });
+    const decoded = await decodeDraft(encoded);
+    expect(decoded.header.v).toBe(1);
+    expect(decoded.tracks).toBeUndefined();
+    expect(decoded.channels).toEqual(pcm(2, 4));
   });
 });

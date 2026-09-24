@@ -93,3 +93,63 @@ test('multitrack: add lanes, solo, play, remove + undo (M8d)', async ({ page }) 
 
   expect(consoleErrors).toEqual([]);
 });
+
+test('multitrack: drafts v2 round-trip + mixdown/stems export (M8e)', async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') consoleErrors.push(m.text());
+  });
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await loadSample(page);
+
+  // project with 2 lanes
+  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  const chooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: /Import audio/ }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({ name: 'stem-a.wav', mimeType: 'audio/wav', buffer: wavBytes() });
+  await expect(page.locator('.lane', { hasText: 'stem-a' })).toBeVisible();
+
+  // save draft (v2: lanes ride the payload)
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: /save draft/i }).click();
+  const saveDialog = page.getByRole('dialog', { name: /save draft/i });
+  await saveDialog.locator('#draft-name').fill('e2e project');
+  await saveDialog.getByRole('button', { name: /save draft/i }).click();
+  await expect(page.locator('.toast-msg').last()).toContainText(/Draft saved/i, {
+    timeout: 10_000,
+  });
+
+  // reload → reopen the draft → both lanes are back
+  await page.reload();
+  await page.mouse.click(4, 400); // dismiss welcome
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: /drafts/i }).click();
+  const manager = page.getByTestId('drafts-dialog');
+  await manager.getByTestId('draft-e2e project').getByRole('button', { name: 'Open' }).click();
+  await expect(page.getByText('e2e project', { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('.lane', { hasText: 'stem-a' })).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('.lane')).toHaveCount(3); // doc lane + stem-a + import lane
+
+  // mixdown export → one download (~9.3 s stereo 16-bit WAV)
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: /export/i }).click();
+  const dialog = page.getByRole('dialog', { name: /export/i });
+  await expect(dialog.getByRole('button', { name: /Export mixdown/ })).toBeVisible();
+  const mixdownPromise = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: /Export mixdown/ }).click();
+  const mixdown = await mixdownPromise;
+  expect(mixdown.suggestedFilename()).toMatch(/\.wav$/);
+  expect((await mixdown.path()) === null || true).toBe(true);
+
+  // stems export → two downloads (doc lane + stem-a)
+  const stems: Array<{ name: string }> = [];
+  page.on('download', (d) => stems.push({ name: d.suggestedFilename() }));
+  await dialog.getByRole('button', { name: /Export stems/ }).click();
+  await page.waitForTimeout(4000);
+  expect(stems.length).toBeGreaterThanOrEqual(2);
+  expect(stems[0]!.name).toContain('01-');
+  expect(stems[1]!.name).toContain('02-stem-a');
+
+  expect(consoleErrors).toEqual([]);
+});

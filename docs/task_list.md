@@ -618,7 +618,13 @@ no-account lane; decision: lane-based single timeline, not clips).
       activate, one Ctrl+Z chain across doc+project histories (timestamp
       rule, ties → doc); project transport (play/pause/stop/seek/loop)
       through ProjectPlayback; e2e add→import→solo→play→remove→undo
-- [ ] M8e persistence/io (drafts v2, mixdown+stems, record-into-track)
-      → M8f effects on tracks → M8g hardening/close
+- [x] **M8e** persistence/io (drafts v2 `0130384`+): header v2 + per-track
+      PCM block sequence (zod-validated `draftTrackSchema`); v1 drafts load
+      forever; save/autosave/restore paths carry lanes (autosave re-encode
+      preserves v2); mixdown export via the deterministic mix kernel +
+      per-lane stem export (batch downloads, ID3 on stem 1); e2e
+      save→reload→lanes-restored + mixdown/stems downloads. Record-into-
+      track moves to M8f scope (recorder plumbing).
+- [ ] M8f effects on tracks (+ record-into-track) → M8g hardening/close
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)

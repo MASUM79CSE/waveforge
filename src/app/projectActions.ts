@@ -6,7 +6,7 @@
  * Engine layer stays signal-free; this is the only bridge (golden rule 1).
  */
 import { AudioProjectEditor, newProject } from '../engine/projectEditor';
-import { createTrack, projectDuration, type ProjectState, type TrackState } from '../engine/project';
+import { createTrack, mixTracks, projectDuration, type ProjectState, type TrackState } from '../engine/project';
 import { ProjectPlayback, type GraphContext, type PlaybackTrack } from '../engine/projectPlayback';
 import { decodeBlob, getSharedContext } from '../io/decode';
 import { getErrorMessage } from '../core/errors';
@@ -145,6 +145,79 @@ export function updateTrackMix(
   Object.assign(track, patch);
   sync();
   playback?.updateMix(playbackViews());
+}
+
+/** Lanes for draft persistence (v2): meta + live channel references. */
+export interface ProjectTrackExport {
+  meta: {
+    id: string;
+    name: string;
+    gain: number;
+    pan: number;
+    mute: boolean;
+    solo: boolean;
+    channels: 1 | 2;
+    length: number;
+  };
+  channels: Float32Array[];
+}
+
+export function exportProjectTracks(): ProjectTrackExport[] | null {
+  if (!proj || proj.project.tracks.length === 0) return null;
+  return proj.project.tracks.map((t) => ({
+    meta: {
+      id: t.id,
+      name: t.name,
+      gain: t.gain,
+      pan: t.pan,
+      mute: t.mute,
+      solo: t.solo,
+      channels: t.channels.length === 1 ? 1 : 2,
+      length: t.channels[0]?.length ?? 0,
+    },
+    channels: t.channels,
+  }));
+}
+
+/**
+ * Restore lanes from a draft (M8e): fresh project state, no history —
+ * track 1 re-points at the just-installed document, later tracks take
+ * decoded copies.
+ */
+export function restoreProjectTracks(
+  payload: Array<{ meta: ProjectTrackExport['meta']; channels: Float32Array[] }>,
+): void {
+  ensureProject();
+  if (!proj) return;
+  const sampleRate = proj.project.sampleRate;
+  const docChannels = getDocChannels();
+  const tracks: TrackState[] = payload.map((p, i) =>
+    createTrack(i === 0 && docChannels ? docChannels : p.channels.map((c) => c.slice()), {
+      id: p.meta.id,
+      name: p.meta.name,
+      gain: p.meta.gain,
+      pan: p.meta.pan,
+      mute: p.meta.mute,
+      solo: p.meta.solo,
+    }),
+  );
+  proj.adopt(newProject(sampleRate, tracks, tracks[0]?.id ?? null));
+  sync();
+}
+
+/** Mixdown of the current project (parity with ProjectPlayback gains). */
+export function mixdownChannels(): Float32Array[] | null {
+  if (!proj) return null;
+  return mixTracks(proj.project);
+}
+
+/** Per-track stems (name + channels) for stem export. */
+export function stemChannels(): Array<{ name: string; channels: Float32Array[] }> | null {
+  if (!proj) return null;
+  return proj.project.tracks.map((t) => ({
+    name: t.name.replace(/[/\\:*?"<>|]/g, '_'),
+    channels: t.channels,
+  }));
 }
 
 export function setActiveTrack(trackId: string): void {

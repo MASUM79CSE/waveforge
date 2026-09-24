@@ -11,9 +11,11 @@ import {
   decodeDraft,
   draftHeaderSchema,
   encodeDraft,
+  encodeDraftTracks,
   hashPcm,
   supportsCompression,
   type DraftHeader,
+  type DraftTrackPayload,
 } from './draftPayload';
 
 export interface DraftSummary {
@@ -39,11 +41,15 @@ export interface DraftInput {
   selection?: { start: number; end: number };
   /** E6a noise print (per-bin magnitudes) — persisted via the header (M7). */
   noisePrint?: number[];
+  /** M8e: v2 lanes (track 1 included) — encoded as per-track PCM blocks. */
+  tracks?: DraftTrackPayload[];
 }
 
 export interface DraftRecord {
   header: DraftHeader;
   channels: Float32Array[];
+  /** M8e: present when the draft was saved from a multitrack project. */
+  tracks?: DraftTrackPayload[];
 }
 
 export const AUTOSAVE_ID = 'ring';
@@ -71,7 +77,9 @@ export class IdbDraftRepository {
 
   async save(input: DraftInput): Promise<DraftSummary> {
     const { id, now } = this.reserveRow();
-    const meta = await this.writeSnapshot(input, now, id);
+    const meta = input.tracks
+      ? await this.writeSnapshotTracks(input, now, id)
+      : await this.writeSnapshot(input, now, id);
     return rowToSummary(meta);
   }
 
@@ -91,9 +99,85 @@ export class IdbDraftRepository {
     ]);
   }
 
+  /** M8e: multitrack snapshot — header v2 + per-track PCM blocks. */
+  private async writeSnapshotTracks(
+    input: DraftInput,
+    now: number,
+    id: string,
+  ): Promise<DraftMetaRow> {
+    const primary = input.tracks![0]!;
+    const header: DraftHeader = draftHeaderSchema.parse({
+      v: 2,
+      name: input.name,
+      sampleRate: input.sampleRate,
+      channels: primary.channels.length === 1 ? 1 : 2,
+      length: primary.channels[0]?.length ?? 0,
+      savedAt: now,
+      tracks: input.tracks!.map((t) => t.meta),
+    });
+    const payload = await encodeDraftTracks(header, input.tracks!, {
+      compress: supportsCompression(),
+    });
+    const hash = await hashPcm(input.tracks!.flatMap((t) => t.channels));
+    const meta: DraftMetaRow = {
+      id,
+      name: input.name,
+      createdAt: now,
+      updatedAt: now,
+      sampleRate: input.sampleRate,
+      channels: header.channels,
+      length: header.length,
+      hash,
+      payloadBytes: payload.length,
+      compressed: supportsCompression(),
+    };
+    const tx = this.db.transaction(['drafts', 'draftBlobs'], 'readwrite');
+    await Promise.all([
+      tx.objectStore('drafts').put(meta),
+      tx.objectStore('draftBlobs').put(payload, id),
+      tx.done,
+    ]);
+    return meta;
+  }
+
   // ---- autosave ring (single overwritten record) ----
 
   async writeAutosave(input: DraftInput): Promise<void> {
+    if (input.tracks) {
+      const primaryT = input.tracks[0]!;
+      const headerT: DraftHeader = draftHeaderSchema.parse({
+        v: 2,
+        name: input.name,
+        sampleRate: input.sampleRate,
+        channels: primaryT.channels.length === 1 ? 1 : 2,
+        length: primaryT.channels[0]?.length ?? 0,
+        savedAt: Date.now(),
+        tracks: input.tracks.map((t) => t.meta),
+      });
+      const payloadT = await encodeDraftTracks(headerT, input.tracks, {
+        compress: supportsCompression(),
+      });
+      const hashT = await hashPcm(input.tracks.flatMap((t) => t.channels));
+      const metaT: DraftMetaRow = {
+        id: AUTOSAVE_ID,
+        name: input.name,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        sampleRate: input.sampleRate,
+        channels: headerT.channels,
+        length: headerT.length,
+        hash: hashT,
+        payloadBytes: payloadT.length,
+        compressed: supportsCompression(),
+      };
+      const txT = this.db.transaction(['drafts', 'draftBlobs'], 'readwrite');
+      await Promise.all([
+        txT.objectStore('drafts').put(metaT),
+        txT.objectStore('draftBlobs').put(payloadT, AUTOSAVE_ID),
+        txT.done,
+      ]);
+      return;
+    }
     const header: DraftHeader = draftHeaderSchema.parse({
       v: 1,
       name: input.name,

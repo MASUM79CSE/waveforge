@@ -4,6 +4,7 @@ import {
   currentEstimate,
   defaultExportName,
   performExport,
+  performProjectExport,
 } from '../exportActions';
 import { closeExportDialog } from '../actions';
 import {
@@ -13,6 +14,7 @@ import {
   exportProgress,
   metadataOpen,
   selection,
+  projectOpen,
 } from '../state';
 import { t } from '../../i18n';
 import { Modal } from './Modal';
@@ -198,6 +200,26 @@ export function ExportDialog() {
             {t().exportButton}
           </button>
         </div>
+        {projectOpen.value && (
+          <div class="fx-actions">
+            <span class="lane-export-hint">{t().projectExportHint}</span>
+            <span class="fx-spacer" />
+            <button
+              class="btn-secondary"
+              disabled={exportBusy.value}
+              onClick={() => void performProjectExport(format, quality, filename, 'mixdown')}
+            >
+              {t().projectMixdown}
+            </button>
+            <button
+              class="btn-secondary"
+              disabled={exportBusy.value}
+              onClick={() => void performProjectExport(format, quality, filename, 'stems')}
+            >
+              {t().projectStems}
+            </button>
+          </div>
+        )}
       </div>
     </Modal>
   );

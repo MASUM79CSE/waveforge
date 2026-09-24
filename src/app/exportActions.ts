@@ -13,6 +13,7 @@ import { t } from '../i18n';
 import { toastInfo, toastError } from './actions';
 import { currentChannels, targetRange } from './editActions';
 import { getDoc } from './runtime';
+import { mixdownChannels, stemChannels } from './projectActions';
 import * as S from './state';
 
 interface SavePickerWindow {
@@ -131,6 +132,109 @@ export async function performExport(
       toastInfo(t().exportCancelled);
     } else {
       logger.error('export failed', { detail: String(error) });
+      toastError(t().exportFailed);
+    }
+  } finally {
+    S.exportBusy.value = false;
+    S.exportProgress.value = null;
+    S.exportCancel.value = null;
+  }
+}
+
+/**
+ * M8e: export the multitrack project — 'mixdown' renders the deterministic
+ * mix kernel output; 'stems' renders one file per lane. Both reuse the
+ * per-file save flow of performExport (picker → worker → progress).
+ */
+export async function performProjectExport(
+  format: ExportFormat,
+  quality: string,
+  filename: string,
+  kind: 'mixdown' | 'stems',
+): Promise<void> {
+  if (S.exportBusy.value) return;
+  const sampleRate = S.docInfo.value?.sampleRate ?? 44100;
+  const jobs: Array<{ name: string; channels: Float32Array[] }> = [];
+  if (kind === 'mixdown') {
+    const mix = mixdownChannels();
+    if (mix) jobs.push({ name: sanitizeFilename(filename), channels: mix });
+  } else {
+    const stems = stemChannels();
+    for (const [i, stem] of (stems ?? []).entries()) {
+      jobs.push({
+        name: `${sanitizeFilename(filename)}-${String(i + 1).padStart(2, '0')}-${sanitizeFilename(stem.name)}`,
+        channels: stem.channels,
+      });
+    }
+  }
+  if (jobs.length === 0) return;
+
+  const signal = { cancelled: false };
+  S.exportCancel.value = signal;
+  S.exportBusy.value = true;
+  S.exportProgress.value = 0;
+  try {
+    for (const [idx, job] of jobs.entries()) {
+      if (signal.cancelled) break;
+      const fullName = `${job.name}.${EXTENSION[format]}`;
+      const picker = (window as SavePickerWindow).showSaveFilePicker;
+      let handle: Awaited<
+        ReturnType<NonNullable<SavePickerWindow['showSaveFilePicker']>>
+      > | null = null;
+      if (typeof picker === 'function' && jobs.length === 1) {
+        try {
+          handle = await picker({
+            suggestedName: fullName,
+            types: [
+              {
+                description: format.toUpperCase(),
+                accept: { [MIME_BY_FORMAT[format]]: [`.${EXTENSION[format]}`] },
+              },
+            ],
+          });
+        } catch {
+          S.exportBusy.value = false; // user cancelled the picker
+          return;
+        }
+      }
+      const result = await runExport({
+        channels: job.channels,
+        sampleRate,
+        options: { format, quality },
+        onProgress: (fraction) => {
+          S.exportProgress.value = (idx + fraction) / jobs.length;
+        },
+        signal,
+      });
+      if (signal.cancelled) break;
+      const tagBytes =
+        Object.values(S.tags.value).some((v) => v !== '') && format === 'mp3' && idx === 0
+          ? buildId3Tag(S.tags.value)
+          : null;
+      const blob =
+        tagBytes && format === 'mp3'
+          ? new Blob([tagBytes, result.blob], { type: MIME_BY_FORMAT[format] })
+          : result.blob;
+      if (handle) {
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      } else {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fullName;
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      }
+    }
+    if (signal.cancelled) toastInfo(t().exportCancelled);
+    else toastInfo(`${t().exportDone}: ${kind === 'mixdown' ? 'mixdown' : `${jobs.length} stems`}`);
+  } catch (error: unknown) {
+    if (signal.cancelled || (error instanceof Error && error.message === 'cancelled')) {
+      toastInfo(t().exportCancelled);
+    } else {
+      logger.error('project export failed', { detail: String(error) });
       toastError(t().exportFailed);
     }
   } finally {
