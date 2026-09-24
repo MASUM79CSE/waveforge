@@ -20,7 +20,7 @@ export const NORMALIZE_TARGET_DB = -0.1;
 export const SILENCE_THRESHOLD_DB = -50;
 export const SILENCE_MIN_MS = 100;
 export const ZERO_CROSS_RADIUS_S = 0.008;
-export const HISTORY_MAX_BYTES = 256 * 1024 * 1024;
+export const HISTORY_MAX_BYTES = 250_000_000; // §2.3: undo stacks stay under 250 MB
 export const HISTORY_MIN_KEEP = 10;
 
 /** Effects internals (M3) — numeric boundaries per ADR 005. */
