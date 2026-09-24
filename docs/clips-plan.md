@@ -70,6 +70,45 @@ retained). Overlaps impossible by construction (kernels clamp).
 Gates: unit (reducers) + e2e: import → split at cursor → drag second
 half right → undo ×2 → duplicate → play.
 
+### M9d breakdown (analysis 2026-09-25 — code walk: project.ts,
+### projectEditor.ts, waveDraw.ts, TrackLanes.tsx, projectActions.ts)
+
+**M9d1 — doc-model flip (state + render, no UI change for single-clip
+lanes):**
+- `TrackState.channels` → `clips: ClipTrack`; `ProjectState` gains
+  `assets: Record<string, AudioAsset>` (plain/serializable; refcounts
+  derived from clip lists — AssetLibrary stays the bounce-side helper).
+- `createTrack(channels)` → builds asset `asset_<trackId>` + one full
+  clip `clip_<trackId>` (M9b bridge, now the factory).
+- Legacy accessor `trackChannels(state, trackId)` = renderClipTrack —
+  single-clip lanes render bit-exact (M9a/M9b anchors), so peaks, v2
+  draft SAVE (render), and any straggler consumer keep working.
+- Consumer migrations: waveDraw lane peaks (rendered channels in),
+  playbackViews → ClipPlaybackTrack + startClips (M9c goes live),
+  mixdown/stems → renderClipTrack + Float64 sum (unit anchor: single-
+  clip lane == M8 result), importToTrack/record → asset+clip,
+  safeTrackEdit + EffectDialog lane path → bounceRegion COW.
+- History (minimal for the M9d e2e; M9e perfects): clip-edit entries
+  snapshot `{trackId, clipsBefore, clipsAfter}` + touched assets ride
+  the entry (PCM retained → undo/redo exact); bytes = touched-asset PCM
+  not already charged (dedup by asset id within the entry). Slice-op
+  EditOutcome path retires with `channels`.
+
+**M9d2 — interactions:** click clip = select (per-lane active clip);
+drag body = move (kernel-clamped into the free gap; snap to beats when
+SNAP on, else free samples); edge handles = trim (kernel bounds);
+split-at-cursor (S key? single-source shortcuts module — pick non-
+colliding binding); Ctrl+D duplicate; Delete removes clip (asset kept —
+refcount drop only when no clip references it, GC deferred to M9e
+bookkeeping sweep).
+
+**M9d3 — e2e + polish:** the plan gate scenario; console-clean; v2
+draft round-trip e2e still green untouched.
+
+Order: M9d1 RED → GREEN (unit-heavy: state factories, accessor parity,
+mixdown anchor, bounce routing) → M9d2 (reducers + pointer logic unit
+tested, then canvas/DOM) → M9d3 (e2e).
+
 ## M9e — history + commands
 
 Clip ops ride `ProjectHistoryOp` (timeline payloads, byte-light); bounce
