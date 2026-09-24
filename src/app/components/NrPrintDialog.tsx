@@ -4,8 +4,9 @@
  * noise-only region (magnitude EMA over STFT frames, channels averaged)
  * and routed to preview/apply through the EffectRunContext side-channel
  * (effects v2 §E6). No print learned ⇒ the kernel is a bit-exact no-op.
- * In-session hold only; draft-side persistence deferred to M7 (storage
- * schema change, recorded in task_list).
+ * The print lives in the `sessionNoisePrint` signal and is persisted in
+ * draft + autosave headers, so it survives reloads (M7) until the next
+ * document load clears it.
  */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
@@ -16,7 +17,7 @@ import type { EffectRunContext, Params, ParamSpec } from '../../fx/types';
 import { applyEffect, effectLabel, preparePreview } from '../fxActions';
 import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { closeEffectDialog } from '../actions';
-import { effectDialogId, previewActive } from '../state';
+import { effectDialogId, previewActive, sessionNoisePrint } from '../state';
 import { currentChannels, targetRange } from '../editActions';
 import { t } from '../../i18n';
 import { Modal } from './Modal';
@@ -33,6 +34,11 @@ export function NrPrintDialog(): JSX.Element | null {
 
   useEffect(() => {
     if (def) setParams(defaultParams(def));
+    const restored = sessionNoisePrint.value;
+    if (restored) {
+      ctxRef.current = { noisePrint: restored };
+      setStatus(`${t().nrPrintRestored} — ${restored.length} bins`);
+    }
     return () => stopPreview();
   }, [id]);
 
@@ -76,6 +82,7 @@ export function NrPrintDialog(): JSX.Element | null {
     const region = sliceRegion(channels, range.start, range.len);
     const print = learnNoisePrint(region);
     ctxRef.current = { noisePrint: print };
+    sessionNoisePrint.value = print;
     setStatus(`${t().nrPrintLearned} — ${print.length} bins`);
     restartPreview(params);
   };

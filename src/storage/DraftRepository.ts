@@ -37,6 +37,8 @@ export interface DraftInput {
   audio: Float32Array[];
   cursor?: number;
   selection?: { start: number; end: number };
+  /** E6a noise print (per-bin magnitudes) — persisted via the header (M7). */
+  noisePrint?: number[];
 }
 
 export interface DraftRecord {
@@ -101,6 +103,7 @@ export class IdbDraftRepository {
       savedAt: Date.now(),
       cursor: input.cursor,
       selection: input.selection,
+      noisePrint: input.noisePrint,
     });
     const payload = await encodeDraft(header, input.audio, { compress: supportsCompression() });
     const hash = await hashPcm(input.audio);
@@ -170,6 +173,7 @@ export class IdbDraftRepository {
       savedAt: Date.now(),
       cursor: input.cursor,
       selection: input.selection,
+      noisePrint: input.noisePrint,
     });
     const payload = await encodeDraft(header, input.audio, { compress });
     const hash = await hashPcm(input.audio);

@@ -53,6 +53,7 @@ function updateHistorySignals(): void {
 
 /** Fresh load: resets view, history and transport. */
 export function installDoc(doc: AudioDocument | null): void {
+  S.sessionNoisePrint.value = null; // a print belongs to its audio
   invalidateAnalysis();
   S.restoreStamp.value = null; // an explicit load supersedes the restore offer
   engine.setDocument(doc);

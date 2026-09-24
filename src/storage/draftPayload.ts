@@ -19,6 +19,8 @@ export const draftHeaderSchema = z.object({
   savedAt: z.number().int().nonnegative(),
   cursor: z.number().nonnegative().optional(),
   selection: z.object({ start: z.number(), end: z.number() }).optional(),
+  /** E6a noise-reduction print (per-bin magnitudes) — survives drafts (M7). */
+  noisePrint: z.array(z.number()).max(8192).optional(),
 });
 
 export type DraftHeader = z.infer<typeof draftHeaderSchema>;

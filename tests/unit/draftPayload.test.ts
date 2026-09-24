@@ -41,6 +41,27 @@ describe('encodeDraft / decodeDraft (gzip path)', () => {
     }
   });
 
+  test('M7: noise print survives the round-trip (schema extension)', async () => {
+    const print = [0.25, 0.5, 1.5, 0.75, 0.125];
+    const encoded = await encodeDraft({ ...HEADER, noisePrint: print }, pcm(2, 4), {
+      compress: true,
+    });
+    const decoded = await decodeDraft(encoded);
+    expect(decoded.header.noisePrint).toEqual(print);
+    // raw fallback path carries it too
+    const raw = await encodeDraft({ ...HEADER, noisePrint: print }, pcm(2, 4), {
+      compress: false,
+    });
+    const decodedRaw = await decodeDraft(raw);
+    expect(decodedRaw.header.noisePrint).toEqual(print);
+  });
+
+  test('M7: legacy drafts (no print) decode with noisePrint undefined', async () => {
+    const encoded = await encodeDraft(HEADER, pcm(2, 4), { compress: true });
+    const decoded = await decodeDraft(encoded);
+    expect(decoded.header.noisePrint).toBeUndefined();
+  });
+
   test('gzip actually shrinks a quiet signal', async () => {
     const flat = [new Float32Array(64_000).fill(0.125)];
     const raw = await encodeDraft(HEADER, flat, { compress: false });

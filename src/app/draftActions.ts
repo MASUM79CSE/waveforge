@@ -99,6 +99,9 @@ export async function confirmSaveDraft(name: string): Promise<void> {
       audio: currentChannels(),
       cursor: engine.cursor,
       selection: S.selection.value ?? undefined,
+      noisePrint: S.sessionNoisePrint.value
+        ? Array.from(S.sessionNoisePrint.value)
+        : undefined,
     });
     toastInfo(t().draftSaved(trimmed));
     S.draftSaveOpen.value = false;
@@ -124,6 +127,9 @@ export async function openDraft(id: string): Promise<void> {
       }),
     );
     if (record.header.cursor !== undefined) engine.seek(record.header.cursor);
+    S.sessionNoisePrint.value = record.header.noisePrint
+      ? Float32Array.from(record.header.noisePrint)
+      : null;
     S.draftsOpen.value = false;
     toastInfo(t().draftOpened(record.header.name));
   } catch (error) {
@@ -168,6 +174,9 @@ export const autosave = new AutosaveController({
       audio: currentChannels(),
       cursor: engine.cursor,
       selection: S.selection.value ?? undefined,
+      noisePrint: S.sessionNoisePrint.value
+        ? Array.from(S.sessionNoisePrint.value)
+        : undefined,
     });
   },
   clear: async () => {
@@ -204,6 +213,9 @@ export async function restoreAutosave(): Promise<void> {
     }),
   );
   if (record.header.cursor !== undefined) engine.seek(record.header.cursor);
+  S.sessionNoisePrint.value = record.header.noisePrint
+    ? Float32Array.from(record.header.noisePrint)
+    : null;
   toastInfo(t().draftRestored(record.header.name));
 }
 

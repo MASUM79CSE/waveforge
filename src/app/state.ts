@@ -51,6 +51,8 @@ export const loadingProgress = signal<number | null>(null);
 export const welcomeOpen = signal(true);
 export const aboutOpen = signal(false);
 export const doctorOpen = signal(false);
+/** E6a noise print held across the session; persisted in draft headers (M7). */
+export const sessionNoisePrint = signal<Float32Array | null>(null);
 export const urlOpen = signal(false);
 export const gainPromptOpen = signal(false);
 export const normalizePromptOpen = signal(false);

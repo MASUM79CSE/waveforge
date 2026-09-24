@@ -156,6 +156,7 @@ export const en = {
   paramIndependent: 'Independent (stretch + pitch)',
   viewExperimental: 'Experimental effects',
   nrLearn: 'Learn print from selection',
+  nrPrintRestored: 'Print restored from draft',
   nrPrintLearned: 'Print learned',
   nrPrintNone: 'No print learned — apply is a no-op',
   paramDecay: 'Decay',
