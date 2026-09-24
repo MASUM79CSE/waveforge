@@ -13,7 +13,8 @@ import {
   type AudioClip,
   type ClipTrack,
 } from './clips';
-import type { TrackState } from './project';
+import type { ProjectState } from './project';
+
 
 export class AssetLibrary {
   private entries = new Map<string, { asset: AudioAsset; refcount: number }>();
@@ -69,11 +70,18 @@ export interface LaneBridge {
   tracks: Map<string, ClipTrack>;
 }
 
+/** Structural lane view (pre-flip lanes; TrackState satisfied this in M8). */
+export interface BridgeLane {
+  id: string;
+  channels: Float32Array[];
+}
+
 /**
- * Bridge M8 lanes into the clip world: each lane's channels become an
+ * Bridge raw lanes into the clip world: each lane's channels become an
  * immutable asset (by reference — no PCM copy) backing one clip at 0.
+ * (M9d1: project.createTrack does the same at the doc layer.)
  */
-export function ensureLaneClips(lanes: TrackState[], sampleRate: number): LaneBridge {
+export function ensureLaneClips(lanes: BridgeLane[], sampleRate: number): LaneBridge {
   const assets = new AssetLibrary();
   const tracks = new Map<string, ClipTrack>();
   for (const lane of lanes) {
@@ -159,3 +167,37 @@ export function bounceRegion(
 }
 
 const SR_FALLBACK = 44100;
+
+export interface ProjectBounce {
+  trackId: string;
+  before: AudioClip[];
+  after: AudioClip[];
+  asset: AudioAsset;
+}
+
+/**
+ * Project-level COW bounce (M9d1): destructive region edit on one lane.
+ * Returns the pieces for `AudioProjectEditor.executeClipEdit` — the app
+ * applies + sweeps; this adapter stays pure (no project mutation).
+ * Returns null for an unknown lane or a zero-length region.
+ */
+export function bounceLaneRegion(
+  project: ProjectState,
+  trackId: string,
+  from: number,
+  len: number,
+  process: (channels: Float32Array[]) => Float32Array[],
+  newAssetId: string,
+): ProjectBounce | null {
+  const track = project.tracks.find((t) => t.id === trackId);
+  if (!track || len <= 0) return null;
+  const lib = new AssetLibrary();
+  for (const a of Object.values(project.assets)) lib.add(a);
+  // refcounts in this temp view only support the bounce math (render/split
+  // GC safety); project-level ownership is derived from clip lists instead
+  for (const c of track.clips) if (lib.refcount(c.assetId) === 0) lib.acquire(c.assetId);
+  const result = bounceRegion(lib, { clips: track.clips }, Math.round(from), Math.round(len), process, newAssetId);
+  const asset = lib.get(newAssetId);
+  if (!asset) throw new Error(`bounceLaneRegion: bounce asset ${newAssetId} missing`);
+  return { trackId, before: track.clips, after: result.track.clips, asset };
+}

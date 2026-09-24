@@ -8,7 +8,9 @@ import type { SliceOp } from './editOps';
 /** M8c: project-structural op riding beside (or instead of) slice-ops. */
 export type ProjectHistoryOp =
   | { kind: 'removeTrackById'; trackId: string }
-  | { kind: 'addTrackAt'; index: number; track: import('./project').TrackState };
+  | { kind: 'addTrackAt'; index: number; track: import('./project').TrackState }
+  /** M9d1: clip-arrangement snapshot for one lane (assets ride the entry). */
+  | { kind: 'setClips'; trackId: string; clips: import('./clips').AudioClip[] };
 
 export interface HistoryEntry {
   label: string;
@@ -20,6 +22,9 @@ export interface HistoryEntry {
   /** M8c: structural add/remove-track entries carry project ops instead. */
   projectUndo?: ProjectHistoryOp;
   projectRedo?: ProjectHistoryOp;
+  /** M9d1: clip entries retain the assets needed by either side (undo/redo
+   * must be able to resurrect swept assets) — bytes charge their PCM. */
+  clipAssets?: import('./clips').AudioAsset[];
 }
 
 export interface HistoryOptions {

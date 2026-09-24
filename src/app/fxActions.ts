@@ -17,7 +17,7 @@ import { logger } from '../core/logger-instance';
 import { t } from '../i18n';
 import { toastInfo } from './actions';
 import { currentChannels, targetRange } from './editActions';
-import { activeTrackTarget, commitTrackEdit, ensureProject } from './projectActions';
+import { activeTrackTarget, commitTrackChannels, ensureProject } from './projectActions';
 import { bufferFactory, getDoc, performEdit } from './runtime';
 import type { PreviewPlan } from './preview';
 
@@ -108,7 +108,7 @@ export async function applyEffect(
         wet = await renderEffectOffline(trackBuffer, target.channels.length, range.start, range.len, def, params);
       }
       const outcome = makeOverwritePaste(target.channels, range.start, range.len, wet);
-      if (commitTrackEdit(target.trackId, outcome, effectLabel(def))) {
+      if (commitTrackChannels(target.trackId, outcome.channels, effectLabel(def))) {
         toastInfo(`${t().fxApplied}: ${effectLabel(def)}`);
       } else {
         toastInfo(t().editFailed);

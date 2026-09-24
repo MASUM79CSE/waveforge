@@ -193,7 +193,7 @@ export class ProjectPlayback {
   }
 
   /** Live mixer update (mute/solo/gain/pan) — click-free ramps, no restart. */
-  updateMix(tracks: PlaybackTrack[]): void {
+  updateMix(tracks: readonly Pick<PlaybackTrack, 'gain' | 'pan' | 'mute' | 'solo'>[]): void {
     if (!this.playing) return;
     const anySolo = tracks.some((t) => t.solo);
     const now = this.ctx.currentTime;

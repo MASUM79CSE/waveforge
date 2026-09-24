@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   createTrack,
+  laneAsset,
   mixTracks,
   mixdownReference,
   projectDuration,
@@ -8,6 +9,7 @@ import {
   type ProjectState,
   type TrackState,
 } from '../../src/engine/project';
+import { newProject } from '../../src/engine/projectEditor';
 
 const SR = 44100;
 
@@ -21,23 +23,38 @@ function mono(n: number, fill: number): Float32Array[] {
   return [new Float32Array(n).fill(fill)];
 }
 
+const pcm = new WeakMap<TrackState, Float32Array[]>();
+
 function track(
   channels: Float32Array[],
   opts: Partial<Omit<TrackState, 'channels'>> = {},
 ): TrackState {
-  return createTrack(channels, opts);
+  const t = createTrack(channels, { sampleRate: SR, ...opts });
+  pcm.set(t, channels);
+  return t;
+}
+
+/** Raw channels a test lane was built from (the factory asset is zero-copy). */
+function ch(t: TrackState): Float32Array[] {
+  return pcm.get(t)!;
 }
 
 function proj(tracks: TrackState[], activeTrackId: string | null = null): ProjectState {
-  return { sampleRate: SR, tracks, activeTrackId };
+  const p = newProject(SR, []);
+  for (const t of tracks) {
+    p.assets[`asset_${t.id}`] = laneAsset(t.id, ch(t), SR);
+    p.tracks.push(t);
+  }
+  p.activeTrackId = activeTrackId ?? tracks[0]?.id ?? null;
+  return p;
 }
 
 describe('M8a project core — types/helpers', () => {
   test('createTrack: mono stays mono, stereo stays stereo; ids unique; defaults sane', () => {
     const a = track(mono(8, 0.5), { name: 'A' });
     const b = track(stereo(8, 0.25, -0.25));
-    expect(a.channels).toHaveLength(1);
-    expect(b.channels).toHaveLength(2);
+    expect(ch(a)).toHaveLength(1);
+    expect(ch(b)).toHaveLength(2);
     expect(a.id).not.toBe(b.id);
     expect(a.gain).toBe(1);
     expect(a.pan).toBe(0);
@@ -94,8 +111,8 @@ describe('M8a mixdown kernels — literal anchors', () => {
     const m = track(mono(64, 0.5));
     const mid = mixTracks(proj([m]));
     expect(mid).toHaveLength(2);
-    expect(mid[0]).toEqual(m.channels[0]);
-    expect(mid[1]).toEqual(m.channels[0]);
+    expect(mid[0]).toEqual(ch(m)[0]);
+    expect(mid[1]).toEqual(ch(m)[0]);
 
     const left = mixTracks(proj([track(mono(64, 0.5), { pan: -1 })]));
     for (let i = 0; i < 64; ++i) {
@@ -107,13 +124,13 @@ describe('M8a mixdown kernels — literal anchors', () => {
   test('mute contributes exactly 0; solo alone equals mute-others', () => {
     const a = track(stereo(32, 0.5, 0.5));
     const b = track(stereo(32, 0.5, 0.5), { gain: 0.5 });
-    const muted = mixTracks(proj([a, track(b.channels, { mute: true })]));
-    expect(muted[0]).toEqual(a.channels[0]);
+    const muted = mixTracks(proj([a, track(ch(b), { mute: true })]));
+    expect(muted[0]).toEqual(ch(a)[0]);
 
     const soloed = mixTracks(
-      proj([a, track(b.channels, { gain: b.gain, solo: true })]),
+      proj([a, track(ch(b), { gain: b.gain, solo: true })]),
     );
-    const onlyB = mixTracks(proj([track(a.channels, { mute: true }), b]));
+    const onlyB = mixTracks(proj([track(ch(a), { mute: true }), b]));
     expect(soloed[0]).toEqual(onlyB[0]);
     expect(soloed[1]).toEqual(onlyB[1]);
   });

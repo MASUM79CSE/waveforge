@@ -29,7 +29,7 @@ import {
   type EditOutcome,
 } from '../engine/editOps';
 import { getDoc, engine, performEdit, runRedo, runUndo } from './runtime';
-import { activeTrackTarget, commitTrackEdit } from './projectActions';
+import { activeTrackTarget, commitTrackChannels } from './projectActions';
 import * as S from './state';
 import { t } from '../i18n';
 import { toastInfo } from './actions';
@@ -97,7 +97,7 @@ function safeTrackEdit(build: (channels: Float32Array[]) => EditOutcome | null, 
   }
   try {
     const outcome = build(target.channels);
-    if (outcome && !commitTrackEdit(target.trackId, outcome, label)) {
+    if (outcome && !commitTrackChannels(target.trackId, outcome.channels, label)) {
       toastInfo(t().editFailed);
     }
   } catch (error: unknown) {

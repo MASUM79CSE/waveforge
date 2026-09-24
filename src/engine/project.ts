@@ -1,11 +1,18 @@
 /**
- * Multitrack project core (M8a — Build Plan docs/multitrack-plan.md).
- * Pure, deterministic kernels: lane-based tracks on one shared timeline,
- * mixed by fixed-order Float64 accumulation (Audacity-class model — see
- * docs/multitrack-analysis.md §3). No engine/UI imports by design.
+ * Multitrack project core (M8a — docs/multitrack-plan.md; M9d1 clip flip —
+ * docs/clips-plan.md). Pure, deterministic kernels: lanes hold SORTED
+ * NON-OVERLAPPING CLIPS referencing shared immutable assets (one shared
+ * timeline, mixed by fixed-order Float64 accumulation — Audacity-class
+ * model, see docs/multitrack-analysis.md §3 + docs/clips-analysis.md).
+ * No engine/UI imports by design. `createTrack` wraps plain channels as a
+ * single-clip lane over a fresh asset (zero-copy — the M9b bridge).
  */
+import { renderClipTrack, type AudioAsset, type AudioClip } from './clips';
 
-/** Per-track mixer state + audio. Mono tracks hold exactly one channel. */
+export type { AudioAsset, AudioClip };
+export type { ClipTrack } from './clips';
+
+/** Per-track mixer state + clip arrangement. Audio lives in project.assets. */
 export interface TrackState {
   id: string;
   name: string;
@@ -15,7 +22,8 @@ export interface TrackState {
   pan: number;
   mute: boolean;
   solo: boolean;
-  channels: Float32Array[];
+  /** Sorted non-overlapping clips (sample domain; see clips.ts kernels). */
+  clips: AudioClip[];
 }
 
 export interface ProjectState {
@@ -23,6 +31,8 @@ export interface ProjectState {
   /** Lane order, top → bottom. */
   tracks: TrackState[];
   activeTrackId: string | null;
+  /** Shared immutable takes, keyed by id; referenced by clip lists. */
+  assets: Record<string, AudioAsset>;
 }
 
 let trackSeq = 0;
@@ -32,23 +42,82 @@ function makeId(): string {
   return `t${trackSeq}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** Wrap channel arrays as a track (mono stays mono; defaults sane). */
+export interface CreateTrackOptions {
+  id?: string;
+  name?: string;
+  gain?: number;
+  pan?: number;
+  mute?: boolean;
+  solo?: boolean;
+  /** Asset sample rate (defaults to the project rate at registration). */
+  sampleRate?: number;
+  /** Override the auto asset/clip ids (draft loading reuses stored ids). */
+  assetId?: string;
+  clipId?: string;
+  /** Pre-built clip arrangement (draft loading); default = one full clip. */
+  clips?: AudioClip[];
+  /** Alternate PCM for the backing asset (draft loading; default = channels). */
+  assetChannels?: Float32Array[];
+}
+
+/** Wrap channel arrays as a single-clip lane (mono stays mono; defaults sane). */
 export function createTrack(
   channels: Float32Array[],
-  opts: Partial<Omit<TrackState, 'channels'>> = {},
+  opts: CreateTrackOptions = {},
 ): TrackState {
   if (channels.length < 1 || channels.length > 2) {
     throw new Error(`createTrack: 1 or 2 channels required, got ${channels.length}`);
   }
+  const id = opts.id ?? makeId();
+  const assetId = opts.assetId ?? `asset_${id}`;
+  const clipId = opts.clipId ?? `clip_${id}`;
+  const clips = opts.clips ?? [
+    {
+      id: clipId,
+      assetId,
+      start: 0,
+      offset: 0,
+      duration: channels[0]?.length ?? 0,
+    },
+  ];
   return {
-    id: opts.id ?? makeId(),
+    id,
     name: opts.name ?? `Track ${trackSeq + 1}`,
     gain: clampGain(opts.gain ?? 1),
     pan: clampPan(opts.pan ?? 0),
     mute: opts.mute ?? false,
     solo: opts.solo ?? false,
-    channels,
+    clips,
   };
+}
+
+/** Convenience: the backing asset a factory lane would register. */
+export function laneAsset(
+  trackId: string,
+  channels: Float32Array[],
+  sampleRate: number,
+  assetId?: string,
+): AudioAsset {
+  return { id: assetId ?? `asset_${trackId}`, sampleRate, channels };
+}
+
+/**
+ * Create a lane from channels AND register its zero-copy backing asset in
+ * the project (the canonical app-layer entry point — import/record/etc).
+ */
+export function createProjectTrack(
+  project: ProjectState,
+  channels: Float32Array[],
+  opts: CreateTrackOptions = {},
+): TrackState {
+  const track = createTrack(channels, { sampleRate: project.sampleRate, ...opts });
+  const asset = laneAsset(track.id, channels, project.sampleRate, opts.assetId);
+  project.assets[asset.id] = opts.assetChannels
+    ? { ...asset, channels: opts.assetChannels }
+    : asset;
+  project.tracks.push(track);
+  if (!project.activeTrackId) project.activeTrackId = track.id;
+  return track;
 }
 
 function clampGain(g: number): number {
@@ -78,13 +147,61 @@ export function panGains(pan: number): [number, number] {
   return [p >= 0 ? 1 - p : 1, p <= 0 ? 1 + p : 1];
 }
 
-/** Project length in seconds (longest track; 0 when empty). */
+/** Asset table as a Map view for the pure render kernels. */
+export function assetsMap(project: ProjectState): Map<string, AudioAsset> {
+  return new Map(Object.entries(project.assets));
+}
+
+/** Live channel arrays of a track — rendered from its clip arrangement.
+ * Mono lanes stay mono (M8 parity: effects keep the channel count; the
+ * mixer/playback paths do the mono→stereo spread themselves). */
+export function trackChannels(
+  project: ProjectState,
+  trackId: string,
+): Float32Array[] | null {
+  const track = project.tracks.find((t) => t.id === trackId);
+  if (!track) return null;
+  const fast = lanePcm(project, track);
+  if (fast) return fast;
+  const rendered = renderClipTrack({ clips: track.clips }, assetsMap(project));
+  // arranged lane: preserve mono-ness when every clip's asset is mono
+  const allMono = track.clips.every((c) => (project.assets[c.assetId]?.channels.length ?? 2) === 1);
+  return allMono ? [rendered[0]!] : rendered;
+}
+
+/**
+ * Zero-copy fast path (M9d1 perf): a single full clip at start 0 offset 0
+ * renders bit-identically to its asset PCM (the render is a copy), so the
+ * asset channels can be returned BY REFERENCE. Treat the result as
+ * immutable. Returns null whenever the lane is arranged (render needed).
+ */
+function lanePcm(project: ProjectState, track: TrackState): Float32Array[] | null {
+  if (track.clips.length !== 1) return null;
+  const c = track.clips[0]!;
+  const asset = project.assets[c.assetId];
+  if (!asset) return null;
+  const len = asset.channels[0]?.length ?? 0;
+  if (c.start !== 0 || c.offset !== 0 || c.duration !== len) return null;
+  return asset.channels;
+}
+
+/** Project length in seconds (longest clip-timeline end; 0 when empty). */
 export function projectDuration(project: ProjectState): number {
-  let maxLen = 0;
+  let maxEnd = 0;
   for (const t of project.tracks) {
-    for (const ch of t.channels) if (ch.length > maxLen) maxLen = ch.length;
+    for (const c of t.clips) if (c.start + c.duration > maxEnd) maxEnd = c.start + c.duration;
   }
-  return maxLen / project.sampleRate;
+  return maxEnd / project.sampleRate;
+}
+
+/** Per-track rendered channels (for mixers that iterate lanes). */
+function renderedTracks(project: ProjectState): Array<{ t: TrackState; ch: Float32Array[] }> {
+  const out: Array<{ t: TrackState; ch: Float32Array[] }> = [];
+  for (const t of project.tracks) {
+    const ch = trackChannels(project, t.id);
+    if (ch && ch.length > 0) out.push({ t, ch });
+  }
+  return out;
 }
 
 /**
@@ -93,24 +210,24 @@ export function projectDuration(project: ProjectState): number {
  * project mixes to zero channels.
  */
 export function mixTracks(project: ProjectState): Float32Array[] {
-  const { tracks } = project;
-  if (tracks.length === 0) return [];
+  const rendered = renderedTracks(project);
+  if (rendered.length === 0) return [];
 
   let maxLen = 0;
-  for (const t of tracks) {
-    for (const ch of t.channels) if (ch.length > maxLen) maxLen = ch.length;
+  for (const { ch } of rendered) {
+    for (const c of ch) if (c.length > maxLen) maxLen = c.length;
   }
 
-  const anySolo = tracks.some((t) => t.solo);
+  const anySolo = project.tracks.some((t) => t.solo);
   const accL = new Float64Array(maxLen);
   const accR = new Float64Array(maxLen);
 
-  for (const t of tracks) {
+  for (const { t, ch } of rendered) {
     const geff = trackEffectiveGain(t, anySolo);
     if (geff === 0) continue; // contributes exactly nothing
     const [gl, gr] = panGains(t.pan);
-    const l = t.channels[0]!;
-    const r = t.channels[1] ?? t.channels[0]!;
+    const l = ch[0]!;
+    const r = ch[1] ?? ch[0]!;
     const wl = gl * geff;
     const wr = gr * geff;
     for (let i = 0; i < l.length; ++i) accL[i] = accL[i]! + l[i]! * wl;
@@ -131,23 +248,23 @@ export function mixTracks(project: ProjectState): Float32Array[] {
  * fixed order). Test anchor for `mixTracks` — do not optimize this one.
  */
 export function mixdownReference(project: ProjectState): Float32Array[] {
-  const { tracks } = project;
-  if (tracks.length === 0) return [];
+  const rendered = renderedTracks(project);
+  if (rendered.length === 0) return [];
 
   let maxLen = 0;
-  for (const t of tracks) {
-    for (const ch of t.channels) if (ch.length > maxLen) maxLen = ch.length;
+  for (const { ch } of rendered) {
+    for (const c of ch) if (c.length > maxLen) maxLen = c.length;
   }
 
-  const anySolo = tracks.some((t) => t.solo);
+  const anySolo = project.tracks.some((t) => t.solo);
   const outL = new Float64Array(maxLen);
   const outR = new Float64Array(maxLen);
 
-  for (const t of tracks) {
+  for (const { t, ch } of rendered) {
     const geff = trackEffectiveGain(t, anySolo);
     const [gl, gr] = panGains(t.pan);
-    const l = t.channels[0]!;
-    const r = t.channels[1] ?? t.channels[0]!;
+    const l = ch[0]!;
+    const r = ch[1] ?? ch[0]!;
     for (let i = 0; i < l.length; ++i) outL[i] = outL[i]! + l[i]! * (gl * geff);
     for (let i = 0; i < r.length; ++i) outR[i] = outR[i]! + r[i]! * (gr * geff);
   }
@@ -159,4 +276,13 @@ export function mixdownReference(project: ProjectState): Float32Array[] {
     resR[i] = outR[i]!;
   }
   return [resL, resR];
+}
+
+/** Drop assets no clip references anymore (COW GC — app layer calls after bounces). */
+export function sweepAssets(project: ProjectState): void {
+  const live = new Set<string>();
+  for (const t of project.tracks) for (const c of t.clips) live.add(c.assetId);
+  for (const id of Object.keys(project.assets)) {
+    if (!live.has(id)) delete project.assets[id];
+  }
 }

@@ -6,7 +6,7 @@ import {
   type AssetBounceResult,
 } from '../../src/engine/clipAssets';
 import { insertClip, renderClipTrack, renderRegion, type AudioClip, type ClipTrack } from '../../src/engine/clips';
-import { createTrack, type TrackState } from '../../src/engine/project';
+
 
 const SR = 44100;
 
@@ -50,7 +50,7 @@ describe('M9b AssetLibrary — refcount lifecycle', () => {
 describe('M9b lane bridge — lanes become single-clip tracks', () => {
   test('parity: render of the bridged track == original channels bit-exact', () => {
     const ch: Float32Array[] = [new Float32Array(8).fill(0.25), new Float32Array(8).fill(-0.25)];
-    const lane: TrackState = createTrack(ch, { name: 'L' });
+    const lane = { id: 'laneX', channels: ch };
     const bridge = ensureLaneClips([lane], SR);
     const track = bridge.tracks.get(lane.id)!;
     expect(track.clips).toHaveLength(1);
@@ -110,7 +110,7 @@ describe('M9b bounceRegion — copy-on-write', () => {
 
   test('bridged lane: identity bounce preserves render bit-exact vs original channels', () => {
     const ch: Float32Array[] = [new Float32Array(16).fill(0.3), new Float32Array(16).fill(-0.3)];
-    const lane: TrackState = createTrack(ch, { name: 'L' });
+    const lane = { id: 'laneY', channels: ch };
     const bridge = ensureLaneClips([lane], SR);
     const t = bridge.tracks.get(lane.id)!;
     const result = bounceRegion(bridge.assets, t, 4, 8, (c) => c, 'bridge_b');

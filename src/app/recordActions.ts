@@ -12,7 +12,7 @@ import { t } from '../i18n';
 import { toastError, toastInfo } from './actions';
 import { getSharedContext } from '../io/decode';
 import { installDoc } from './runtime';
-import { addProjectTrack, conformToProjectRate, ensureProject } from './projectActions';
+import { addProjectTrack, conformToProjectRate, ensureProject, registerLaneAsset } from './projectActions';
 import { createTrack } from '../engine/project';
 import * as S from './state';
 
@@ -119,16 +119,14 @@ async function stopRecording(): Promise<void> {
     try {
       ensureProject();
       const projectRate = S.docInfo.value?.sampleRate ?? take.sampleRate;
-      addProjectTrack(
-        createTrack(
-          conformToProjectRate(
-            take.channels.map((c) => c.slice()),
-            take.sampleRate,
-            projectRate,
-          ),
-          { name: `Recording ${takeCounter}` },
-        ),
+      const takeChannels = conformToProjectRate(
+        take.channels.map((c) => c.slice()),
+        take.sampleRate,
+        projectRate,
       );
+      const lane = createTrack(takeChannels, { name: `Recording ${takeCounter}` });
+      registerLaneAsset(lane.id, takeChannels);
+      addProjectTrack(lane);
       toastInfo(`${t().recordReady} — ${t().trackImported}: Recording ${takeCounter}`);
       return;
     } catch {

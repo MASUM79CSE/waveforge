@@ -6,11 +6,21 @@
  * Engine layer stays signal-free; this is the only bridge (golden rule 1).
  */
 import { AudioProjectEditor, newProject } from '../engine/projectEditor';
-import { createTrack, mixTracks, projectDuration, type ProjectState, type TrackState } from '../engine/project';
-import { ProjectPlayback, type GraphContext, type PlaybackTrack } from '../engine/projectPlayback';
+import {
+  createProjectTrack,
+  createTrack,
+  laneAsset,
+  mixTracks,
+  projectDuration,
+  sweepAssets,
+  trackChannels,
+  type ProjectState,
+  type TrackState,
+} from '../engine/project';
+import { bounceLaneRegion } from '../engine/clipAssets';
+import { ProjectPlayback, type ClipPlaybackTrack, type GraphContext } from '../engine/projectPlayback';
 import { decodeBlob, getSharedContext } from '../io/decode';
 import { resample } from '../fx/resample';
-import type { EditOutcome } from '../engine/editOps';
 import { resolveFxTarget } from './fxTarget';
 import { getErrorMessage } from '../core/errors';
 import { toastInfo } from './toast';
@@ -37,7 +47,10 @@ let rafId = 0;
 /** Cursor position where the current play started (stop returns here). */
 let playFrom = 0;
 
-function snapshotOf(t: TrackState): TrackSnapshot {
+function snapshotOf(project: ProjectState, t: TrackState): TrackSnapshot {
+  const asset = t.clips[0] ? project.assets[t.clips[0]!.assetId] : undefined;
+  let length = 0;
+  for (const c of t.clips) if (c.start + c.duration > length) length = c.start + c.duration;
   return {
     id: t.id,
     name: t.name,
@@ -45,14 +58,15 @@ function snapshotOf(t: TrackState): TrackSnapshot {
     pan: t.pan,
     mute: t.mute,
     solo: t.solo,
-    channelCount: t.channels.length,
-    length: t.channels[0]?.length ?? 0,
+    channelCount: asset?.channels.length ?? 1,
+    length,
   };
 }
 
 function sync(): void {
   if (!proj) return;
-  S.projectTracks.value = proj.project.tracks.map(snapshotOf);
+  const project = proj.project;
+  S.projectTracks.value = project.tracks.map((t) => snapshotOf(project, t));
   S.activeTrackId.value = proj.project.activeTrackId;
   S.projectVersion.value += 1;
 }
@@ -89,8 +103,9 @@ export function ensureProject(): ProjectState | null {
   if (proj) return proj.project;
   const channels = runtimeDocChannels();
   if (!channels) return null;
-  const track = createTrack(channels, { name: doc.name });
-  proj = new AudioProjectEditor(newProject(doc.sampleRate, [track], track.id));
+  const fresh = newProject(doc.sampleRate, []);
+  createProjectTrack(fresh, channels, { name: doc.name });
+  proj = new AudioProjectEditor(fresh);
   playback = new ProjectPlayback(playbackCtx(), doc.sampleRate);
   S.projectOpen.value = true;
   sync();
@@ -117,13 +132,23 @@ export function getTrackChannels(trackId: string): Float32Array[] | null {
   return proj?.trackChannels(trackId) ?? null;
 }
 
-/** Re-point track 1 at the live document channels (after load/edit). */
+/** Re-point track 1 at the live document channels (after load/edit).
+ * M9d1: the lane's backing asset is re-pointed BY REFERENCE and the lane's
+ * arrangement resets to one full clip over it (M8 mirror semantics). */
 export function resyncDocTrack(): void {
   const channels = getDocChannels();
   if (!proj || !channels) return;
   const first = proj.project.tracks[0];
   if (!first) return;
-  first.channels = channels;
+  const assetId = first.clips[0]?.assetId ?? `asset_${first.id}`;
+  proj.project.assets[assetId] = {
+    id: assetId,
+    sampleRate: proj.project.sampleRate,
+    channels,
+  };
+  first.clips = [
+    { id: `clip_${first.id}`, assetId, start: 0, offset: 0, duration: channels[0]?.length ?? 0 },
+  ];
   sync();
 }
 
@@ -139,7 +164,11 @@ export async function importToTrack(file: File): Promise<void> {
     const projectRate = S.docInfo.value?.sampleRate ?? buffer.sampleRate;
     channels = conformToProjectRate(channels, buffer.sampleRate, projectRate);
     const ed = requireEditor();
-    const track = createTrack(channels, { name: file.name.replace(/\.[^.]+$/, '') });
+    const track = createTrack(channels, {
+      name: file.name.replace(/\.[^.]+$/, ''),
+      sampleRate: ed.project.sampleRate,
+    });
+    ed.project.assets[`asset_${track.id}`] = laneAsset(track.id, channels, ed.project.sampleRate);
     ed.addTrack(track);
     lastProjectOpAt = Date.now();
     sync();
@@ -151,6 +180,12 @@ export async function importToTrack(file: File): Promise<void> {
 }
 
 /** Add a fully-formed track (import/record path — undoable). */
+/** Register a lane's backing asset (zero-copy) — call before addProjectTrack. */
+export function registerLaneAsset(trackId: string, channels: Float32Array[]): void {
+  const project = requireEditor().project;
+  project.assets[`asset_${trackId}`] = laneAsset(trackId, channels, project.sampleRate);
+}
+
 export function addProjectTrack(track: TrackState): void {
   requireEditor().addTrack(track);
   lastProjectOpAt = Date.now();
@@ -210,19 +245,22 @@ export interface ProjectTrackExport {
 
 export function exportProjectTracks(): ProjectTrackExport[] | null {
   if (!proj || proj.project.tracks.length === 0) return null;
-  return proj.project.tracks.map((t) => ({
-    meta: {
-      id: t.id,
-      name: t.name,
-      gain: t.gain,
-      pan: t.pan,
-      mute: t.mute,
-      solo: t.solo,
-      channels: t.channels.length === 1 ? 1 : 2,
-      length: t.channels[0]?.length ?? 0,
-    },
-    channels: t.channels,
-  }));
+  return proj.project.tracks.map((t) => {
+    const channels = trackChannels(proj!.project, t.id) ?? [];
+    return {
+      meta: {
+        id: t.id,
+        name: t.name,
+        gain: t.gain,
+        pan: t.pan,
+        mute: t.mute,
+        solo: t.solo,
+        channels: proj!.project.assets[t.clips[0]?.assetId ?? '']?.channels.length === 1 ? 1 : 2,
+        length: channels[0]?.length ?? 0,
+      },
+      channels,
+    };
+  });
 }
 
 /**
@@ -237,17 +275,23 @@ export function restoreProjectTracks(
   if (!proj) return;
   const sampleRate = proj.project.sampleRate;
   const docChannels = getDocChannels();
-  const tracks: TrackState[] = payload.map((p, i) =>
-    createTrack(i === 0 && docChannels ? docChannels : p.channels.map((c) => c.slice()), {
+  const fresh = newProject(sampleRate, []);
+  for (const [i, p] of payload.entries()) {
+    const channels = i === 0 && docChannels ? docChannels : p.channels.map((c) => c.slice());
+    const track = createTrack(channels, {
       id: p.meta.id,
       name: p.meta.name,
       gain: p.meta.gain,
       pan: p.meta.pan,
       mute: p.meta.mute,
       solo: p.meta.solo,
-    }),
-  );
-  proj.adopt(newProject(sampleRate, tracks, tracks[0]?.id ?? null));
+      sampleRate,
+    });
+    fresh.assets[`asset_${track.id}`] = laneAsset(track.id, channels, sampleRate);
+    fresh.tracks.push(track);
+  }
+  fresh.activeTrackId = fresh.tracks[0]?.id ?? null;
+  proj.adopt(fresh);
   sync();
 }
 
@@ -262,7 +306,7 @@ export function stemChannels(): Array<{ name: string; channels: Float32Array[] }
   if (!proj) return null;
   return proj.project.tracks.map((t) => ({
     name: t.name.replace(/[/\\:*?"<>|]/g, '_'),
-    channels: t.channels,
+    channels: trackChannels(proj!.project, t.id) ?? [],
   }));
 }
 
@@ -289,10 +333,34 @@ export function activeTrackTarget(): TrackEditTarget | null {
   return { trackId: target, channels };
 }
 
-/** Commit an outcome to a lane ≥ 2 through the project history. */
-export function commitTrackEdit(trackId: string, outcome: EditOutcome, label: string): boolean {
+/** Commit new channel content for a lane ≥ 2 through the project history
+ * (M9d1: copy-on-write bounce — renders the lane's clip timeline, stores the
+ * processed audio as a NEW asset, one full clip replaces the arrangement). */
+export function commitTrackChannels(
+  trackId: string,
+  newChannels: Float32Array[],
+  label: string,
+): boolean {
   try {
-    requireEditor().executeTrackEdit(trackId, outcome, label);
+    const ed = requireEditor();
+    let laneEnd = 0;
+    for (const c of ed.project.tracks.find((t) => t.id === trackId)?.clips ?? []) {
+      if (c.start + c.duration > laneEnd) laneEnd = c.start + c.duration;
+    }
+    if (laneEnd === 0) return false;
+    const bounceId = `b${bounceSeq.toString(36)}_${Date.now().toString(36)}`;
+    bounceSeq += 1;
+    const bounce = bounceLaneRegion(
+      ed.project,
+      trackId,
+      0,
+      laneEnd,
+      () => newChannels,
+      bounceId,
+    );
+    if (!bounce) return false;
+    ed.executeClipEdit(trackId, label, bounce.before, bounce.after, [bounce.asset]);
+    sweepAssets(ed.project);
     lastProjectOpAt = Date.now();
     sync();
     return true;
@@ -300,6 +368,7 @@ export function commitTrackEdit(trackId: string, outcome: EditOutcome, label: st
     return false;
   }
 }
+let bounceSeq = 0;
 
 export function setActiveTrack(trackId: string): void {
   if (!proj) return;
@@ -307,8 +376,17 @@ export function setActiveTrack(trackId: string): void {
   S.activeTrackId.value = trackId;
 }
 
-function playbackViews(): PlaybackTrack[] {
-  return requireEditor().project.tracks;
+function playbackViews(): ClipPlaybackTrack[] {
+  const project = requireEditor().project;
+  const assets = new Map(Object.entries(project.assets));
+  return project.tracks.map((t) => ({
+    clips: t.clips,
+    assets,
+    gain: t.gain,
+    pan: t.pan,
+    mute: t.mute,
+    solo: t.solo,
+  }));
 }
 
 // ---- undo/redo policy stamps ----
@@ -404,7 +482,7 @@ export function projectTogglePlay(): void {
     S.cursorPos.value = duration;
     projectCursorHook?.(duration);
   };
-  playback.start(playbackViews(), { from: playFrom, loop: region });
+  playback.startClips(playbackViews(), { from: playFrom, loop: region });
   S.playing.value = true;
   stopTick();
   rafId = requestAnimationFrame(rafTick);
