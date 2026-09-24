@@ -1403,3 +1403,13 @@
   color: var(--text-dim, #8a929e);
   white-space: nowrap;
 }
+
+/* M9d2: e2e/a11y clip-count readout (screen-reader visible, layout-invisible) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

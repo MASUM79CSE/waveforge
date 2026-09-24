@@ -7,7 +7,7 @@ import {
   updateTrackMix,
 } from '../projectActions';
 import { t } from '../../i18n';
-import { LaneCanvas } from './ClipLaneCanvas';
+import { LaneCanvas, useClipCount } from './ClipLaneCanvas';
 
 /**
  * Multitrack lane stack (M8d): strips + waveform lanes mirroring the main
@@ -65,6 +65,7 @@ interface Snap {
 
 function Lane({ snap, active }: { snap: Snap; active: boolean }) {
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const clipCount = useClipCount(snap.id);
   return (
     <div
       class={`lane ${active ? 'active' : ''}`}
@@ -154,6 +155,7 @@ function Lane({ snap, active }: { snap: Snap; active: boolean }) {
         </span>
       </div>
       <LaneCanvas trackId={snap.id} />
+      <span class="visually-hidden" data-testid={`clips-${snap.name}`}>{clipCount}</span>
     </div>
   );
 }

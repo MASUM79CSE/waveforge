@@ -17,10 +17,10 @@ async function loadSample(page: Page): Promise<void> {
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 }
 
-/** Minimal valid mono WAV (16-bit PCM 44.1 kHz, ~0.1 s of a square hum). */
-function wavBytes(): Buffer {
+/** Minimal valid mono WAV (16-bit PCM 44.1 kHz, square hum; seconds param). */
+function wavBytes(seconds = 0.1): Buffer {
   const sr = 44100;
-  const n = 4410;
+  const n = Math.round(sr * seconds);
   const data = Buffer.alloc(n * 2);
   for (let i = 0; i < n; ++i) {
     data.writeInt16LE(((i % 100) < 50 ? 6000 : -6000) | 0, i * 2);
@@ -222,6 +222,69 @@ test('multitrack: quick edit commands (Reverse) target the active lane (M8f+)', 
   await page.keyboard.press('Control+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
   await expect(page.locator('.lane', { hasText: 'take9' })).toBeVisible();
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test('arrangement: split at cursor, drag right, undo x2, duplicate, play (M9d)', async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') consoleErrors.push(m.text());
+  });
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await loadSample(page);
+
+  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  const chooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: /Import audio/ }).click();
+  const chooser = await chooserPromise;
+  // 3 s take → the clip spans a comfortable ~30% of the default view
+  await chooser.setFiles({ name: 'take9.wav', mimeType: 'audio/wav', buffer: wavBytes(3) });
+  const lane = page.locator('.lane', { hasText: 'take9' });
+  await lane.click(); // activate (lane 2, clip 0..0.1 s)
+  const clipsOf = page.getByTestId('clips-take9');
+  await expect(clipsOf).toHaveText('1');
+
+  // cursor to ~15% of the view (~1.5 s — mid-clip; doc rail ≈ 26 px)
+  const doc = page.locator('canvas.wave-canvas');
+  const box = await doc.boundingBox();
+  const y = box!.y + box!.height / 2;
+  const cursorX = box!.x + 26 + 0.15 * (box!.width - 26);
+  await page.mouse.click(cursorX, y);
+  await expect(page.getByRole('button', { name: /^Play \(Space\)/ })).toBeVisible();
+
+  // split at cursor → two clips
+  await page.keyboard.press('s');
+  await expect(clipsOf).toHaveText('2');
+
+  // drag the right half rightward (free space) → still two clips
+  const laneBox = await lane.locator('canvas.lane-canvas').boundingBox();
+  const ly = laneBox!.y + laneBox!.height / 2;
+  const midClip = laneBox!.x + 0.25 * laneBox!.width; // body of the right half
+  await page.mouse.move(midClip, ly);
+  await page.mouse.down();
+  await page.mouse.move(midClip + 0.15 * laneBox!.width, ly, { steps: 8 });
+  await page.mouse.up();
+  await expect(clipsOf).toHaveText('2');
+
+  // undo x2 → the split is gone (one clip again)
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+  await page.keyboard.press('Control+z');
+  await expect(clipsOf).toHaveText('1');
+
+  // re-select the clip body → Ctrl+D duplicates into the empty right
+  await page.mouse.click(laneBox!.x + 45, ly);
+  await page.keyboard.press('Control+d');
+  await expect(clipsOf).toHaveText('2');
+
+  // arranged playback (startClips path) runs and stops cleanly
+  await page.getByRole('button', { name: /^Play \(Space\)/ }).click();
+  await expect(page.getByRole('button', { name: /^Pause \(Space\)/ })).toBeVisible();
+  await page.getByRole('button', { name: /^Pause \(Space\)/ }).click();
+  await expect(page.getByRole('button', { name: /^Play \(Space\)/ })).toBeVisible();
 
   expect(consoleErrors).toEqual([]);
 });

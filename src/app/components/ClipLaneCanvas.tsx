@@ -316,6 +316,12 @@ export function LaneCanvas({ trackId }: { trackId: string }) {
   return <canvas ref={canvasRef} class="lane-canvas" />;
 }
 
+/** Live clip count for a lane (e2e + aria assertability). */
+export function useClipCount(trackId: string): number {
+  void projectVersion.value; // subscribe: re-render on any project change
+  return clipArrangement(trackId)?.length ?? 0;
+}
+
 /** Pixel x for time t given the viewState convention (start seconds, spp). */
 function xAtTimePx(t: number, startSec: number, sr: number, spp: number): number {
   if (spp <= 0) return -1;
