@@ -65,9 +65,9 @@ in conventional style before the next opens.
   (disabled/muted variant), center line, selection accent-soft + accent
   borders, playhead `#ff8c35`, ruler labels `#d9d955` on black strip,
   lane bg from bg-0, peak separators (`#365457` family) at zoomed-in spp.
-- Left **dB scale column** (canvas-drawn, -Inf..0 gridlines + labels)
-  with a View-menu toggle (default on), matching AudioMass's
-  "Timeline ✔"-style check items.
+- Bottom **dB amplitude axis** (canvas-drawn, -Inf..0, matching the
+  reference screenshot) + L/R channel labels on the left rail, with a
+  View-menu toggle (default on), AudioMass "Timeline ✔"-style.
 - **Tests:** existing anchors prove geometry unchanged; add View-toggle
   e2e (state persists via viewState signals).
 - **Commit:** `feat(d4): canvas skin + dB scale column`.

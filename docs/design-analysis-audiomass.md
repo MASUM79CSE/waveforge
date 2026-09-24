@@ -44,7 +44,11 @@ Compared component-by-component against WaveForge at `a1157f8`.
 | Marker palette | `#9dff6a #5af2ff #f557d2 #ffd15c #ff8c35 #b9c6ff` |
 
 WaveForge canvas today: teal `#3ddad0` wave on `#0a0e13`, orange playhead,
-no dB scale column, no peak separators.
+no amplitude axis, no peak separators. Screenshot-verified extras: AM shows
+a large mono `00:00:000` clock leftmost in the control row, a red round
+record button, edit-icon cluster (copy/paste/cut/S), vertical zoom [+/−]
+at the workspace's bottom-left, and a bottom scrollbar with [+ − R] zoom
+buttons. (docs/design/*.png)
 
 ### 1.3 Layout anatomy (rendered DOM map)
 
@@ -75,7 +79,7 @@ Tooltips (custom) · context menu · toasts (oneup)
 | G6 | Canvas skin | green `#9dff6a` wave, orange cursor, dB scale column, peak separators, `#d9d955` labels | teal wave, orange playhead, no dB column, no separators | **PARTIAL → D4** |
 | G7 | Zoom bar | bottom button group: horiz ± , reset (0), **vertical ±** | menu + keyboard only | **MISSING → D5** (vertical zoom is new state) |
 | G8 | Beat row | BEAT toggle · SNAP · BPM · time signature | BPM detection + `snapEdgeToBeat` engine exist; no UI row | **PARTIAL → D5** |
-| G9 | dB scale column | canvas-drawn -Inf..0 labels left of lanes | none | **MISSING → D4** |
+| G9 | Amplitude axis | **horizontal dB axis along the bottom edge** (-Inf..0, 2 dB steps) + L/R labels on the left rail (screenshot-verified) | none (status bar shows ×spp only) | **MISSING → D4** |
 | G10 | Welcome modal | tips + OK (shift-key usage, sample hint, GitHub) | welcome exists (load sample) | MATCH (restyle + tips in D6) |
 | G11 | Progress modal | "Please wait… N% + cancel" | export dialog has progress | MATCH (restyle D6) |
 | G12 | Tooltips w/ shortcuts | custom tooltip system, every icon | `title` attributes only | **PARTIAL → D2** (title + aria-label; richer tooltip optional) |
