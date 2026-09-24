@@ -12,7 +12,7 @@ import {
   tremoloProcess,
   vibratoProcess,
 } from './modulation';
-import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq } from './paramEq';
+import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq, processParamEqSwept } from './paramEq';
 import { reverb2Process } from './reverb2';
 import { nr3Process } from './nr3';
 import { nrProcess } from './nrPrint';
@@ -274,8 +274,14 @@ const DEFS: EffectDef[] = [
     id: 'fx.pgeq8',
     labelKey: 'fxPgeq8',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      processParamEq(channels, sampleRate, eqBandsFromParams(params)),
+    process: (channels, sampleRate, params, ctx) => {
+      const bands = eqBandsFromParams(params);
+      const curves = ctx?.paramCurves;
+      if (curves && Object.keys(curves).length > 0) {
+        return processParamEqSwept(channels, sampleRate, bands, curves);
+      }
+      return processParamEq(channels, sampleRate, bands);
+    },
     specs: pgeq8Specs(),
   },
   {

@@ -27,6 +27,9 @@ export interface EffectRunContext {
   irSampleRate?: number;
   /** Learned noise print for fx.nrPrint (E6a), |N̂(k)| in linear magnitude. */
   noisePrint?: Float32Array;
+  /** A6b: per-param automation curves (region-relative sample domain),
+   * keyed by the effect's flat param keys (e.g. `b0Freq`). */
+  paramCurves?: Record<string, import('../engine/automation').AutomationCurve>;
 }
 
 export interface KernelEffectDef {

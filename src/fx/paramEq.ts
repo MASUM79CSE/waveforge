@@ -12,6 +12,7 @@ import {
   processBiquad,
   type BiquadKind,
 } from './biquad';
+import { mulTable, type AutomationCurve } from '../engine/automation';
 
 export const EQ_TYPES: BiquadKind[] = [
   'peaking',
@@ -117,6 +118,101 @@ export function processParamEq(
     const out = Float32Array.from(ch);
     for (const coeffs of sections) processBiquad(out, coeffs);
     return out;
+  });
+}
+
+/**
+ * A6b: per-sample swept band stage — coefficients recomputed EVERY sample
+ * from the current curve values via the SAME designBiquad, and the SAME TDF
+ * recursion as processBiquad with (s1, s2) carried ACROSS coefficient
+ * updates (the standard slowly-varying-filter approach). Constant curves
+ * reproduce the static coefficients sample-for-sample → bit-identical
+ * audio. Curve values come from mulTable (A1 semantics: on-point owns the
+ * sample, endpoint clamps) so the swept values == evalCurve exactly.
+ * Domains (20..20000 Hz etc.) are enforced where curves are authored —
+ * designBiquad additionally guards w0 ≤ 0.999π.
+ */
+function sweepStage(
+  ch: Float32Array,
+  sampleRate: number,
+  band: EqBand,
+  freq: Float64Array | null,
+  gainDb: Float64Array | null,
+  q: Float64Array | null,
+): Float32Array {
+  const cascade = (band.type === 'hpf' || band.type === 'lpf') && band.slope === 24;
+  const sections = cascade ? 2 : 1;
+  const out = Float32Array.from(ch);
+  const states = Array.from({ length: sections }, () => ({ s1: 0, s2: 0 }));
+  for (let i = 0; i < out.length; ++i) {
+    let x = out[i]!;
+    const f = freq ? freq[i]! : band.freq;
+    const g = gainDb ? gainDb[i]! : band.gainDb;
+    const qv = q ? q[i]! : band.q;
+    for (let j = 0; j < sections; ++j) {
+      const coeffs = designBiquad(band.type, f, g, cascade ? BUTTERWORTH_Q_24DB[j]! : qv, sampleRate);
+      const st = states[j]!;
+      const y = coeffs.b0 * x + st.s1;
+      st.s1 = coeffs.b1 * x - coeffs.a1 * y + st.s2;
+      st.s2 = coeffs.b2 * x - coeffs.a2 * y;
+      // section boundaries round to f32 exactly like the static path's
+      // per-section array stores — constant curves stay BIT-identical
+      x = Math.fround(y);
+    }
+    out[i] = x;
+  }
+  return out;
+}
+
+/**
+ * A6b: processParamEq with per-band automation curves keyed `b{I}Freq` /
+ * `b{I}Gain` / `b{I}Q` (region-relative samples). Bands without curves ride
+ * the EXACT static section path (bit-identical); no curves at all
+ * degenerates to processParamEq. Chain order and per-band state resets
+ * match processParamEq's section chain.
+ */
+export function processParamEqSwept(
+  channels: Float32Array[],
+  sampleRate: number,
+  bands: EqBand[],
+  curves: Record<string, AutomationCurve>,
+): Float32Array[] {
+  const len = channels[0]?.length ?? 0;
+  interface Stage {
+    band: EqBand;
+    freq: Float64Array | null;
+    gainDb: Float64Array | null;
+    q: Float64Array | null;
+  }
+  const stages: Array<Stage | null> = bands.map((band, i) => {
+    const freqC = curves[`b${i}Freq`];
+    const gainC = curves[`b${i}Gain`];
+    const qC = curves[`b${i}Q`];
+    const hasCurve = !!(freqC || gainC || qC);
+    // a curve opts the band IN (a gain sweep can leave the 0 dB bypass)
+    if (!isActive(band) && !hasCurve) return null;
+    if (!hasCurve) return { band, freq: null, gainDb: null, q: null };
+    return {
+      band,
+      freq: freqC && freqC.length > 0 ? mulTable(freqC, len) : null,
+      gainDb: gainC && gainC.length > 0 ? mulTable(gainC, len) : null,
+      q: qC && qC.length > 0 ? mulTable(qC, len) : null,
+    };
+  });
+  if (!stages.some((s) => s && (s.freq || s.gainDb || s.q))) {
+    return processParamEq(channels, sampleRate, bands);
+  }
+  return channels.map((ch) => {
+    let cur: Float32Array = Float32Array.from(ch);
+    for (const stage of stages) {
+      if (!stage) continue;
+      if (stage.freq || stage.gainDb || stage.q) {
+        cur = sweepStage(cur, sampleRate, stage.band, stage.freq, stage.gainDb, stage.q);
+      } else {
+        for (const coeffs of bandSections(stage.band, sampleRate)) processBiquad(cur, coeffs);
+      }
+    }
+    return cur;
   });
 }
 
