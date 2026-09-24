@@ -50,7 +50,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     coverage: {
       provider: 'v8',
       include: [
@@ -71,6 +71,7 @@ export default defineConfig({
         'src/fx/resample.ts',
         'src/fx/registry.ts',
         'src/fx/defs.ts',
+        'src/app/components/Modal.tsx',
         'src/fx/graphs.ts',
         // E1 mastering kernels (effects v2)
         'src/fx/mastering.ts',
