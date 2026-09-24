@@ -8,7 +8,6 @@ import {
   view,
 } from './actions';
 import { resolveShortcut } from './shortcuts';
-import * as EA from './editActions';
 import {
   aboutOpen,
   doctorOpen,
@@ -94,11 +93,6 @@ export function bindKeyboard(): void {
       case 'Tab':
         event.preventDefault();
         view.center();
-        break;
-      case 'Delete':
-      case 'Backspace':
-        event.preventDefault();
-        EA.deleteSelection();
         break;
       case 'q':
       case 'Q':
