@@ -15,8 +15,15 @@ import {
 import { compressKernelSwept } from './compressor';
 import { noiseGateSwept } from './gate';
 import { truePeakLimitSwept } from './mastering';
+import {
+  chorusProcessSwept,
+  flangerProcessSwept,
+  phaserProcessSwept,
+  tremoloProcessSwept,
+  vibratoProcessSwept,
+} from './modulationCurves';
 import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq, processParamEqSwept } from './paramEq';
-import { reverb2Process } from './reverb2';
+import { reverb2Process, reverb2ProcessSwept } from './reverb2';
 import { nr3Process } from './nr3';
 import { nrProcess } from './nrPrint';
 import { deesserProcess } from './deesser';
@@ -166,15 +173,21 @@ const DEFS: EffectDef[] = [
     id: 'fx.reverb2',
     labelKey: 'fxReverb2',
     kind: 'kernel',
-    process: (channels, sampleRate, params, ctx) =>
-      reverb2Process(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const p = {
         type: Number(params.type) as 0 | 1 | 2 | 3,
         rt60Sec: Number(params.rt60Sec),
         damping: Number(params.damping),
         predelayMs: Number(params.predelayMs),
         mix: Number(params.mix),
         seed: Number(params.seed),
-      }, ctx),
+      };
+      const curves = ctx?.paramCurves;
+      if (curves && Object.keys(curves).length > 0) {
+        return reverb2ProcessSwept(channels, sampleRate, p, curves, ctx);
+      }
+      return reverb2Process(channels, sampleRate, p, ctx);
+    },
     // wet tail beyond the region: the full decay plus predelay and a
     // short settle margin; an imported IR uses its own length instead
     tail: (params, ctx) => {
@@ -201,13 +214,19 @@ const DEFS: EffectDef[] = [
     id: 'fx.chorus',
     labelKey: 'fxChorus',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      chorusProcess(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const p = {
         baseMs: Number(params.baseMs),
         depthMs: Number(params.depthMs),
         rateHz: Number(params.rateHz),
         mix: Number(params.mix),
-      }),
+      };
+      const curves = ctx?.paramCurves;
+      if (curves && Object.keys(curves).length > 0) {
+        return chorusProcessSwept(channels, sampleRate, p, curves);
+      }
+      return chorusProcess(channels, sampleRate, p);
+    },
     specs: [
       num('baseMs', 'paramBaseMs', 0, 60, 0.1, 20),
       num('depthMs', 'paramDepthMs', 0, 30, 0.1, 4),
@@ -219,14 +238,20 @@ const DEFS: EffectDef[] = [
     id: 'fx.flanger',
     labelKey: 'fxFlanger',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      flangerProcess(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const p = {
         baseMs: Number(params.baseMs),
         depthMs: Number(params.depthMs),
         rateHz: Number(params.rateHz),
         feedback: Number(params.feedback),
         mix: Number(params.mix),
-      }),
+      };
+      const curves = ctx?.paramCurves;
+      if (curves && Object.keys(curves).length > 0) {
+        return flangerProcessSwept(channels, sampleRate, p, curves);
+      }
+      return flangerProcess(channels, sampleRate, p);
+    },
     specs: [
       num('baseMs', 'paramBaseMs', 0, 20, 0.1, 2),
       num('depthMs', 'paramDepthMs', 0, 10, 0.1, 4),
@@ -239,14 +264,20 @@ const DEFS: EffectDef[] = [
     id: 'fx.phaser',
     labelKey: 'fxPhaser',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      phaserProcess(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const p = {
         stages: Number(params.stages),
         rateHz: Number(params.rateHz),
         centerHz: Number(params.centerHz),
         feedback: Number(params.feedback),
         mix: Number(params.mix),
-      }),
+      };
+      const curves = ctx?.paramCurves;
+      if (curves && Object.keys(curves).length > 0) {
+        return phaserProcessSwept(channels, sampleRate, p, curves);
+      }
+      return phaserProcess(channels, sampleRate, p);
+    },
     specs: [
       num('stages', 'paramStages', 2, 8, 1, 6),
       num('rateHz', 'paramRate', 0.05, 8, 0.05, 0.5),
@@ -259,12 +290,18 @@ const DEFS: EffectDef[] = [
     id: 'fx.tremolo',
     labelKey: 'fxTremolo',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      tremoloProcess(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const p = {
         rateHz: Number(params.rateHz),
         depth: Number(params.depth),
         shape: Number(params.shape),
-      }),
+      };
+      const curves = ctx?.paramCurves;
+      if (curves && Object.keys(curves).length > 0) {
+        return tremoloProcessSwept(channels, sampleRate, p, curves);
+      }
+      return tremoloProcess(channels, sampleRate, p);
+    },
     specs: [
       num('rateHz', 'paramRate', 0.5, 20, 0.1, 5),
       num('depth', 'paramDepth', 0, 1, 0.01, 0.5),
@@ -275,11 +312,14 @@ const DEFS: EffectDef[] = [
     id: 'fx.vibrato',
     labelKey: 'fxVibrato',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      vibratoProcess(channels, sampleRate, {
-        rateHz: Number(params.rateHz),
-        depthMs: Number(params.depthMs),
-      }),
+    process: (channels, sampleRate, params, ctx) => {
+      const p = { rateHz: Number(params.rateHz), depthMs: Number(params.depthMs) };
+      const curves = ctx?.paramCurves;
+      if (curves && Object.keys(curves).length > 0) {
+        return vibratoProcessSwept(channels, sampleRate, p, curves);
+      }
+      return vibratoProcess(channels, sampleRate, p);
+    },
     specs: [
       num('rateHz', 'paramRate', 0.1, 14, 0.1, 5),
       num('depthMs', 'paramDepthMs', 0, 30, 0.1, 4),

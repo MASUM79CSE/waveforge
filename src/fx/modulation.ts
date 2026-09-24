@@ -18,7 +18,8 @@ const COS_LUT = new Float64Array(LUT_N);
 for (let k = 0; k < LUT_N; ++k) COS_LUT[k] = Math.cos((TAU * k) / LUT_N);
 
 /** Deterministic cosine via table lookup + linear interpolation. */
-function lutCos(phaseRad: number): number {
+/** Exported for the swept variants (modulationCurves.ts) — same package contract. */
+export function lutCos(phaseRad: number): number {
   let pos = (phaseRad / TAU) % 1;
   if (pos < 0) pos += 1;
   const f = pos * LUT_N;
@@ -30,7 +31,8 @@ function lutCos(phaseRad: number): number {
 }
 
 /** Catmull-Rom read at a fractional (possibly negative) position. */
-function readCatmull(src: Float32Array, p: number): number {
+/** Exported for the swept variants (modulationCurves.ts). */
+export function readCatmull(src: Float32Array, p: number): number {
   const i0 = Math.floor(p);
   const t = p - i0;
   const s0 = i0 - 1 >= 0 ? (src[i0 - 1] ?? 0) : 0;
@@ -59,10 +61,12 @@ export interface ChorusParams {
   mix: number;
 }
 
-const CHORUS_PHASES = [0, TAU / 3, (2 * TAU) / 3];
+/** Exported for the swept variants (modulationCurves.ts). */
+export const CHORUS_PHASES = [0, TAU / 3, (2 * TAU) / 3];
 /** Right-channel voice phases: 60° offset — a disjoint phase SET (a pure
  * permutation of the left set is FP-commutative and would cancel width). */
-const CHORUS_PHASES_R = [TAU / 6, TAU / 2, (5 * TAU) / 6];
+/** Exported for the swept variants (modulationCurves.ts). */
+export const CHORUS_PHASES_R = [TAU / 6, TAU / 2, (5 * TAU) / 6];
 
 /**
  * 3-voice chorus; voices share the LFO rate but sit 120° apart. The right
@@ -295,3 +299,4 @@ export function phaserProcess(
     return out;
   });
 }
+
