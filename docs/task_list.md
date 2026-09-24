@@ -451,4 +451,34 @@ pending — record with the E2 phase.
       preserved, Ctrl+Z/Ctrl+Y); Noise Reduction learns the print from the
       selection, applies, undoes (suite 16 → 18).
 
+## E5 — WSOLA time-stretch / pitch-shift (effects-v2) ✅
+
+- [x] **E5 kernel** (`src/fx/wsola.ts`, pure): WSOLA with frame 2028
+      (46 ms), hop-s 1014, hop-a = round(hs/ratio), search τ = ±441
+      (±10 ms); Hann analysis + exact per-sample window-sum denominator.
+      Decision signal: onset map (energy flux > 3× median on **signed**
+      ch0; MA(9) + hysteresis metering during anchor development only)
+      → onset-locked δ = round((ratio−1)(k·ha−onset)) clamped ±τ; else
+      normalized cross-correlation of signed ch0 vs the **continuation
+      template** (signal immediately after the frame read), 3× decimated
+      coarse search + ±3 refine. `pitchShift(n)` = stretch(2^(n/12)) then
+      `resample(·, 2^(n/12))`. ratio 1 → bit-exact copies; outLen is
+      exactly round(inLen·ratio). (Plan deviations ratified: rectified
+      decision signal and self-template both produced OLA cancellation
+      notches / +5 Hz pitch bias — caught by the pitch anchor.)
+- [x] **E5 anchors** (8 tests): ×1.00/+0 st bit-exact; 10 s ×1.25 →
+      551250±88, ×0.8 → 352800±88; 440 Hz +3 st → 523.25 Hz ±0.5 %
+      zero-cross; click train ×1.5 → grid ±2 ms; stereo channels
+      bit-identical; 30 s ×1.7 / ×0.6 bounded ≤4 no NaN; guard rails
+      (bad ratio, empty input); profile 60 s stereo ×1.25 ≈ 1.1–1.2 s
+      uninstrumented (budget 3 s).
+- [x] **E5 wiring**: `experimentalFx` signal (localStorage-gated) +
+      View-menu toggle (`view.experimental`); `fx.stretch` command +
+      Stretch / Pitch dialog (linked stretch↔semitones controls with an
+      independent escape hatch; stretch==1 && st==0 → bit-exact).
+      MenuBar: click after a hover-switch keeps the freshly-opened menu
+      open (native-menu behaviour; the click no longer instantly closes
+      it). Registry 21 effects; e2e suite 18 → 19 (hidden until enabled,
+      then View → Stretch / Pitch → ×1.25 → 11.5 s → Ctrl+Z).
+
 ## M7+ — see Build Plan §10 (roadmap)
