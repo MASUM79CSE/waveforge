@@ -20,6 +20,7 @@ import {
   bindDocChannels,
   bindDocHistory,
   bindProjectCursor,
+  closeProject,
   projectRedo,
   projectSeek,
   projectUndo,
@@ -64,6 +65,7 @@ function updateHistorySignals(): void {
 
 /** Fresh load: resets view, history and transport. */
 export function installDoc(doc: AudioDocument | null): void {
+  closeProject(); // fresh load supersedes any open multitrack session
   S.sessionNoisePrint.value = null; // a print belongs to its audio
   invalidateAnalysis();
   S.restoreStamp.value = null; // an explicit load supersedes the restore offer

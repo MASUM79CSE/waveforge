@@ -12,6 +12,8 @@ import { t } from '../i18n';
 import { toastError, toastInfo } from './actions';
 import { getSharedContext } from '../io/decode';
 import { installDoc } from './runtime';
+import { addProjectTrack, ensureProject } from './projectActions';
+import { createTrack } from '../engine/project';
 import * as S from './state';
 
 export const recorder = new RecorderEngine();
@@ -110,6 +112,25 @@ async function stopRecording(): Promise<void> {
 
   takeCounter += 1;
   const frames = take.channels[0]?.length ?? 0;
+
+  // M8f: with a project open, the take lands as a NEW LANE (the project
+  // survives); without one the take stays a fresh document (M4 behavior).
+  if (S.projectOpen.value) {
+    try {
+      ensureProject();
+      addProjectTrack(
+        createTrack(
+          take.channels.map((c) => c.slice()),
+          { name: `Recording ${takeCounter}` },
+        ),
+      );
+      toastInfo(`${t().recordReady} — ${t().trackImported}: Recording ${takeCounter}`);
+      return;
+    } catch {
+      /* fall through to the document path */
+    }
+  }
+
   // a REAL AudioBuffer on the shared context: the engine hands doc.buffer
   // straight to AudioBufferSourceNode, and the peaks worker reads it too
   const audioBuffer = getSharedContext().createBuffer(

@@ -9,6 +9,8 @@ import { AudioProjectEditor, newProject } from '../engine/projectEditor';
 import { createTrack, mixTracks, projectDuration, type ProjectState, type TrackState } from '../engine/project';
 import { ProjectPlayback, type GraphContext, type PlaybackTrack } from '../engine/projectPlayback';
 import { decodeBlob, getSharedContext } from '../io/decode';
+import type { EditOutcome } from '../engine/editOps';
+import { resolveFxTarget } from './fxTarget';
 import { getErrorMessage } from '../core/errors';
 import { toastInfo } from './actions';
 import { t, tError } from '../i18n';
@@ -61,6 +63,22 @@ function requireEditor(): AudioProjectEditor {
 
 function playbackCtx(): GraphContext {
   return getSharedContext() as unknown as GraphContext;
+}
+
+/** Close the project (fresh loads supersede it; lanes re-open on ＋). */
+export function closeProject(): void {
+  if (!proj) return;
+  if (playback?.playing) {
+    playback.stop();
+    stopTick();
+    S.playing.value = false;
+  }
+  proj = null;
+  playback = null;
+  S.projectOpen.value = false;
+  S.projectTracks.value = [];
+  S.activeTrackId.value = null;
+  S.projectVersion.value += 1;
 }
 
 /** Open (or return) the project, adopting the current document as track 1. */
@@ -126,6 +144,13 @@ export async function importToTrack(file: File): Promise<void> {
     toastInfo(tError('WF-E201'));
     throw new Error(getErrorMessage(error));
   }
+}
+
+/** Add a fully-formed track (import/record path — undoable). */
+export function addProjectTrack(track: TrackState): void {
+  requireEditor().addTrack(track);
+  lastProjectOpAt = Date.now();
+  sync();
 }
 
 export function removeTrack(trackId: string): void {
@@ -218,6 +243,41 @@ export function stemChannels(): Array<{ name: string; channels: Float32Array[] }
     name: t.name.replace(/[/\\:*?"<>|]/g, '_'),
     channels: t.channels,
   }));
+}
+
+/** The project lane that mirrors the document (lane 1). */
+export function docTrackId(): string | null {
+  return proj?.project.tracks[0]?.id ?? null;
+}
+
+export interface TrackEditTarget {
+  trackId: string;
+  channels: Float32Array[];
+}
+
+/**
+ * Channels an effect/edit should target right now: the active lane when
+ * the project is open and a lane ≥ 2 is active, else null (doc path).
+ */
+export function activeTrackTarget(): TrackEditTarget | null {
+  if (!proj) return null;
+  const target = resolveFxTarget(proj.project.tracks, proj.project.activeTrackId, docTrackId() ?? '');
+  if (typeof target !== 'string') return null;
+  const channels = proj.trackChannels(target);
+  if (!channels) return null;
+  return { trackId: target, channels };
+}
+
+/** Commit an outcome to a lane ≥ 2 through the project history. */
+export function commitTrackEdit(trackId: string, outcome: EditOutcome, label: string): boolean {
+  try {
+    requireEditor().executeTrackEdit(trackId, outcome, label);
+    lastProjectOpAt = Date.now();
+    sync();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function setActiveTrack(trackId: string): void {

@@ -17,6 +17,7 @@ import { logger } from '../core/logger-instance';
 import { t } from '../i18n';
 import { toastInfo } from './actions';
 import { currentChannels, targetRange } from './editActions';
+import { activeTrackTarget, commitTrackEdit, ensureProject } from './projectActions';
 import { bufferFactory, getDoc, performEdit } from './runtime';
 import type { PreviewPlan } from './preview';
 
@@ -46,10 +47,18 @@ export function preparePreview(
   // clamp before any DSP touches them (preview runs the raw graph)
   const safeParams = validateParams(def, params);
 
+  // M8f: an active lane >= 2 previews against its own channels (dry buffer
+  // rebuilt from the track; lane 1 stays on the doc path — it IS the doc).
+  const target = activeTrackTarget();
+  const dryChannels = target?.channels ?? currentChannels();
+  ensureProject(); // no-op when open; guards the preview-vs-project race
+
   const startSec = range.start / doc.sampleRate;
   const durSec = range.len / doc.sampleRate;
   const base: PreviewPlan = {
-    buffer: doc.buffer as AudioBuffer,
+    buffer: target
+      ? (bufferFactory(dryChannels, doc.sampleRate) as unknown as AudioBuffer)
+      : (doc.buffer as AudioBuffer),
     startSec,
     durSec,
     def,
@@ -59,7 +68,7 @@ export function preparePreview(
   if (def.kind === 'kernel') {
     const wet = kernelProcess(
       def,
-      currentChannels(),
+      dryChannels,
       range.start,
       range.len,
       doc.sampleRate,
@@ -86,6 +95,30 @@ export async function applyEffect(
   const params = validateParams(def, rawParams);
   const range = targetRange();
   if (!range) return;
+
+  // M8f: lanes >= 2 commit through the project history (lane 1 = doc path).
+  const target = activeTrackTarget();
+  if (target) {
+    try {
+      let wet: Float32Array[];
+      if (def.kind === 'kernel') {
+        wet = kernelProcess(def, target.channels, range.start, range.len, doc.sampleRate, params, ctx);
+      } else {
+        const trackBuffer = bufferFactory(target.channels, doc.sampleRate) as unknown as AudioBuffer;
+        wet = await renderEffectOffline(trackBuffer, target.channels.length, range.start, range.len, def, params);
+      }
+      const outcome = makeOverwritePaste(target.channels, range.start, range.len, wet);
+      if (commitTrackEdit(target.trackId, outcome, effectLabel(def))) {
+        toastInfo(`${t().fxApplied}: ${effectLabel(def)}`);
+      } else {
+        toastInfo(t().editFailed);
+      }
+    } catch (error: unknown) {
+      logger.error('fx apply failed (track)', { id, detail: String(error) });
+      toastInfo(t().editFailed);
+    }
+    return;
+  }
 
   try {
     let wet: Float32Array[];

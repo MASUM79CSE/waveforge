@@ -19,6 +19,7 @@ import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { closeEffectDialog } from '../actions';
 import { effectDialogId, previewActive, sessionNoisePrint } from '../state';
 import { currentChannels, targetRange } from '../editActions';
+import { activeTrackTarget } from '../projectActions';
 import { t } from '../../i18n';
 import { Modal } from './Modal';
 import { ParamRow } from './EffectDialog';
@@ -74,7 +75,8 @@ export function NrPrintDialog(): JSX.Element | null {
 
   const onLearn = (): void => {
     const range = targetRange();
-    const channels = currentChannels();
+    // M8f: learn from the active lane when one is targeted (doc otherwise)
+    const channels = activeTrackTarget()?.channels ?? currentChannels();
     if (!range || !channels.length) {
       setStatus(t().nrPrintNone);
       return;

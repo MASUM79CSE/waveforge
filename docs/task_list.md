@@ -625,6 +625,29 @@ no-account lane; decision: lane-based single timeline, not clips).
       per-lane stem export (batch downloads, ID3 on stem 1); e2e
       save→reload→lanes-restored + mixdown/stems downloads. Record-into-
       track moves to M8f scope (recorder plumbing).
-- [ ] M8f effects on tracks (+ record-into-track) → M8g hardening/close
+- [x] **M8f** effects on tracks (`fxTarget` routing): dialog effects (the
+      full registry via EffectDialog — apply AND A/B preview) target the
+      active lane ≥ 2 (kernel region processed on track channels, committed
+      through the project history); lane 1 stays the doc path; NR print
+      learn reads the active lane; **fresh loads close the project** (stale
+      lane-1 fix) with draft-restore re-opening lanes; record with a
+      project open lands the take as a NEW LANE (M4 new-doc behavior kept
+      otherwise). Boundary: quick edit-menu commands (Gain/Fades/Normalize/
+      Reverse/Invert/Remove Silence) remain doc-scoped until the edit
+      routing sweep (post-M8 backlog, small mechanical follow-up).
+- [x] **M8g** hardening + close: coarse lane envelope buckets
+      (`laneBuckets`/`lanePeaksFromBuckets`, 256-sample) — zoom/pan reads
+      ≈3 ms for 6×3-min lanes (build 184 ms per edit, cached per version);
+      Lighthouse **99/100/100/100** with the lane stack shipped
+      (`docs/perf/lighthouse-m8.json`); final gates: 484 unit (57 files) @
+      96.23/75.47, 33 e2e, build ~1 s, lint clean.
+
+**M8 complete (M8a–M8g).** WaveForge is a lane-based multitrack editor:
+per-lane strips (gain/pan/M/S), import + record-into-project, A/B-previewed
+effects per lane, deterministic mixdown (playback≡render parity) + stem
+export, drafts v2 with lanes, unified undo across document and project
+histories — still fully local, no account, no track cap. Deferred backlog:
+lane-scoped quick edit commands, clip/arrangement model (M9+), automation
+package (ADR 007), RNNoise mode (E7b).
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)

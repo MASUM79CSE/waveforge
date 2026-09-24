@@ -153,3 +153,47 @@ test('multitrack: drafts v2 round-trip + mixdown/stems export (M8e)', async ({ p
 
   expect(consoleErrors).toEqual([]);
 });
+
+test('multitrack: effects apply to the active lane and record lands a lane (M8f)', async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') consoleErrors.push(m.text());
+  });
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await loadSample(page);
+
+  // project with an imported lane, then activate it
+  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  const chooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: /Import audio/ }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({ name: 'vox.wav', mimeType: 'audio/wav', buffer: wavBytes() });
+  await page.locator('.lane', { hasText: 'vox' }).click();
+  await expect(page.locator('.lane.active', { hasText: 'vox' })).toBeVisible();
+
+  // De-esser applies to the LANE (dialog effects route by active lane)
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^De-esser/ }).click();
+  const fxPanel = page.getByRole('dialog');
+  await expect(fxPanel).toBeVisible();
+  await fxPanel.getByRole('button', { name: 'Apply' }).click();
+  await expect(page.locator('.toast-msg').last()).toContainText(/Applied: De-esser/i, {
+    timeout: 15_000,
+  });
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+  await expect(page.locator('.lane', { hasText: 'vox' })).toBeVisible();
+
+  // record while the project is open → the take becomes a new lane
+  await page.getByRole('button', { name: /record/i }).first().click();
+  await page.waitForTimeout(1500);
+  await page.getByRole('button', { name: /stop recording/i }).click();
+  await expect(page.locator('.lane', { hasText: 'Recording 1' })).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(page.locator('.lane')).toHaveCount(4); // doc + vox + Recording 1 + import
+
+  expect(consoleErrors).toEqual([]);
+});

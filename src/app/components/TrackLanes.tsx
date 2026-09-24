@@ -18,10 +18,23 @@ import {
   setActiveTrack,
   updateTrackMix,
 } from '../projectActions';
-import { lanePeaks } from '../../engine/lanePeaks';
+import { laneBuckets, lanePeaksFromBuckets, type LaneBuckets } from '../../engine/lanePeaks';
 import { currentTheme } from '../../engine/waveDraw';
 import { paletteVersionNow } from '../theme';
 import { t } from '../../i18n';
+
+/** Bucket envelope cache: rebuilt once per (lane, project version). */
+const bucketCache = new Map<string, { version: number; buckets: LaneBuckets }>();
+
+function bucketsFor(trackId: string, version: number): LaneBuckets | null {
+  const hit = bucketCache.get(trackId);
+  if (hit && hit.version === version) return hit.buckets;
+  const channels = getTrackChannels(trackId);
+  if (!channels) return null;
+  const buckets = laneBuckets(channels);
+  bucketCache.set(trackId, { version, buckets });
+  return buckets;
+}
 
 /**
  * Multitrack lane stack (M8d): strips + waveform lanes mirroring the main
@@ -206,10 +219,11 @@ function LaneCanvas({ trackId }: { trackId: string }) {
         min = cache.min;
         max = cache.max;
       } else {
-        const channels = getTrackChannels(trackId);
-        // view.start is seconds (viewState convention); peak domain is samples
-        const peaks = channels
-          ? lanePeaks(channels, Math.max(1, Math.round(spp)), Math.round(start * sr), w)
+        // M8g: aggregate coarse buckets (instant zoom/pan); zoomed-in views
+        // fall back to the bounded direct scan inside fromBuckets
+        const buckets = bucketsFor(trackId, projectVersion.value);
+        const peaks = buckets
+          ? lanePeaksFromBuckets(buckets, Math.max(1, Math.round(spp)), Math.round(start * sr), w)
           : null;
         min = peaks?.min ?? new Float32Array(w);
         max = peaks?.max ?? new Float32Array(w);
