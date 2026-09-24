@@ -703,3 +703,14 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
   to stay bit-identical with the static whole-array path (array stores
   round; f64 locals don't). Automation package COMPLETE incl. A6;
   follow-ups: per-kernel curves (dynamics/modulation), FX envelope UI.
+
+## 2026-09-25 (later still) — A6c dynamics curves SHIPPED
+
+- `efbb473`+`030479f`: swept compressor / gate / true-peak limiter
+  (audio-shaping params only), defs routed, 14 anchors.
+- Gates: 628/628 unit (74 files), 37/37 e2e, lint 0, build 0.99 s.
+- LESSONS: (1) sweepable = audio-shaping only; time constants stay
+  static (anchored ignore). (2) test references must reproduce the
+  kernel's intermediate f32 roundings (gate gains array) or bit anchors
+  diverge. (3) physics scenarios need timescales ≫ the smoothing
+  constants (a 100 ms release cannot close inside a 13 ms window).

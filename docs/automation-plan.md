@@ -215,3 +215,22 @@ demand order): dynamics (compressor/limiter/gate gain computer),
 modulation (chorus/flanger/phaser LFO depth+rate), tremolo/vibrato,
 reverb2 mix. UI: an FX-envelope lane in the A4 overlay can now drive
 `paramCurves` / `renderEffectOffline(curves)` — no renderer work left.
+
+## Status stamp (A6c dynamics SHIPPED, 2026-09-25)
+
+| Part | State | Evidence |
+| --- | --- | --- |
+| A6c dynamics | ✅ `efbb473`/`030479f` | compressKernelSwept (threshold/ratio/knee/makeup; attack/release deliberately static), noiseGateSwept (threshold/ratio), truePeakLimitSwept (ceiling); all constant==static bit-for-bit; per-sample references exact; physics anchors (compression, gating, ceiling pull-down) — 14 anchors |
+
+Gates at A6c: **628/628 unit (74 files), 37/37 e2e, lint 0, build
+0.99 s**.
+
+Per-kernel curve follow-ups remaining (demand order): modulation
+(chorus/flanger/phaser depth+rate — LFO phase integrates per-sample
+rate), tremolo/vibrato, reverb2 mix. Scope rule that emerged: only
+AUDIO-SHAPING params are sweepable; detector/time-constant params
+(attack, release, lookahead) stay static and curves under those keys
+are ignored (anchored). Reference-lesson: any intermediate the static
+kernel f32-rounds (e.g. the gate's gains array) must be f32 in the
+test reference too, or constant-vs-reference anchors diverge in the
+last bits.
