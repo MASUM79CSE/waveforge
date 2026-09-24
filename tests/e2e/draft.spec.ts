@@ -52,6 +52,58 @@ test('flow #5: save draft → reload → reopen → same document', async ({ pag
   await expect(page.getByText(/9\.27 s/)).toBeVisible();
 });
 
+test('flow #5c: the NR noise print survives a draft save / reload / reopen', async ({ page }) => {
+  await loadSample(page);
+
+  // select a region and learn a print from it (Effects → Noise Reduction)
+  const canvas = page.locator('canvas').first();
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('canvas not laid out');
+  await page.mouse.move(box.x + box.width * 0.1, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height / 2, { steps: 6 });
+  await page.mouse.up();
+
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^Noise Reduction/ }).click();
+  const nr = page.getByRole('dialog');
+  await expect(nr).toBeVisible();
+  await nr.getByRole('button', { name: /learn print from selection/i }).click();
+  await expect(nr.getByText(/print learned/i)).toBeVisible({ timeout: 15_000 });
+  await nr.getByRole('button', { name: 'Cancel' }).click();
+
+  // save → reload → reopen (same choreography as flow #5)
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: /save draft/i }).click();
+  const saveDialog = page.getByRole('dialog', { name: /save draft/i });
+  await saveDialog.locator('#draft-name').fill('e2e print draft');
+  await saveDialog.getByRole('button', { name: /save draft/i }).click();
+  await expect(page.locator('.toast-msg').last()).toContainText(/Draft saved/i, {
+    timeout: 10_000,
+  });
+
+  await page.reload();
+  await expect(page.getByRole('dialog', { name: /welcome/i })).toBeVisible();
+  await page.mouse.click(4, 400);
+  await expect(page.getByRole('dialog', { name: /welcome/i })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: /drafts/i }).click();
+  const manager = page.getByTestId('drafts-dialog');
+  await expect(manager.getByTestId('draft-e2e print draft')).toBeVisible();
+  await manager.getByTestId('draft-e2e print draft').getByRole('button', { name: 'Open' }).click();
+  await expect(page.getByText('e2e print draft', { exact: true })).toBeVisible({
+    timeout: 10_000,
+  });
+
+  // the print came back with the document
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^Noise Reduction/ }).click();
+  const nr2 = page.getByRole('dialog');
+  await expect(nr2).toBeVisible();
+  await expect(nr2.getByText(/print restored from draft/i)).toBeVisible({ timeout: 15_000 });
+});
+
 test('flow #5b: autosave ring offers crash recovery after a burst of edits', async ({ page }) => {
   await loadSample(page);
 

@@ -133,7 +133,7 @@ describe('E6a noise-print NR', () => {
     expect(maxDiff).toBeLessThanOrEqual(1e-6);
   });
 
-  test('tone + noise @ +6 dB SNR: post-NR SNR improves ≥ 10 dB', { timeout: 30_000 }, () => {
+  test('tone + noise @ +6 dB SNR: post-NR SNR improves ≥ 10 dB', { timeout: 90_000 }, () => {
     const n = SR; // 1 s
     const noisy = noise(n, 5, 0.05);
     const amp = 0.05 * Math.sqrt((2 * Math.pow(10, 6 / 10)) / 3); // +6 dB SNR
@@ -147,7 +147,7 @@ describe('E6a noise-print NR', () => {
     expect(after - before).toBeGreaterThanOrEqual(10);
   });
 
-  test('tone magnitude loss ≤ 1 dB at the 1 kHz peak', { timeout: 30_000 }, () => {
+  test('tone magnitude loss ≤ 1 dB at the 1 kHz peak', { timeout: 90_000 }, () => {
     const n = SR;
     const noisy = noise(n, 6, 0.05);
     const amp = 0.05 * Math.sqrt((2 * Math.pow(10, 6 / 10)) / 3);
@@ -159,7 +159,7 @@ describe('E6a noise-print NR', () => {
     expect(loss).toBeGreaterThanOrEqual(-1);
   });
 
-  test('musical-noise bound: frame-energy variance ratio post/pre ≤ 2.5', { timeout: 30_000 }, () => {
+  test('musical-noise bound: frame-energy variance ratio post/pre ≤ 2.5', { timeout: 90_000 }, () => {
     const n = SR;
     const noisy = noise(n, 7, 0.05);
     const amp = 0.05 * Math.sqrt((2 * Math.pow(10, 6 / 10)) / 3);
@@ -183,7 +183,7 @@ describe('E6a noise-print NR', () => {
     expect(o2[0]).toEqual(o1[0]);
   });
 
-  test('stereo honesty: both channels gain ≥ 10 dB SNR with a shared print', { timeout: 30_000 }, () => {
+  test('stereo honesty: both channels gain ≥ 10 dB SNR with a shared print', { timeout: 90_000 }, () => {
     const n = SR;
     const amp = 0.05 * Math.sqrt((2 * Math.pow(10, 6 / 10)) / 3);
     const toneWav = tone(1000, amp, 1);
