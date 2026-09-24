@@ -1,49 +1,16 @@
 /**
- * WaveRenderer — imperative Canvas2D painting of ruler, waveform lanes,
- * selection and playhead (ADR 001). All view math is delegated to the pure
- * viewState module; peaks come from the PeakClient as cached tiles with
- * progressive refinement.
+ * WaveRenderer — canvas lifecycle, zoom/pan state and pointer interaction
+ * (ADR 001). Painting lives in waveDraw.ts; all view math is delegated to
+ * the pure viewState module.
  */
-import { fmtRuler } from '../core/format';
-import { clamp, niceTickFor, pickPeakLevel, zoomFactor } from '../core/zoom';
+import { clamp, zoomFactor } from '../core/zoom';
 import type { AudioDocument } from './AudioDocument';
 import type { PeakClient } from './peakClient';
-import { tilesForRange } from './protocol';
 import * as V from './viewState';
+import { RULER_H, drawFrame } from './waveDraw';
 
-const RULER_H = 28;
 const CLICK_EPSILON = 0.005; // seconds — below this a drag counts as a click
 const CLICK_PIXELS = 3;
-
-interface Theme {
-  bg: string;
-  laneBg: string;
-  wave: string;
-  center: string;
-  rulerBg: string;
-  rulerText: string;
-  rulerLine: string;
-  playhead: string;
-  selection: string;
-  selectionBorder: string;
-  pending: string;
-  beatLine: string;
-}
-
-const THEME: Theme = {
-  bg: '#0a0e13',
-  laneBg: '#10161e',
-  wave: '#3ddad0',
-  center: '#1d3336',
-  rulerBg: '#0c1117',
-  rulerText: '#8b96a5',
-  rulerLine: '#232b36',
-  playhead: '#ffb454',
-  selection: 'rgba(61, 218, 208, 0.14)',
-  selectionBorder: 'rgba(61, 218, 208, 0.55)',
-  pending: '#151d27',
-  beatLine: 'rgba(90, 200, 250, 0.25)',
-};
 
 export class WaveRenderer {
   view: V.ViewState = { spp: 1024, start: 0 };
@@ -189,176 +156,25 @@ export class WaveRenderer {
   }
 
   private draw(): void {
+    const doc = this.doc;
+    const env = this.env();
     const g = this.g;
-    if (!g || !this.canvas) return;
-    const W = this.cssW;
-    const H = this.cssH;
-
-    g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    g.fillStyle = THEME.bg;
-    g.fillRect(0, 0, W, H);
-    this.drawRuler(g, W);
-
-    const doc = this.doc;
-    if (doc && this.peaks && this.cssW > 0) {
-      this.drawLanes(g, W, H - RULER_H);
-    }
-    this.drawBeats(g, W, H);
-    this.drawSelection(g, H);
-    this.drawPlayhead(g, H);
-  }
-
-  private drawBeats(g: CanvasRenderingContext2D, W: number, H: number): void {
-    const doc = this.doc;
-    const env = this.env();
-    if (!doc || !env || this.beats.length === 0) return;
-    g.fillStyle = THEME.beatLine ?? 'rgba(90, 200, 250, 0.25)';
-    for (const t of this.beats) {
-      const x = Math.round(V.xAtTime(this.view, env, t)) + 0.5;
-      if (x < 0 || x > W) continue;
-      g.fillRect(x, RULER_H, 1, H - RULER_H);
-    }
-  }
-
-  private drawRuler(g: CanvasRenderingContext2D, W: number): void {
-    g.fillStyle = THEME.rulerBg;
-    g.fillRect(0, 0, W, RULER_H);
-    g.fillStyle = THEME.rulerLine;
-    g.fillRect(0, RULER_H - 1, W, 1);
-
-    const doc = this.doc;
-    const env = this.env();
-    if (!doc || !env) return;
-
-    const tick = niceTickFor(this.view.spp, doc.sampleRate);
-    g.fillStyle = THEME.rulerText;
-    g.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
-    g.textBaseline = 'middle';
-
-    const dur = V.viewDuration(this.view, env);
-    for (let t = Math.ceil(this.view.start / tick) * tick; t < this.view.start + dur; t += tick) {
-      const x = Math.round(V.xAtTime(this.view, env, t)) + 0.5;
-      if (x < -60 || x > W + 60) continue;
-      g.fillRect(x, RULER_H - 8, 1, 8);
-      g.fillText(fmtRuler(t, tick), x + 4, (RULER_H - 8) / 2 + 1);
-    }
-  }
-
-  private drawLanes(g: CanvasRenderingContext2D, W: number, lanesH: number): void {
-    const doc = this.doc;
-    const peaks = this.peaks;
-    if (!doc || !peaks) return;
-
-    const laneCount = doc.channels;
-    const laneH = lanesH / laneCount;
-    const level = pickPeakLevel(this.view.spp);
-    const tileReqs: ReturnType<typeof tilesForRange> = [];
-    let missing = false;
-
-    for (let ch = 0; ch < laneCount; ++ch) {
-      const y0 = RULER_H + ch * laneH;
-      const mid = y0 + laneH / 2;
-      const amp = (laneH / 2) * 0.92;
-
-      g.fillStyle = THEME.laneBg;
-      g.fillRect(0, y0, W, laneH);
-      g.fillStyle = THEME.center;
-      g.fillRect(0, Math.round(mid), W, 1);
-
-      if (this.view.spp < 1) {
-        missing = this.drawRawLane(g, ch, y0, laneH, mid, amp) || missing;
-        continue;
-      }
-
-      g.fillStyle = THEME.wave;
-      for (let x = 0; x < W; ++x) {
-        const sample = this.view.start * doc.sampleRate + x * this.view.spp;
-        const value = peaks.bucketValue(ch, level, Math.floor(sample / level));
-        if (!value) {
-          missing = true;
-          tileReqs.push(...tilesForRange(ch, level, Math.max(0, sample), Math.max(0, sample) + this.view.spp));
-          g.fillStyle = THEME.pending;
-          g.fillRect(x, y0, 1, laneH);
-          g.fillStyle = THEME.wave;
-          continue;
-        }
-        const yMin = clamp(mid - value.max * amp, y0 + 1, y0 + laneH - 1);
-        const yMax = clamp(mid - value.min * amp, y0 + 1, y0 + laneH - 1);
-        g.fillRect(x, yMin, 1, Math.max(1, yMax - yMin));
-      }
-    }
-
-    if (missing && tileReqs.length > 0) {
-      const unique = dedupeReqs(tileReqs);
-      void this.peaks?.requestTiles(unique).then(() => this.requestDraw());
-    }
-  }
-
-  /** Sample-level lane (spp < 1): polyline from raw slices. */
-  private drawRawLane(
-    g: CanvasRenderingContext2D,
-    ch: number,
-    y0: number,
-    laneH: number,
-    mid: number,
-    amp: number,
-  ): boolean {
-    const doc = this.doc;
-    const peaks = this.peaks;
-    if (!doc || !peaks) return false;
-
-    const sr = doc.sampleRate;
-    const rawStart = Math.floor(this.view.start * sr);
-    const count = Math.ceil(this.cssW * this.view.spp) + 2;
-    void peaks.requestRaw(ch, rawStart, count).then((samples) => {
-      this.pendingRaw.set(ch, samples);
-      this.requestDraw();
+    if (!g || !this.canvas || !env || !doc) return;
+    drawFrame({
+      g,
+      cssW: this.cssW,
+      cssH: this.cssH,
+      dpr: this.dpr,
+      view: this.view,
+      env,
+      doc,
+      peaks: this.peaks,
+      cursor: this.cursor,
+      selection: this.selection,
+      beats: this.beats,
+      pendingRaw: this.pendingRaw,
+      requestDraw: () => this.requestDraw(),
     });
-
-    const samples = this.pendingRaw.get(ch);
-    if (!samples || samples.length === 0) return true;
-
-    const offset = this.view.start * sr - rawStart;
-    g.beginPath();
-    for (let x = 0; x < this.cssW; ++x) {
-      const idx = Math.floor(offset + x * this.view.spp);
-      if (idx >= samples.length) break;
-      const y = clamp(mid - (samples[idx] ?? 0) * amp, y0 + 1, y0 + laneH - 1);
-      if (x === 0) g.moveTo(x, y);
-      else g.lineTo(x, y);
-    }
-    g.strokeStyle = THEME.wave;
-    g.lineWidth = 1;
-    g.stroke();
-    return false;
-  }
-
-  private drawSelection(g: CanvasRenderingContext2D, H: number): void {
-    const sel = this.selection;
-    const env = this.env();
-    if (!sel || !env) return;
-    const x1 = V.xAtTime(this.view, env, sel.start);
-    const x2 = V.xAtTime(this.view, env, sel.end);
-    g.fillStyle = THEME.selection;
-    g.fillRect(x1, RULER_H, x2 - x1, H - RULER_H);
-    g.fillStyle = THEME.selectionBorder;
-    g.fillRect(Math.round(x1) - 1, RULER_H, 1, H - RULER_H);
-    g.fillRect(Math.round(x2), RULER_H, 1, H - RULER_H);
-  }
-
-  private drawPlayhead(g: CanvasRenderingContext2D, H: number): void {
-    const env = this.env();
-    if (!env) return;
-    const x = Math.round(V.xAtTime(this.view, env, this.cursor)) + 0.5;
-    if (x < -2 || x > this.cssW + 2) return;
-    g.fillStyle = THEME.playhead;
-    g.fillRect(x, 3, 1, H - 3);
-    g.beginPath();
-    g.moveTo(x - 5, 2);
-    g.lineTo(x + 5, 2);
-    g.lineTo(x, 10);
-    g.closePath();
-    g.fill();
   }
 
   // ---------- interaction ----------
@@ -462,16 +278,4 @@ export class WaveRenderer {
     const seconds = ((dx || dy) * this.view.spp) / env.sampleRate;
     this.setStart(this.view.start + seconds * 1.2);
   }
-}
-
-function dedupeReqs(reqs: ReturnType<typeof tilesForRange>): ReturnType<typeof tilesForRange> {
-  const seen = new Set<string>();
-  const out: ReturnType<typeof tilesForRange> = [];
-  for (const r of reqs) {
-    const key = `${r.ch}:${r.level}:${r.tile}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(r);
-  }
-  return out;
 }
