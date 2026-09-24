@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { amplitudeAxis, docInfo, loadingActive, loadingLabel, loadingProgress, vzoom } from '../state';
 import { openFileObject, loadSample, pickAudioFile } from '../actions';
 import { renderer } from '../runtime';
@@ -9,6 +9,8 @@ import { BrandMark } from './MenuBar';
 /** Hosts the waveform canvas, empty state, loading overlay and drag&drop. */
 export function CanvasPane() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const dragDepth = useRef(0);
   const doc = docInfo.value;
   const loading = loadingActive.value;
 
@@ -34,15 +36,31 @@ export function CanvasPane() {
   return (
     <div
       class="canvas-region"
+      onDragEnter={(e) => {
+        e.preventDefault();
+        dragDepth.current += 1;
+        setDragOver(true);
+      }}
       onDragOver={(e) => {
         e.preventDefault();
       }}
+      onDragLeave={() => {
+        dragDepth.current = Math.max(0, dragDepth.current - 1);
+        if (dragDepth.current === 0) setDragOver(false);
+      }}
       onDrop={(e) => {
         e.preventDefault();
+        dragDepth.current = 0;
+        setDragOver(false);
         const file = e.dataTransfer?.files[0];
         if (file) void openFileObject(file);
       }}
     >
+      {dragOver && (
+        <div class="drop-overlay" aria-hidden="true">
+          <span class="drop-overlay-label">{t().dropHint}</span>
+        </div>
+      )}
       <canvas ref={canvasRef} class="wave-canvas" />
       {doc && !loading && <ZoomBar />}
 

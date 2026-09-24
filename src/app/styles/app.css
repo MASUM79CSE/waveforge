@@ -1181,6 +1181,55 @@
   padding-left: var(--s2) !important;
 }
 
+.gtip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  padding: 4px 9px;
+  background: var(--bg-4);
+  color: var(--fg-0);
+  border: 1px solid var(--bd-h);
+  border-radius: var(--r);
+  font-size: 11px;
+  font-family: var(--ff);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 120ms var(--ease),
+    visibility 120ms var(--ease);
+  z-index: 500;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.gtip[data-on] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 10px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--ac);
+  border-radius: var(--r-lg);
+  background: var(--ac-soft);
+  pointer-events: none;
+}
+
+.drop-overlay-label {
+  padding: 10px 22px;
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+  color: var(--ac);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--glow);
+}
+
 /* ---- M7 doctor panel (§6.3 #7) ---- */
 .doctor-running {
   margin: 24px 0;

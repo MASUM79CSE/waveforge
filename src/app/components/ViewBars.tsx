@@ -17,7 +17,7 @@ export function ZoomBar() {
     <div class="zoombar" role="toolbar" aria-label="Zoom">
       <button
         class="toolbtn"
-        title="Zoom In Horiz (+)"
+        data-tip="Zoom In Horiz (+)"
         aria-label="Zoom In Horiz (+)"
         onClick={() => runCommand('view.zoomIn')}
       >
@@ -25,7 +25,7 @@ export function ZoomBar() {
       </button>
       <button
         class="toolbtn"
-        title="Zoom Out Horiz (-)"
+        data-tip="Zoom Out Horiz (-)"
         aria-label="Zoom Out Horiz (-)"
         onClick={() => runCommand('view.zoomOut')}
       >
@@ -33,7 +33,7 @@ export function ZoomBar() {
       </button>
       <button
         class="toolbtn"
-        title="Reset Zoom (0)"
+        data-tip="Reset Zoom (0)"
         aria-label="Reset Zoom (0)"
         onClick={() => runCommand('view.zoomReset')}
       >
@@ -42,7 +42,7 @@ export function ZoomBar() {
       <span class="zoombar-sep" aria-hidden="true" />
       <button
         class="toolbtn"
-        title="Zoom In Vertically"
+        data-tip="Zoom In Vertically"
         aria-label="Zoom In Vertically"
         disabled={vzoom.value >= VZOOM_MAX - 1e-9}
         onClick={() => stepVZoom(1)}
@@ -51,7 +51,7 @@ export function ZoomBar() {
       </button>
       <button
         class="toolbtn"
-        title="Zoom Out Vertically"
+        data-tip="Zoom Out Vertically"
         aria-label="Zoom Out Vertically"
         disabled={vzoom.value <= VZOOM_MIN + 1e-9}
         onClick={() => stepVZoom(-1)}

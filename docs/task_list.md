@@ -559,11 +559,17 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
       10 ms setTargetAtTime ramps; unit + playback e2e. Also: Escape now
       closes the doctor + shortcuts dialogs (gap caught by re-verification).
 
-**D-series complete.** WaveForge now wears the AudioMass design system
-(tokens, control row, canvas, zoom/beat bars, shortcuts overlay) on the
-WaveForge engine — with the effects/UX advances retained (21 effects,
-LUFS, drafts+autosave, PWA, doctor, focus traps). Backlog beyond D7:
-per-channel pan strips (engine pan node), richer custom tooltips,
-light-theme token variant, selectable accent.
+- [x] **D10** interaction polish: delegated fixed-position tooltips
+      (`data-tip` → styled chip with shortcut hints; escapes clipped
+      ancestors; focus shows them too) + full-window drag-n-drop overlay
+      with dashed accent frame. Lighthouse **99/100/100/100** holds
+      (`docs/perf/lighthouse-d10.json`).
+
+**D-series complete (D0–D10).** WaveForge wears the AudioMass design
+system and exceeds it: per-channel mix strips, light theme + 5 accents,
+shortcuts overlay, drop overlay, tooltips — on the stronger engine
+(21 effects, LUFS, drafts+autosave, PWA, doctor, focus traps).
+Remaining backlog is post-v1 roadmap (M8 multitrack, automation
+package ADR 007, RNNoise).
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)

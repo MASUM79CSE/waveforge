@@ -30,7 +30,7 @@ export function ToolBar() {
               <button
                 key={def.command}
                 class="toolbtn"
-                title={titleFor(def.command)}
+                data-tip={titleFor(def.command)}
                 aria-label={titleFor(def.command)}
                 disabled={!enabled}
                 onClick={() => runCommand(def.command)}

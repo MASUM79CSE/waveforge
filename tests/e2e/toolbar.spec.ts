@@ -189,3 +189,26 @@ test('D9: light theme + accent cycling apply to <html>, persist, and redraw the 
   await page.waitForTimeout(800);
   expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('light');
 });
+
+test('D10: styled tooltip on hover, drop overlay during dragover', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
+  await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
+
+  // tooltip appears above the cut icon with the shortcut hint
+  const cut = page.getByRole('button', { name: /^Cut/i }).first();
+  await cut.hover();
+  const tip = page.locator('.gtip');
+  await expect(tip).toBeVisible();
+  await expect(tip).toContainText(/cut/i);
+  await page.mouse.move(10, 400);
+  await expect(tip).toBeHidden();
+
+  // dragover shows the drop overlay; leaving hides it
+  const data = Buffer.from('RIFF----WAVE').toString('base64');
+  await page.dispatchEvent('.canvas-region', 'dragenter');
+  await expect(page.locator('.drop-overlay')).toBeVisible();
+  await page.dispatchEvent('.canvas-region', 'dragleave');
+  await expect(page.locator('.drop-overlay')).toHaveCount(0);
+  void data;
+});
