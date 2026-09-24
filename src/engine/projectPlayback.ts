@@ -7,7 +7,15 @@
  * The single-document AudioEngine path is untouched.
  */
 import { panGains, trackEffectiveGain } from './project';
+import {
+  expandClipPass,
+  type ClipPlaybackTrack,
+  type ScheduledClip,
+} from './clipPlayback';
 import { positionAt, type LoopRegion } from './transportMath';
+
+export type { ClipPlaybackTrack, ScheduledClip };
+export { expandClipPass };
 
 /** Structural track view (TrackState satisfies it; tests pass plain objects). */
 export interface PlaybackTrack {
@@ -34,7 +42,7 @@ interface GraphSource {
   loopEnd: number;
   onended: (() => void) | null;
   connect(dest: unknown, out?: number, in_?: number): unknown;
-  start(when?: number, offset?: number): void;
+  start(when?: number, offset?: number, duration?: number): void;
   stop(): void;
   disconnect(): void;
 }
@@ -72,6 +80,7 @@ export interface ProjectStartOptions {
   loop?: LoopRegion | null;
 }
 
+
 interface TrackNodes {
   src: GraphSource;
   gL: GraphGain;
@@ -79,10 +88,19 @@ interface TrackNodes {
   samples: number;
 }
 
+/** Per-track audible gain legs shared by both scheduling paths. */
+interface GainLegs {
+  gL: GraphGain;
+  gR: GraphGain;
+}
+
 export class ProjectPlayback {
   private readonly ctx: GraphContext;
   private readonly sampleRate: number;
   private nodes: TrackNodes[] = [];
+  private clipTracks: ClipPlaybackTrack[] | null = null;
+  private clipLegs: GainLegs[] = [];
+  private clipSources: GraphSource[] = [];
   private merger: GraphSplitter | null = null;
   private startedAtCtx = 0;
   private startOffset = 0;
@@ -137,18 +155,11 @@ export class ProjectPlayback {
       const src = this.ctx.createBufferSource();
       src.buffer = buffer;
       const splitter = this.ctx.createChannelSplitter(2);
-      const gL = this.ctx.createGain();
-      const gR = this.ctx.createGain();
-      const geff = trackEffectiveGain(t, anySolo);
-      const [pl, pr] = panGains(t.pan);
-      gL.gain.value = pl * geff;
-      gR.gain.value = pr * geff;
+      const leg = this.makeLeg(t, anySolo);
 
       src.connect(splitter);
-      splitter.connect(gL, 0, 0);
-      splitter.connect(gR, 1, 0);
-      gL.connect(this.merger!, 0, 0);
-      gR.connect(this.merger!, 0, 1);
+      splitter.connect(leg.gL, 0, 0);
+      splitter.connect(leg.gR, 1, 0);
 
       if (this.loopRegion) {
         src.loop = true;
@@ -160,7 +171,7 @@ export class ProjectPlayback {
       }
 
       src.start(0, begin);
-      return { src, gL, gR, samples: ch0.length };
+      return { src, gL: leg.gL, gR: leg.gR, samples: ch0.length };
     });
 
     this.startOffset = begin;
@@ -168,15 +179,29 @@ export class ProjectPlayback {
     this.playing = true;
   }
 
+  /** Per-track L/R gain legs (balance law × effective gain) → merger. */
+  private makeLeg(t: PlaybackTrack | ClipPlaybackTrack, anySolo: boolean): GainLegs {
+    const gL = this.ctx.createGain();
+    const gR = this.ctx.createGain();
+    const geff = trackEffectiveGain(t, anySolo);
+    const [pl, pr] = panGains(t.pan);
+    gL.gain.value = pl * geff;
+    gR.gain.value = pr * geff;
+    gL.connect(this.merger!, 0, 0);
+    gR.connect(this.merger!, 0, 1);
+    return { gL, gR };
+  }
+
   /** Live mixer update (mute/solo/gain/pan) — click-free ramps, no restart. */
   updateMix(tracks: PlaybackTrack[]): void {
     if (!this.playing) return;
     const anySolo = tracks.some((t) => t.solo);
     const now = this.ctx.currentTime;
-    const n = Math.min(tracks.length, this.nodes.length);
+    const legs: GainLegs[] = this.clipLegs.length > 0 ? this.clipLegs : this.nodes;
+    const n = Math.min(tracks.length, legs.length);
     for (let i = 0; i < n; ++i) {
       const t = tracks[i]!;
-      const node = this.nodes[i]!;
+      const node = legs[i]!;
       const geff = trackEffectiveGain(t, anySolo);
       const [pl, pr] = panGains(t.pan);
       node.gL.gain.setTargetAtTime(pl * geff, now, RAMP_TAU);
@@ -209,6 +234,135 @@ export class ProjectPlayback {
     this.onEnded?.();
   }
 
+  /**
+   * Start (or restart) playback from the clip world (M9c): one source per
+   * audible clip. Loop semantics: schedule one pass over the region and
+   * restart it when the pass's last source ends (restart-on-loop). Position
+   * math and gain kernels are shared with the channel path — what you hear
+   * stays exactly what the mixdown renders.
+   */
+  startClips(tracks: readonly ClipPlaybackTrack[], opts: ProjectStartOptions = {}): void {
+    this.stop();
+    if (tracks.length === 0) return;
+
+    let endSample = 0;
+    for (const t of tracks) {
+      for (const c of t.clips) {
+        if (c.start + c.duration > endSample) endSample = c.start + c.duration;
+      }
+    }
+    this.duration = endSample / this.sampleRate;
+
+    const from = opts.from ?? 0;
+    let begin = from;
+    if (begin >= this.duration - END_EPSILON) begin = 0;
+
+    const loop = opts.loop ?? null;
+    this.loopRegion =
+      loop && loop.end - loop.start > MIN_LOOP_SECONDS ? loop : null;
+
+    this.merger = this.ctx.createChannelMerger(2);
+    this.merger.connect(this.ctx.destination);
+
+    const anySolo = tracks.some((t) => t.solo);
+    this.clipTracks = [...tracks];
+    this.clipLegs = tracks.map((t) => this.makeLeg(t, anySolo));
+
+    const winStart = this.loopRegion ? Math.max(begin, this.loopRegion.start) : begin;
+    const winEnd = this.loopRegion ? this.loopRegion.end : this.duration;
+    if (this.schedulePass(winStart, winEnd, begin) === 0) {
+      // e.g. a loop over an empty gap: nothing to play, don't hang "playing"
+      this.playing = false;
+      this.teardown();
+      return;
+    }
+
+    this.startOffset = begin;
+    this.startedAtCtx = this.ctx.currentTime;
+    this.playing = true;
+  }
+
+  /** Schedule one clip pass into [winStart, winEnd); returns source count. */
+  private schedulePass(winStart: number, winEnd: number, passStart: number): number {
+    const list = expandClipPass(
+      this.clipTracks!,
+      this.sampleRate,
+      passStart,
+      winStart,
+      winEnd,
+    );
+    const now = this.ctx.currentTime;
+    let bestEnd = -1;
+    let bestSrc: GraphSource | null = null;
+    for (const sc of list) {
+      const src = this.ctx.createBufferSource();
+      const a0 = sc.asset.channels[0]!;
+      const a1 = sc.asset.channels[1] ?? a0;
+      const spanLen = Math.min(sc.spanLen, a0.length - sc.spanStart);
+      const buffer = this.ctx.createBuffer(2, Math.max(1, spanLen), this.sampleRate);
+      buffer.getChannelData(0).set(a0.subarray(sc.spanStart, sc.spanStart + spanLen));
+      buffer.getChannelData(1).set(a1.subarray(sc.spanStart, sc.spanStart + spanLen));
+      src.buffer = buffer;
+
+      const splitter = this.ctx.createChannelSplitter(2);
+      src.connect(splitter);
+      const leg = this.clipLegs[sc.trackIndex]!;
+      splitter.connect(leg.gL, 0, 0);
+      splitter.connect(leg.gR, 1, 0);
+
+      src.start(now + sc.when, sc.offset, sc.dur);
+      this.clipSources.push(src);
+      const endsAt = sc.when + sc.dur;
+      if (endsAt > bestEnd) {
+        bestEnd = endsAt;
+        bestSrc = src;
+      }
+    }
+    if (bestSrc) {
+      const restart = this.loopRegion !== null;
+      bestSrc.onended = restart ? () => this.handlePassEnded() : () => this.handleEnded();
+    }
+    return list.length;
+  }
+
+  /** A loop pass finished → schedule the next pass anchored at loop start. */
+  private handlePassEnded(): void {
+    if (!this.playing) return;
+    const loop = this.loopRegion;
+    if (loop && this.clipTracks) {
+      this.releasePassSources();
+      if (this.schedulePass(loop.start, loop.end, loop.start) === 0) {
+        this.playing = false;
+        this.teardown();
+        return;
+      }
+      this.startOffset = loop.start;
+      this.startedAtCtx = this.ctx.currentTime;
+      return;
+    }
+    this.playing = false;
+    this.teardown();
+    this.onEnded?.();
+  }
+
+  /** Stop + disconnect every clip-pass source (legs and merger stay). */
+  private releasePassSources(): void {
+    for (const src of this.clipSources) {
+      src.onended = null;
+      try {
+        src.stop();
+      } catch {
+        /* already stopped */
+      }
+      try {
+        src.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+    }
+    this.clipSources = [];
+  }
+
   /** Silence + release every source; safe to call repeatedly. */
   private teardown(): void {
     for (const n of this.nodes) {
@@ -225,6 +379,9 @@ export class ProjectPlayback {
       }
     }
     this.nodes = [];
+    this.releasePassSources();
+    this.clipLegs = [];
+    this.clipTracks = null;
     if (this.merger) {
       try {
         this.merger.disconnect();
