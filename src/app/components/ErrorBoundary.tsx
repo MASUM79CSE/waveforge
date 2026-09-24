@@ -1,5 +1,6 @@
 import { Component, type ComponentChildren } from 'preact';
 import { logger } from '../../core/logger-instance';
+import { pushError } from '../errorLog';
 
 interface BoundaryProps {
   children: ComponentChildren;
@@ -23,6 +24,7 @@ export class ErrorBoundary extends Component<BoundaryProps, BoundaryState> {
   override componentDidCatch(error: Error, info: { componentStack?: string }): void {
     // componentStack is dev-detail; keep it out of the redacted log context
     logger.error('UI crashed inside error boundary', { message: error.message });
+    pushError({ message: error.message, detail: 'react-crash', time: Date.now() });
     void info;
   }
 

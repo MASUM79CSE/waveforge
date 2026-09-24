@@ -9,6 +9,7 @@ import { PeakClient } from '../engine/peakClient';
 import { WaveRenderer } from '../engine/WaveRenderer';
 import { findZeroCross, type EditOutcome } from '../engine/editOps';
 import { toastInfo } from './actions';
+import { pushError } from './errorLog';
 import { ZERO_CROSS_RADIUS_S } from '../core/constants';
 import { snapEdgeToBeat } from '../engine/bpm';
 
@@ -131,6 +132,25 @@ function unlockAudio(): void {
 }
 document.addEventListener('pointerdown', unlockAudio);
 document.addEventListener('keydown', unlockAudio);
+
+// ---- local error log (§6.3 #8): capture globals, never networked ----
+window.addEventListener('error', (e) => {
+  pushError({
+    message: e.message,
+    detail: e.error?.name ?? 'Error',
+    stack: e.error?.stack?.slice(0, 2000),
+    time: Date.now(),
+  });
+});
+window.addEventListener('unhandledrejection', (e) => {
+  const r = e.reason as Error | undefined;
+  pushError({
+    message: String(r?.message ?? e.reason),
+    detail: 'unhandledrejection',
+    stack: r?.stack?.slice(0, 2000),
+    time: Date.now(),
+  });
+});
 
 // ---- engine → signals ----
 engine.onCursor = (t) => {
