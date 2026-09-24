@@ -5,6 +5,8 @@ import { toggleChannelMute, toggleChannelsSwapped } from '../editActions';
 import { toggleRecord } from '../recordActions';
 import { recording, recLevel, recSeconds } from '../state';
 import { engine } from '../runtime';
+import { ToolBar } from './ToolBar';
+import { SelectionBar } from './SelectionBar';
 import { fmtClock } from '../../core/format';
 import { t } from '../../i18n';
 
@@ -55,6 +57,9 @@ export function TransportBar() {
         <span class="time-sep">/</span>
         <span class="time-total">{doc ? fmtClock(doc.duration) : '0:00.000'}</span>
       </div>
+
+      <ToolBar />
+      <SelectionBar />
 
       <div class="transport-spacer" />
 

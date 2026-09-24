@@ -156,6 +156,7 @@
   min-height: var(--transport-h);
 }
 
+.toolbar-group,
 .transport-group {
   display: flex;
   align-items: center;
@@ -219,6 +220,104 @@
   align-items: center;
   gap: 8px;
   color: var(--text-dim);
+}
+
+.toolbar-group {
+  align-self: center;
+  height: 46px;
+  padding: 0 var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+  box-shadow: var(--inset-hi);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  align-self: center;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 26px;
+  background: var(--bd);
+}
+
+.toolbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r);
+  color: var(--fg-1);
+  transition:
+    background var(--tr),
+    color var(--tr),
+    box-shadow var(--tr);
+}
+
+.toolbtn:hover:enabled {
+  background: var(--bg-4);
+  color: var(--fg-0);
+  box-shadow: 0 0 0 1px var(--bd-h);
+}
+
+.toolbtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.selgroup {
+  gap: var(--s3);
+}
+
+.sel-title {
+  color: var(--fg-1);
+  font-size: 12px;
+}
+
+.sel-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sel-label {
+  color: var(--fg-2);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sel-val {
+  color: var(--ac);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  min-width: 72px;
+}
+
+.sel-clear {
+  align-self: center;
+  color: var(--fg-2);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: var(--r);
+  transition:
+    color var(--tr),
+    box-shadow var(--tr);
+}
+
+.sel-clear:hover:enabled {
+  color: var(--ac);
+  box-shadow: 0 0 0 1px var(--bd-h);
+}
+
+.sel-clear:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 /* Status bar */

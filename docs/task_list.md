@@ -524,10 +524,14 @@ pending — record with the E2 phase.
 Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
 2026-09-24). Sequence D1→D7, each phase gated like a milestone.
 
-- [ ] **D1** token convergence (bg/fg ladders, cyan accent + glow roles,
+- [x] **D1** token convergence (bg/fg ladders, cyan accent + glow roles,
       radii 2/4/8, spacing, 160 ms motion, panel-group anatomy) + AA guard
-- [ ] **D2** icon toolbar → command registry (RED-first unit + e2e)
-- [ ] **D3** selection readout group (Start/End/Duration + Clear Q)
+      (script 6/6 PASS; `3da77ef`)
+- [x] **D2** icon toolbar → command registry — 15 icons in 3 groups, labels
+      resolved from the registry (no drift), disabled without a doc; e2e:
+      cut via icon → 0:06 clock → Shift+Z → 0:09.272 (`5b0…` this commit)
+- [x] **D3** selection readout group (Start/End/Duration + Clear Q) with
+      unit + e2e coverage, embedded in the AM control row
 - [ ] **D4** canvas skin (green `#9dff6a` wave, orange cursor) + dB scale
 - [ ] **D5** zoom bar + vertical zoom + BEAT/SNAP row
 - [ ] **D6** dialog/overlay restyle + keyboard-shortcuts overlay
