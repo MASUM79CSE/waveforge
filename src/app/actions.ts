@@ -61,6 +61,14 @@ export function isZeroCrossOn(): boolean {
   return S.zeroCrossEnabled.value;
 }
 
+export function isAmplitudeAxisOn(): boolean {
+  return S.amplitudeAxis.value;
+}
+
+export function toggleAmplitudeAxis(): void {
+  S.setAmplitudeAxis(!S.amplitudeAxis.value);
+}
+
 // ---- dialogs ----
 
 export function openWelcome(): void {

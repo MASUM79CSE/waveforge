@@ -143,10 +143,17 @@ function writeStoredBool(key: string, value: boolean): void {
 }
 
 export const zeroCrossEnabled = signal(readStoredBool('zerocross', true));
+/** D4: amplitude axis + channel rail along the canvas edges (AudioMass parity). */
+export const amplitudeAxis = signal(readStoredBool('amplitudeaxis', true));
 
 export function setZeroCrossEnabled(value: boolean): void {
   zeroCrossEnabled.value = value;
   writeStoredBool('zerocross', value);
+}
+
+export function setAmplitudeAxis(value: boolean): void {
+  amplitudeAxis.value = value;
+  writeStoredBool('amplitudeaxis', value);
 }
 
 // E5 experimental effects gate (effects v2 plan): menu items flagged

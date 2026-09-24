@@ -132,6 +132,13 @@ export const commands: Command[] = [
     isChecked: () => A.isZeroCrossOn(),
   },
   {
+    id: 'view.axis',
+    label: () => t().viewAmplitudeAxis,
+    run: () => A.toggleAmplitudeAxis(),
+    check: true,
+    isChecked: () => A.isAmplitudeAxisOn(),
+  },
+  {
     id: 'view.experimental',
     label: () => t().viewExperimental,
     run: () => A.toggleExperimentalFx(),

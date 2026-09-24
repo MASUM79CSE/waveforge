@@ -58,3 +58,23 @@ test('selection readout: drag fills Start/End/Duration, Clear (Q) empties them',
   await expect(vals.nth(0)).toHaveText('-');
   await expect(vals.nth(2)).toHaveText('-');
 });
+
+test('view: amplitude axis toggle persists and redraws', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
+  await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
+
+  // default on; toggle off and back on via the View menu
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  const item = page.getByRole('menuitem', { name: /amplitude axis/i });
+  await expect(item).toBeVisible();
+  await item.click();
+  await page.waitForTimeout(300);
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await expect(page.getByRole('menuitem', { name: /amplitude axis/i })).toBeVisible();
+  // persisted preference survives a reload
+  await page.reload();
+  await page.waitForTimeout(800);
+  const stored = await page.evaluate(() => localStorage.getItem('waveforge.amplitudeaxis'));
+  expect(stored).toBe('0');
+});

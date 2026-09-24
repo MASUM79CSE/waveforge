@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks';
-import { docInfo, loadingActive, loadingLabel, loadingProgress } from '../state';
+import { amplitudeAxis, docInfo, loadingActive, loadingLabel, loadingProgress } from '../state';
 import { openFileObject, loadSample, pickAudioFile } from '../actions';
 import { renderer } from '../runtime';
 import { t } from '../../i18n';
@@ -16,6 +16,12 @@ export function CanvasPane() {
     if (!canvas) return;
     renderer.attach(canvas);
     return () => renderer.detach();
+  }, []);
+
+  useEffect(() => {
+    const update = (): void => renderer.setAxisVisible(amplitudeAxis.value);
+    update();
+    return amplitudeAxis.subscribe(update);
   }, []);
 
   return (

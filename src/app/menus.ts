@@ -97,7 +97,7 @@ export const menus: MenuDef[] = [
   {
     id: 'view',
     title: () => t().menuView,
-    items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', '-', 'view.center', '-', 'view.follow', 'view.zerocross', 'view.experimental'],
+    items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', '-', 'view.center', '-', 'view.follow', 'view.zerocross', 'view.axis', 'view.experimental'],
   },
   {
     id: 'help',

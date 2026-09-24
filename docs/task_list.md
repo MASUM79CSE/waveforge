@@ -532,7 +532,10 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
       cut via icon → 0:06 clock → Shift+Z → 0:09.272 (`5b0…` this commit)
 - [x] **D3** selection readout group (Start/End/Duration + Clear Q) with
       unit + e2e coverage, embedded in the AM control row
-- [ ] **D4** canvas skin (green `#9dff6a` wave, orange cursor) + dB scale
+- [x] **D4** canvas skin — green `#9dff6a` wave, `#ff8c35` playhead, `#d9d955`
+      ruler labels on black, `#365457` grid; bottom amplitude axis (-Inf..0,
+      2 dB steps) + L/R rail with the View → Amplitude Axis toggle
+      (persisted, e2e-verified); pointer/wheel math rail-aware
 - [ ] **D5** zoom bar + vertical zoom + BEAT/SNAP row
 - [ ] **D6** dialog/overlay restyle + keyboard-shortcuts overlay
 - [ ] **D7** hardening: Lighthouse ≥95/95/100/100 holds, screenshots, docs

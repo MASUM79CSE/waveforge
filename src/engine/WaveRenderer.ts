@@ -7,7 +7,7 @@ import { clamp, zoomFactor } from '../core/zoom';
 import type { AudioDocument } from './AudioDocument';
 import type { PeakClient } from './peakClient';
 import * as V from './viewState';
-import { RULER_H, drawFrame } from './waveDraw';
+import { RAIL_W, RULER_H, drawFrame } from './waveDraw';
 
 const CLICK_EPSILON = 0.005; // seconds — below this a drag counts as a click
 const CLICK_PIXELS = 3;
@@ -31,6 +31,7 @@ export class WaveRenderer {
   private cssH = 0;
   private dpr = 1;
   private frameQueued = false;
+  private axis = true;
   private pendingRaw = new Map<number, Float32Array>();
   private drag: { mode: 'scrub' | 'select'; anchor: number; startX: number } | null = null;
 
@@ -117,6 +118,12 @@ export class WaveRenderer {
     this.emitView();
   }
 
+  /** D4: toggle the left rail + bottom amplitude axis (AudioMass layout). */
+  setAxisVisible(visible: boolean): void {
+    this.axis = visible;
+    this.requestDraw();
+  }
+
   setSelection(sel: { start: number; end: number } | null): void {
     this.selection = sel;
     this.requestDraw();
@@ -135,7 +142,12 @@ export class WaveRenderer {
 
   private env(): V.ViewEnv | null {
     if (!this.doc || this.cssW <= 0) return null;
-    return { cssW: this.cssW, duration: this.doc.duration, sampleRate: this.doc.sampleRate };
+    const rail = this.axis ? RAIL_W : 0;
+    return {
+      cssW: Math.max(0, this.cssW - rail),
+      duration: this.doc.duration,
+      sampleRate: this.doc.sampleRate,
+    };
   }
 
   private emitView(): void {
@@ -173,6 +185,7 @@ export class WaveRenderer {
       selection: this.selection,
       beats: this.beats,
       pendingRaw: this.pendingRaw,
+      axis: this.axis,
       requestDraw: () => this.requestDraw(),
     });
   }
@@ -207,7 +220,7 @@ export class WaveRenderer {
   private onPointerDown(e: PointerEvent): void {
     if (!this.doc || !this.canvas) return;
     this.canvas.setPointerCapture(e.pointerId);
-    const x = this.localX(e);
+    const x = this.localX(e) - (this.axis ? RAIL_W : 0);
     const env = this.env();
     if (!env) return;
 
@@ -226,12 +239,13 @@ export class WaveRenderer {
     const doc = this.doc;
     if (!drag || !env || !doc) return;
 
+    const x = this.localX(e) - (this.axis ? RAIL_W : 0);
     if (drag.mode === 'scrub') {
-      this.onSeek?.(Math.max(0, V.timeAtX(this.view, env, this.localX(e))));
+      this.onSeek?.(Math.max(0, V.timeAtX(this.view, env, x)));
       return;
     }
-    const t = clamp(V.timeAtX(this.view, env, this.localX(e)), 0, doc.duration);
-    if (Math.abs(this.localX(e) - drag.startX) > CLICK_PIXELS) {
+    const t = clamp(V.timeAtX(this.view, env, x), 0, doc.duration);
+    if (Math.abs(x - drag.startX) > CLICK_PIXELS) {
       this.selection = {
         start: Math.min(drag.anchor, t),
         end: Math.max(drag.anchor, t),
@@ -249,7 +263,7 @@ export class WaveRenderer {
     if (!drag || !env || !doc) return;
 
     if (drag.mode === 'scrub') return;
-    const x = this.localX(e);
+    const x = this.localX(e) - (this.axis ? RAIL_W : 0);
     const t = clamp(V.timeAtX(this.view, env, x), 0, doc.duration);
     if (Math.abs(x - drag.startX) <= CLICK_PIXELS) {
       // plain click: seek and clear any selection
@@ -272,7 +286,8 @@ export class WaveRenderer {
     const dy = (e.deltaY || 0) * scale;
 
     if (e.ctrlKey || e.metaKey) {
-      this.zoom(zoomFactor(dy || dx), this.localX(e) / this.cssW);
+      const rail = this.axis ? RAIL_W : 0;
+      this.zoom(zoomFactor(dy || dx), (this.localX(e) - rail) / Math.max(1, this.cssW - rail));
       return;
     }
     const seconds = ((dx || dy) * this.view.spp) / env.sampleRate;
