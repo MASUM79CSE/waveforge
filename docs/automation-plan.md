@@ -171,6 +171,32 @@ anchors).
 level; kernel: bit-for-bit audio); RED→GREEN per part; all existing
 gates stay green.
 
+### A7 — FX envelope authoring (UI follow-up, build-level scope)
+
+WaveForge effects are OFFLINE BOUNCES (apply → new audio), so param
+curves are authored at the EFFECT DIALOG and BAKED IN on apply — no
+draft-schema change (the audio carries the result). Ratified scope:
+
+- `automationUi` generalizes to domain-parametric primitives
+  (`curveYIn` / `valueAtIn` / `hitPointIn` / `beginEnvelopeGesture` /
+  `dragEnvelopeTo` / `removeEnvelopePointAt`); the A4 track overlay
+  (volume/pan) delegates — existing anchors stay green.
+- `fxEnvelope.ts`: draft state for the open dialog
+  (curves keyed by paramKey + selected param + region length); apply
+  resets it; `fxCurvesOrUndefined()` feeds `EffectRunContext`.
+- EffectDialog: every numeric param row gains a ∿ toggle; the selected
+  param renders `FxCurveEditor` (canvas: x = region samples 0..len,
+  y = spec.min..spec.max, dashed static-value baseline, knot squares;
+  click-add / drag-move / right-click-delete; Clear button).
+- Threading: kernels get curves via `ctx.paramCurves` (preview AND
+  apply — zero kernel-path changes); graph preview schedules
+  `scheduleFxAuto` on the live graph (PreviewPlan.curves); graph apply
+  passes `ctx?.paramCurves` to `renderEffectOffline`. Curves outside a
+  key's sweepable set are IGNORED by the kernels (A6 scope rule) — the
+  ∿ toggle is offered for all numeric params and inert where N/A.
+- 38th e2e: author a tremolo depth envelope → apply → undo → redo,
+  console-clean.
+
 ## Standing constraints (unchanged)
 
 - Shortcuts single-source (`A` goes through `resolveShortcut`); no
