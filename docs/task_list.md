@@ -322,4 +322,40 @@ pending — record with the E2 phase.
       e2e opened an effect dialog. Fixed with a side-effect import at the
       fx composition root (`fxActions`); e2e now covers dialog open/apply.
 
+### E3 — modulation set (chorus / flanger / phaser / tremolo / vibrato)
+
+- [x] **Kernels** (`src/fx/modulation.ts`, pure — no AudioContext): shared
+      deterministic 4096-entry cosine LUT + Catmull-Rom 4-tap fractional
+      delay (≤0.02-sample error measured via DFT phase ratio at 1 kHz);
+      every LFO is a function of ABSOLUTE sample time (no phase
+      accumulators), so chunked processing with overlap stitches
+      bit-identically to one-shot. Chorus = 3 voices 120° apart, right
+      channel runs a 60°-offset phase SET (a permutation of the same set is
+      FP-commutative and cancels stereo width — caught by an anchor test).
+      Flanger = modulated feedback comb with explicit carried `DelayState`;
+      phaser = RBJ all-pass cascade (α = sin(ω0)/2) with ±1-octave stage
+      spread, centre clamped 20 Hz–20 kHz / ω0 clamped below π, feedback via
+      one-sample loop delay with carried `PhaserChannelState`. Tremolo:
+      y = x·(1 − d/2·(1 − lfo)), sine or triangle LFO; vibrato = pure
+      wobbling-delay read.
+- [x] **Analytic anchors** (18 unit tests, `tests/unit/fx2/modulation.test.ts`):
+      frac-delay error ≤0.02 samples + zero-padded edges; inert bypass
+      (mix 0 / depth 0) bit-exact; chunked stitching bit-identical
+      (chorus overlap; phaser through carried state); tremolo sidebands at
+      ±rate match the Bessel ratio 20·log10((d/4)/(1−d/2)) ±0.3 dB,
+      symmetric ±0.1 dB, 2nd-order ≤−50 dB; flanger fb 0.95 bounded ≤4 with
+      ≤1e-3 tail over 30 s; phaser sweep shapes a tone −1…−40 dB with both
+      clamp bounds exercised; 30 s all-effects stability; stereo
+      decorrelation L ≠ R; `[profile]` chorus 60 s stereo within the 0.8 s
+      uninstrumented budget.
+- [x] **Registry/menu**: five new kernel defs — `fx.chorus` (base/depth ms,
+      rate, mix), `fx.flanger` (+ feedback ≤0.95), `fx.phaser` (stages 2–8,
+      centre Hz, feedback, mix), `fx.tremolo` (rate, depth, LFO shape),
+      `fx.vibrato` (rate, depth ms) — flat scalar specs, generic
+      EffectDialog, no custom dialog needed. i18n labels + params,
+      commands, Effects-menu group (after Delay/Reverb).
+- [x] **e2e**: Chorus applies through the real menu/dialog, toast
+      "Applied: Chorus", duration preserved (9.27 s), Ctrl+Z undo +
+      Ctrl+Y redo (suite 14 → 15).
+
 ## M7+ — see Build Plan §10 (roadmap)
