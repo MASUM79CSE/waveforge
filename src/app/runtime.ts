@@ -191,7 +191,7 @@ function snapSelection(sel: { start: number; end: number } | null): { start: num
   const radius = doc.sampleRate * ZERO_CROSS_RADIUS_S;
   const data = doc.channelData(0);
   const snapEdge = (t: number): number => {
-    if (S.beatsShown.value && beats.length > 0) {
+    if (S.beatsShown.value && S.snapToBeat.value && beats.length > 0) {
       const snapped = snapEdgeToBeat(beats, t, beatRadius);
       if (snapped !== t) return snapped; // beat wins
     }

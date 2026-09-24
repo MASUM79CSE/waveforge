@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'preact/hooks';
-import { amplitudeAxis, docInfo, loadingActive, loadingLabel, loadingProgress } from '../state';
+import { amplitudeAxis, docInfo, loadingActive, loadingLabel, loadingProgress, vzoom } from '../state';
 import { openFileObject, loadSample, pickAudioFile } from '../actions';
 import { renderer } from '../runtime';
+import { ZoomBar } from './ViewBars';
 import { t } from '../../i18n';
 import { BrandMark } from './MenuBar';
 
@@ -24,6 +25,12 @@ export function CanvasPane() {
     return amplitudeAxis.subscribe(update);
   }, []);
 
+  useEffect(() => {
+    const update = (): void => renderer.setVZoom(vzoom.value);
+    update();
+    return vzoom.subscribe(update);
+  }, []);
+
   return (
     <div
       class="canvas-region"
@@ -37,6 +44,7 @@ export function CanvasPane() {
       }}
     >
       <canvas ref={canvasRef} class="wave-canvas" />
+      {doc && !loading && <ZoomBar />}
 
       {!doc && !loading && (
         <div class="empty-state">

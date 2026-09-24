@@ -7,6 +7,7 @@ import { recording, recLevel, recSeconds } from '../state';
 import { engine } from '../runtime';
 import { ToolBar } from './ToolBar';
 import { SelectionBar } from './SelectionBar';
+import { BeatBar } from './ViewBars';
 import { fmtClock } from '../../core/format';
 import { t } from '../../i18n';
 
@@ -60,6 +61,7 @@ export function TransportBar() {
 
       <ToolBar />
       <SelectionBar />
+      <BeatBar />
 
       <div class="transport-spacer" />
 

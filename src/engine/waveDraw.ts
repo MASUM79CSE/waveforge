@@ -65,6 +65,8 @@ export interface WaveDrawCtx {
   pendingRaw: Map<number, Float32Array>;
   /** D4: draw the left channel rail + bottom amplitude axis */
   axis: boolean;
+  /** D5: vertical zoom amplitude scale (0.5..3) */
+  vzoom: number;
   /** schedule a redraw (rAF-coalesced in the renderer) */
   requestDraw: () => void;
 }
@@ -153,7 +155,7 @@ function drawLanes(ctx: FullCtx, lanesH: number): void {
   for (let ch = 0; ch < laneCount; ++ch) {
     const y0 = RULER_H + ch * laneH;
     const mid = y0 + laneH / 2;
-    const amp = (laneH / 2) * 0.92;
+    const amp = (laneH / 2) * 0.92 * ctx.vzoom;
 
     g.fillStyle = THEME.laneBg;
     g.fillRect(rail, y0, laneW, laneH);
@@ -201,6 +203,7 @@ function drawRawLane(
   const { g, cssW, doc, peaks, view } = ctx;
   if (!peaks) return false;
 
+  const ampScaled = amp * ctx.vzoom;
   const sr = doc.sampleRate;
   const rail = ctx.axis ? RAIL_W : 0;
   const laneW = cssW - rail;
@@ -219,7 +222,7 @@ function drawRawLane(
   for (let x = 0; x < laneW; ++x) {
     const idx = Math.floor(offset + x * view.spp);
     if (idx >= samples.length) break;
-    const y = clamp(mid - (samples[idx] ?? 0) * amp, y0 + 1, y0 + laneH - 1);
+    const y = clamp(mid - (samples[idx] ?? 0) * ampScaled, y0 + 1, y0 + laneH - 1);
     if (x === 0) g.moveTo(x, y);
     else g.lineTo(x, y);
   }

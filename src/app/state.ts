@@ -125,6 +125,23 @@ export interface DraftRow {
 export const draftsList = signal<DraftRow[]>([]);
 export const draftsUsage = signal<{ usage: number; quota: number } | null>(null);
 
+function readStoredNumber(key: string, fallback: number): number {
+  try {
+    const raw = localStorage.getItem(`${STORAGE_PREFIX}.${key}`);
+    return raw === null ? fallback : Number(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStoredNumber(key: string, value: number): void {
+  try {
+    localStorage.setItem(`${STORAGE_PREFIX}.${key}`, String(value));
+  } catch {
+    return; // private mode — preferences stay in-memory
+  }
+}
+
 function readStoredBool(key: string, fallback: boolean): boolean {
   try {
     return localStorage.getItem(`${STORAGE_PREFIX}.${key}`) === '1' ? true :
@@ -145,6 +162,23 @@ function writeStoredBool(key: string, value: boolean): void {
 export const zeroCrossEnabled = signal(readStoredBool('zerocross', true));
 /** D4: amplitude axis + channel rail along the canvas edges (AudioMass parity). */
 export const amplitudeAxis = signal(readStoredBool('amplitudeaxis', true));
+/** D5: vertical zoom — wave amplitude scale, clamped 0.5..3 (AudioMass parity). */
+export const VZOOM_MIN = 0.5;
+export const VZOOM_MAX = 3;
+export const vzoom = signal(clampVZoom(readStoredNumber('vzoom', 1)));
+/** D5: snap selection edges to detected beats (default keeps the old behavior). */
+export const snapToBeat = signal(readStoredBool('snaptobeat', true));
+
+export function clampVZoom(v: number): number {
+  if (Number.isNaN(v)) return 1;
+  return Math.min(VZOOM_MAX, Math.max(VZOOM_MIN, v));
+}
+
+export function setVZoom(value: number): void {
+  const v = clampVZoom(value);
+  vzoom.value = v;
+  writeStoredNumber('vzoom', v);
+}
 
 export function setZeroCrossEnabled(value: boolean): void {
   zeroCrossEnabled.value = value;

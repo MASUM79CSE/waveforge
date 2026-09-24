@@ -37,7 +37,7 @@ test('selection readout: drag fills Start/End/Duration, Clear (Q) empties them',
   await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
-  const vals = page.locator('.sel-val');
+  const vals = page.locator('.selgroup .sel-val');
   await expect(vals).toHaveCount(3);
   await expect(vals.nth(0)).toHaveText('-');
   await expect(vals.nth(1)).toHaveText('-');
@@ -77,4 +77,31 @@ test('view: amplitude axis toggle persists and redraws', async ({ page }) => {
   await page.waitForTimeout(800);
   const stored = await page.evaluate(() => localStorage.getItem('waveforge.amplitudeaxis'));
   expect(stored).toBe('0');
+});
+
+test('D5: zoom bar drives horizontal + vertical zoom; beat bar toggles', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
+  await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
+
+  const zoombar = page.locator('.zoombar');
+  const sppBefore = await page.locator('.status-item', { hasText: /×/ }).first().textContent();
+  await zoombar.getByRole('button', { name: 'Zoom In Horiz (+)' }).click();
+  await page.waitForTimeout(300);
+  const sppAfter = await page.locator('.status-item', { hasText: /×/ }).first().textContent();
+  expect(sppAfter).not.toBe(sppBefore); // ×284 -> smaller spp
+
+  // vertical zoom: display updates and persists
+  await zoombar.getByRole('button', { name: 'Zoom In Vertically' }).click();
+  await expect(page.locator('.zoombar-val')).toHaveText(/1\.25×/);
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => localStorage.getItem('waveforge.vzoom'))).toBe('1.25');
+
+  // beat bar toggles
+  const beat = page.getByRole('button', { name: 'BEAT', exact: true });
+  const snap = page.getByRole('button', { name: 'SNAP', exact: true });
+  await expect(beat).toHaveAttribute('aria-pressed', 'true');
+  await expect(snap).toHaveAttribute('aria-pressed', 'true');
+  await snap.click();
+  await expect(snap).toHaveAttribute('aria-pressed', 'false');
 });
