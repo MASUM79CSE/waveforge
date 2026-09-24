@@ -25,6 +25,8 @@ export type Params = Record<string, number | boolean>;
 export interface EffectRunContext {
   irChannels?: Float32Array[];
   irSampleRate?: number;
+  /** Learned noise print for fx.nrPrint (E6a), |N̂(k)| in linear magnitude. */
+  noisePrint?: Float32Array;
 }
 
 export interface KernelEffectDef {
