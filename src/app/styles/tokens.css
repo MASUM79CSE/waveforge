@@ -10,7 +10,7 @@
   /* text */
   --text: #dbe4ee;
   --text-dim: #8b96a5;
-  --text-faint: #5c6672;
+  --text-faint: #8a94a2; /* >=4.5:1 on panel + page backgrounds (M7 a11y) */
 
   /* accent (teal) */
   --accent: #3ddad0;
