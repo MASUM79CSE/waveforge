@@ -136,6 +136,12 @@ Order: M9d1 RED → GREEN (unit-heavy: state factories, accessor parity,
 mixdown anchor, bounce routing) → M9d2 (reducers + pointer logic unit
 tested, then canvas/DOM) → M9d3 (e2e).
 
+## M9d3 — DONE: gate e2e — import(3 s take) → split at cursor → drag
+### right half right → undo ×2 → duplicate (Ctrl+D) → play — 35th e2e;
+### clip-count readout (visually-hidden, data-testid clips-<name>) for
+### assertability; geometry lesson: clips need ≥ seconds of view width to
+### grab (edge zones are ±6 px).
+
 ## M9e — history + commands
 
 Clip ops ride `ProjectHistoryOp` (timeline payloads, byte-light); bounce
