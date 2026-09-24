@@ -12,7 +12,7 @@ import { t } from '../i18n';
 import { toastError, toastInfo } from './actions';
 import { getSharedContext } from '../io/decode';
 import { installDoc } from './runtime';
-import { addProjectTrack, ensureProject } from './projectActions';
+import { addProjectTrack, conformToProjectRate, ensureProject } from './projectActions';
 import { createTrack } from '../engine/project';
 import * as S from './state';
 
@@ -118,9 +118,14 @@ async function stopRecording(): Promise<void> {
   if (S.projectOpen.value) {
     try {
       ensureProject();
+      const projectRate = S.docInfo.value?.sampleRate ?? take.sampleRate;
       addProjectTrack(
         createTrack(
-          take.channels.map((c) => c.slice()),
+          conformToProjectRate(
+            take.channels.map((c) => c.slice()),
+            take.sampleRate,
+            projectRate,
+          ),
           { name: `Recording ${takeCounter}` },
         ),
       );

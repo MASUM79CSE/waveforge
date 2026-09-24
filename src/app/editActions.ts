@@ -29,6 +29,7 @@ import {
   type EditOutcome,
 } from '../engine/editOps';
 import { getDoc, engine, performEdit, runRedo, runUndo } from './runtime';
+import { activeTrackTarget, commitTrackEdit } from './projectActions';
 import * as S from './state';
 import { t } from '../i18n';
 import { toastInfo } from './actions';
@@ -78,6 +79,29 @@ function safeEdit(run: () => EditOutcome | null, label: string): void {
   } catch (error: unknown) {
     // recover + report (never rethrow into the command runner — §6.2)
     logger.error('edit failed', { op: label, detail: String(error) });
+    toastInfo(t().editFailed);
+  }
+}
+
+/**
+ * M8f+: quick-command routing — when a lane >= 2 is active, the transform
+ * builds against the TRACK channels and commits through the project
+ * history; otherwise this is the plain doc path (safeEdit). Null outcome
+ * (nothing to do) toasts from inside the builder in both paths.
+ */
+function safeTrackEdit(build: (channels: Float32Array[]) => EditOutcome | null, label: string): void {
+  const target = activeTrackTarget();
+  if (!target) {
+    safeEdit(() => build(currentChannels()), label);
+    return;
+  }
+  try {
+    const outcome = build(target.channels);
+    if (outcome && !commitTrackEdit(target.trackId, outcome, label)) {
+      toastInfo(t().editFailed);
+    }
+  } catch (error: unknown) {
+    logger.error('edit failed (track)', { op: label, detail: String(error) });
     toastInfo(t().editFailed);
   }
 }
@@ -157,11 +181,11 @@ export function trimToSelection(): void {
 export function insertSilence(): void {
   const doc = getDoc();
   if (!doc) return;
-  safeEdit(() => {
+  safeTrackEdit((channels) => {
     const at = selectionRange()?.start ?? Math.round(S.cursorPos.value * doc.sampleRate);
     const len = Math.round(doc.sampleRate * 1); // one second
-    const silence = Array.from({ length: doc.channels }, () => new Float32Array(len));
-    return makeInsert(currentChannels(), at, silence);
+    const silence = Array.from({ length: channels.length }, () => new Float32Array(len));
+    return makeInsert(channels, at, silence);
   }, t().opSilence);
 }
 
@@ -171,8 +195,7 @@ export function applyGainDb(db: number): void {
   const clamped = Math.max(GAIN_MIN_DB, Math.min(GAIN_MAX_DB, db));
   const range = targetRange();
   if (!range) return;
-  safeEdit(() => {
-    const channels = currentChannels();
+  safeTrackEdit((channels) => {
     const before = sliceRegion(channels, range.start, range.len);
     const after = gainRange(channels, range.start, range.len, dbToGain(clamped));
     return makeRangeWrite(channels, range.start, before, after);
@@ -182,8 +205,7 @@ export function applyGainDb(db: number): void {
 export function applyFadeIn(): void {
   const range = targetRange();
   if (!range || range.len < 2) return;
-  safeEdit(() => {
-    const channels = currentChannels();
+  safeTrackEdit((channels) => {
     const before = sliceRegion(channels, range.start, range.len);
     const after = fadeInRange(channels, range.start, range.len);
     return makeRangeWrite(channels, range.start, before, after);
@@ -193,8 +215,7 @@ export function applyFadeIn(): void {
 export function applyFadeOut(): void {
   const range = targetRange();
   if (!range || range.len < 2) return;
-  safeEdit(() => {
-    const channels = currentChannels();
+  safeTrackEdit((channels) => {
     const before = sliceRegion(channels, range.start, range.len);
     const after = fadeOutRange(channels, range.start, range.len);
     return makeRangeWrite(channels, range.start, before, after);
@@ -204,8 +225,7 @@ export function applyFadeOut(): void {
 export function applyNormalize(targetDb: number = NORMALIZE_TARGET_DB): void {
   const range = targetRange();
   if (!range) return;
-  safeEdit(() => {
-    const channels = currentChannels();
+  safeTrackEdit((channels) => {
     const before = sliceRegion(channels, range.start, range.len);
     const { data, factor } = normalizeRange(channels, range.start, range.len, dbToGain(targetDb));
     if (factor === 1) {
@@ -219,8 +239,7 @@ export function applyNormalize(targetDb: number = NORMALIZE_TARGET_DB): void {
 export function applyReverse(): void {
   const range = targetRange();
   if (!range || range.len < 2) return;
-  safeEdit(() => {
-    const channels = currentChannels();
+  safeTrackEdit((channels) => {
     const before = sliceRegion(channels, range.start, range.len);
     const after = reverseRange(channels, range.start, range.len);
     return makeRangeWrite(channels, range.start, before, after);
@@ -230,8 +249,7 @@ export function applyReverse(): void {
 export function applyInvert(): void {
   const range = targetRange();
   if (!range) return;
-  safeEdit(() => {
-    const channels = currentChannels();
+  safeTrackEdit((channels) => {
     const before = sliceRegion(channels, range.start, range.len);
     const after = invertRange(channels, range.start, range.len);
     return makeRangeWrite(channels, range.start, before, after);
@@ -241,11 +259,12 @@ export function applyInvert(): void {
 export function applyRemoveSilence(): void {
   const doc = getDoc();
   if (!doc) return;
-  safeEdit(() => {
-    const channels = currentChannels();
+  safeTrackEdit((channels) => {
     const threshold = dbToGain(SILENCE_THRESHOLD_DB);
     const minLen = Math.round((doc.sampleRate * SILENCE_MIN_MS) / 1000);
-    const ranges = silenceRanges(channels, 0, doc.length, threshold, minLen);
+    // scan the TARGET's length (a lane may be shorter/longer than the doc)
+    const targetLen = channels[0]?.length ?? 0;
+    const ranges = silenceRanges(channels, 0, targetLen, threshold, minLen);
     if (ranges.length === 0) {
       toastInfo(t().noSilenceFound);
       return null;

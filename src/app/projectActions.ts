@@ -9,10 +9,11 @@ import { AudioProjectEditor, newProject } from '../engine/projectEditor';
 import { createTrack, mixTracks, projectDuration, type ProjectState, type TrackState } from '../engine/project';
 import { ProjectPlayback, type GraphContext, type PlaybackTrack } from '../engine/projectPlayback';
 import { decodeBlob, getSharedContext } from '../io/decode';
+import { resample } from '../fx/resample';
 import type { EditOutcome } from '../engine/editOps';
 import { resolveFxTarget } from './fxTarget';
 import { getErrorMessage } from '../core/errors';
-import { toastInfo } from './actions';
+import { toastInfo } from './toast';
 import { t, tError } from '../i18n';
 import * as S from './state';
 import { pickUndoTarget, type UndoTarget } from './undoPolicy';
@@ -130,10 +131,13 @@ export function resyncDocTrack(): void {
 export async function importToTrack(file: File): Promise<void> {
   try {
     const buffer = await decodeBlob(file);
-    const channels: Float32Array[] = [];
+    let channels: Float32Array[] = [];
     for (let ch = 0; ch < buffer.numberOfChannels; ++ch) {
       channels.push(buffer.getChannelData(ch).slice());
     }
+    // off-rate files are resampled to the project rate at the boundary
+    const projectRate = S.docInfo.value?.sampleRate ?? buffer.sampleRate;
+    channels = conformToProjectRate(channels, buffer.sampleRate, projectRate);
     const ed = requireEditor();
     const track = createTrack(channels, { name: file.name.replace(/\.[^.]+$/, '') });
     ed.addTrack(track);
@@ -170,6 +174,23 @@ export function updateTrackMix(
   Object.assign(track, patch);
   sync();
   playback?.updateMix(playbackViews());
+}
+
+/**
+ * Conform decoded channels to the project rate (M8f+): playback stamps the
+ * project rate on lane buffers and the mixdown assumes it, so off-rate
+ * material MUST be resampled at the boundary. Same-rate passes through
+ * by reference (zero cost).
+ */
+export function conformToProjectRate(
+  channels: Float32Array[],
+  fromRate: number,
+  toRate: number,
+): Float32Array[] {
+  if (fromRate === toRate) return channels;
+  // resample() factor is varispeed (out = len / factor): 48k -> 44.1k needs
+  // factor 48000/44100 so the result is SHORTER (fewer samples, same time).
+  return resample(channels, fromRate / toRate);
 }
 
 /** Lanes for draft persistence (v2): meta + live channel references. */

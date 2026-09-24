@@ -3,9 +3,8 @@
 > **STATUS: COMPLETE (M8a–M8g, 2026-09-25).** Shipped as planned, with two
 > ratified deviations: (1) pan pinned to the balance law (center = bit-exact
 > unity, hard side = exact zero) — equal-power 0.707 rejected by the anchor
-> tests; (2) quick edit-menu commands (Gain/Fades/Normalize/Reverse/Invert/
-> Remove Silence) remain doc-scoped — the lane routing sweep for them is
-> post-M8 backlog. Perf: lane buckets 184 ms build / 3 ms zoomed-out read
+> tests; (2) the quick-command lane sweep initially landed doc-scoped, then was
+> completed as M8f+ (all quick commands + rate conformance) — resolved. Perf: lane buckets 184 ms build / 3 ms zoomed-out read
 > (6×3-min); Lighthouse 99/100/100/100 (`docs/perf/lighthouse-m8.json`).
 > Final gates at close: 484 unit (57 files) @ 96.23/75.47, 33 e2e.
 

@@ -647,7 +647,7 @@ per-lane strips (gain/pan/M/S), import + record-into-project, A/B-previewed
 effects per lane, deterministic mixdown (playback≡render parity) + stem
 export, drafts v2 with lanes, unified undo across document and project
 histories — still fully local, no account, no track cap. Deferred backlog:
-lane-scoped quick edit commands, clip/arrangement model (M9+), automation
-package (ADR 007), RNNoise mode (E7b).
+clip/arrangement model (M9+), automation package (ADR 007), RNNoise mode
+(E7b).
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)

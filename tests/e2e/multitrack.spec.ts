@@ -197,3 +197,31 @@ test('multitrack: effects apply to the active lane and record lands a lane (M8f)
 
   expect(consoleErrors).toEqual([]);
 });
+
+test('multitrack: quick edit commands (Reverse) target the active lane (M8f+)', async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') consoleErrors.push(m.text());
+  });
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await loadSample(page);
+
+  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  const chooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: /Import audio/ }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({ name: 'take9.wav', mimeType: 'audio/wav', buffer: wavBytes() });
+  await page.locator('.lane', { hasText: 'take9' }).click();
+  await expect(page.locator('.lane.active', { hasText: 'take9' })).toBeVisible();
+
+  // quick command (no dialog) on the lane, then project-history undo
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^Reverse$/ }).click();
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+  await expect(page.locator('.lane', { hasText: 'take9' })).toBeVisible();
+
+  expect(consoleErrors).toEqual([]);
+});
