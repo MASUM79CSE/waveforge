@@ -610,7 +610,15 @@ no-account lane; decision: lane-based single timeline, not clips).
       trackId-tagged slice-op history + structural add/remove-track ops in
       one LIFO stack (History gains optional trackId/projectUndo/projectRedo);
       cross-track interleaved undo/redo bit-exact; 8 anchors
-- [ ] M8d UI (lane stack + strips) → M8e persistence/io → M8f effects on
-      tracks → M8g hardening/close
+- [x] **M8d** lane UI (`src/app/components/TrackLanes.tsx` + `projectActions`
+      bridge + `lanePeaks`/`undoPolicy`): ＋ Track opens the project (doc =
+      lane 1, channels re-pointed live on doc edits); lanes mirror the doc
+      view (cached envelope, cheap playhead), D8-language strips (name,
+      vol/pan, M/S, guarded remove), import via file picker, click-to-
+      activate, one Ctrl+Z chain across doc+project histories (timestamp
+      rule, ties → doc); project transport (play/pause/stop/seek/loop)
+      through ProjectPlayback; e2e add→import→solo→play→remove→undo
+- [ ] M8e persistence/io (drafts v2, mixdown+stems, record-into-track)
+      → M8f effects on tracks → M8g hardening/close
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)

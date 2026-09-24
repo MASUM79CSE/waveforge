@@ -16,6 +16,17 @@ import { snapEdgeToBeat } from '../engine/bpm';
 /** Max distance (s) for a selection edge to snap onto a beat. */
 const BEAT_SNAP_RADIUS_S = 0.08;
 import { getSharedContext, resumeSharedContext } from '../io/decode';
+import {
+  bindDocChannels,
+  bindDocHistory,
+  bindProjectCursor,
+  projectRedo,
+  projectSeek,
+  projectUndo,
+  resyncDocTrack,
+  stampDocOp,
+  undoTarget,
+} from './projectActions';
 import { tError } from '../i18n';
 import * as S from './state';
 import { invalidateAnalysis } from './analysisActions';
@@ -83,6 +94,7 @@ export function installDoc(doc: AudioDocument | null): void {
 /** Post-edit swap: keeps the view and (clamped) cursor, rebuilds peaks. */
 export function swapDoc(doc: AudioDocument, keepCursorSeconds: number): void {
   invalidateAnalysis();
+  if (S.projectOpen.value) resyncDocTrack(); // lane 1 mirrors the doc edit
   engine.setDocument(doc);
   peaks?.dispose();
   peaks = new PeakClient(doc.buffer);
@@ -105,23 +117,36 @@ export function performEdit(outcome: EditOutcome, label: string): boolean {
   if (!doc) return false;
   swapDoc(doc, engine.cursor);
   updateHistorySignals();
+  stampDocOp(); // orders the doc/project undo stacks
   notifyAutosaveEdit();
   return true;
 }
 
 export function runUndo(): string | null {
+  if (undoTarget() === 'project') {
+    const label = projectUndo();
+    updateHistorySignals();
+    return label;
+  }
   const result = editor.undo();
   if (!result) return null;
   swapDoc(result.doc, engine.cursor);
   updateHistorySignals();
+  stampDocOp();
   return result.label;
 }
 
 export function runRedo(): string | null {
+  if (undoTarget() === 'project') {
+    const label = projectRedo();
+    updateHistorySignals();
+    return label;
+  }
   const result = editor.redo();
   if (!result) return null;
   swapDoc(result.doc, engine.cursor);
   updateHistorySignals();
+  stampDocOp();
   return result.label;
 }
 
@@ -166,7 +191,25 @@ engine.onPlayingChange = (p) => {
 };
 
 // ---- renderer → signals / engine ----
-renderer.onSeek = (t) => engine.seek(t);
+renderer.onSeek = (t) => {
+  if (S.projectOpen.value) projectSeek(t);
+  else engine.seek(t);
+};
+
+// ---- project (M8) bindings ----
+bindDocChannels(() => {
+  const d = engine.document;
+  if (!d) return null;
+  const channels: Float32Array[] = [];
+  for (let ch = 0; ch < d.channels; ++ch) channels.push(d.channelData(ch));
+  return channels;
+});
+bindDocHistory(() => editor.canUndo());
+bindProjectCursor((t) => {
+  renderer.cursor = t;
+  if (S.followCursor.value) renderer.followCursor(t);
+  renderer.requestDraw();
+});
 
 renderer.onSelectionChange = (sel) => {
   const snapped = snapSelection(sel);

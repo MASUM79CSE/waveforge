@@ -11,6 +11,7 @@ import { decodeBlob } from '../io/decode';
 import { parseId3 } from '../io/id3';
 import { t, tError } from '../i18n';
 import { installDoc, engine, renderer, getDoc } from './runtime';
+import { applyProjectLoopIfPlaying, projectStop, projectTogglePlay } from './projectActions';
 import { stopPreview } from './preview';
 import * as S from './state';
 import type { Toast } from './state';
@@ -334,18 +335,30 @@ function basename(url: string): string {
 
 export const transport = {
   togglePlay(): void {
+    if (S.projectOpen.value && S.docInfo.value) {
+      projectTogglePlay();
+      return;
+    }
     if (engine.playing) engine.pause();
     else void engine.play();
   },
   stop(): void {
+    if (S.projectOpen.value) {
+      projectStop();
+      return;
+    }
     engine.stop();
   },
   toggleLoop(): void {
     const next = !S.looping.value;
     S.looping.value = next;
-    const sel = S.selection.value;
-    const region: LoopRegion | null = sel ? sel : null;
-    engine.setLoop(next, region);
+    if (S.projectOpen.value) {
+      applyProjectLoopIfPlaying(); // region resolved at (re)start
+    } else {
+      const sel = S.selection.value;
+      const region: LoopRegion | null = sel ? sel : null;
+      engine.setLoop(next, region);
+    }
     toastInfo(next ? t().loopOn : t().loopOff);
   },
   seekStart(): void {

@@ -1,4 +1,5 @@
 import { CanvasPane } from './CanvasPane';
+import { TrackLanes } from './TrackLanes';
 import { MenuBar } from './MenuBar';
 import { TransportBar } from './TransportBar';
 import { StatusBar } from './StatusBar';
@@ -11,6 +12,7 @@ import { Pgeq8Dialog } from './Pgeq8Dialog';
 import { Reverb2Dialog } from './Reverb2Dialog';
 import { NrPrintDialog } from './NrPrintDialog';
 import { StretchPitchDialog } from './StretchPitchDialog';
+import { projectOpen } from '../state';
 import {
   draftSaveOpen,
   doctorOpen,
@@ -38,8 +40,9 @@ export function App() {
       <RestoreBanner />
       <MenuBar />
       <TransportBar />
-      <main class="workspace">
+      <main class={`workspace ${projectOpen.value ? 'with-lanes' : ''}`}>
         <CanvasPane />
+        <TrackLanes />
       </main>
       <AnalysisPanel />
       <StatusBar />

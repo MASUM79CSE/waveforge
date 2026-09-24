@@ -19,6 +19,7 @@ import {
 import { toggleRecord } from '../recordActions';
 import { recording, recLevel, recSeconds } from '../state';
 import { engine } from '../runtime';
+import { ensureProject } from '../projectActions';
 import { ToolBar } from './ToolBar';
 import { SelectionBar } from './SelectionBar';
 import { BeatBar } from './ViewBars';
@@ -83,6 +84,15 @@ export function TransportBar() {
         <div class="toolbar-group strips" role="group" aria-label="Channel strips">
           <ChannelStrip ch={0} label={t().channelLeft} mute={channelMutes.value[0] ?? false} />
           <ChannelStrip ch={1} label={t().channelRight} mute={channelMutes.value[1] ?? false} />
+          <button
+            class="chbtn addtrack"
+            data-tip={t().trackAdd}
+            aria-label={t().trackAdd}
+            disabled={!docInfo.value}
+            onClick={() => ensureProject()}
+          >
+            ＋
+          </button>
           <button
             class={`chbtn ${channelsSwapped.value ? 'active' : ''}`}
             onClick={() => toggleChannelsSwapped()}

@@ -61,6 +61,13 @@ export const normalizePromptOpen = signal(false);
 // editing
 export const canUndo = signal(false);
 export const canRedo = signal(false);
+
+// M8 — multitrack project
+export const projectOpen = signal(false);
+export const projectTracks = signal<import('./projectActions').TrackSnapshot[]>([]);
+export const activeTrackId = signal<string | null>(null);
+/** Bumped on every project mutation (lane redraws subscribe). */
+export const projectVersion = signal(0);
 export const effectDialogId = signal<string | null>(null);
 export const previewActive = signal(false);
 

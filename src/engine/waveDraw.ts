@@ -69,7 +69,8 @@ const CV_KEYS: Array<[keyof Theme, string]> = [
 let cachedTheme = THEME_FALLBACK;
 let cachedAtVersion = -1;
 
-function currentTheme(): Theme {
+/** Lane painters (M8) share the doc palette cache. */
+export function currentTheme(): Theme {
   const version = paletteVersionNow();
   if (version === cachedAtVersion) return cachedTheme;
   cachedAtVersion = version;

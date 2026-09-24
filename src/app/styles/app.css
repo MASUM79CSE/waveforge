@@ -1230,6 +1230,136 @@
   box-shadow: var(--glow);
 }
 
+/* ---- M8 multitrack lane stack ---- */
+.workspace.with-lanes {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace.with-lanes .canvas-region {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  min-height: 140px;
+}
+
+.lane-stack {
+  border-top: 1px solid var(--bd);
+  background: var(--bg-1);
+  max-height: 46%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.lane {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--bd);
+  cursor: pointer;
+}
+
+.lane.active {
+  box-shadow: inset 3px 0 0 var(--ac);
+  background: var(--ac-soft);
+}
+
+.lane-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 200px;
+  flex: 0 0 200px;
+}
+
+.lane-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+}
+
+.lane-name {
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.lane-badge {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  border: 1px solid var(--bd);
+  border-radius: 2px;
+  padding: 0 3px;
+}
+
+.lane-btns,
+.lane-confirm {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.lane-strip .strip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lane-strip .strip-lab {
+  font-size: 10px;
+  color: var(--text-faint);
+  width: 22px;
+}
+
+.lane-strip .strip-slider {
+  flex: 1;
+  height: 12px;
+}
+
+.lane-remove.danger,
+.chbtn.danger {
+  color: var(--rec);
+}
+
+.chbtn.soloed {
+  color: var(--solo);
+  border-color: var(--solo);
+}
+
+.lane-canvas {
+  flex: 1;
+  height: 56px;
+  min-width: 0;
+  display: block;
+  background: var(--cv-bg, #0b0d10);
+  border-radius: 2px;
+}
+
+.lane-empty {
+  cursor: default;
+  justify-content: center;
+  padding: 10px;
+}
+
+.lane-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chbtn.addtrack {
+  font-size: 13px;
+  min-width: 22px;
+}
+
 /* ---- M7 doctor panel (§6.3 #7) ---- */
 .doctor-running {
   margin: 24px 0;
