@@ -714,3 +714,16 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
   kernel's intermediate f32 roundings (gate gains array) or bit anchors
   diverge. (3) physics scenarios need timescales ≫ the smoothing
   constants (a 100 ms release cannot close inside a 13 ms window).
+
+## 2026-09-25 (latest) — A6d modulation + reverb2 curves SHIPPED — kernel set complete
+
+- `0ddac9a`: modulationCurves.ts (5 swept kernels) + reverb2 per-sample
+  mix (shared reverb2Wet extraction) + 6 def routings + 22 anchors.
+- Gates: 650/650 unit (75 files), 37/37 e2e, lint 0, build 0.97 s.
+- ALL kernel effects now take paramCurves. Scope rule holds: sweepable
+  = audio-shaping only (rateHz/shape/stages/IR params stay static).
+- Lessons: (1) physics heads need HOLD curves — a 0→1 sweep's first
+  samples are interpolated, not 0. (2) extract shared wet paths
+  verbatim (reverb2Wet) rather than re-running the static fn at mix 0/1
+  and recombining. (3) keep new code out of files near the 400-line cap
+  from the start (modulation split forced a refactor mid-phase).

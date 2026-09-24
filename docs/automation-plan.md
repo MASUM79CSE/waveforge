@@ -234,3 +234,19 @@ are ignored (anchored). Reference-lesson: any intermediate the static
 kernel f32-rounds (e.g. the gate's gains array) must be f32 in the
 test reference too, or constant-vs-reference anchors diverge in the
 last bits.
+
+## Status stamp (A6d modulation + reverb2 SHIPPED, 2026-09-25) — KERNEL CURVES COMPLETE
+
+| Part | State | Evidence |
+| --- | --- | --- |
+| A6d modulation | ✅ `0ddac9a` | modulationCurves.ts: chorus/vibrato/tremolo/flanger/phaser swept (audio-shaping params; rateHz/shape/stages ignored-anchored); constants bit-identical; verbatim per-sample refs; offset continuity; exact-passthrough physics |
+| A6d reverb2 | ✅ `0ddac9a` | wet path extracted verbatim (reverb2Wet); per-sample mix; constant==static BIT-FOR-BIT; mix 0 == EXACT passthrough, mix 1 == exact wet (identity anchors instead of an FDN reference) |
+
+Gates at A6d: **650/650 unit (75 files), 37/37 e2e, lint 0, build
+0.97 s**. modulation.ts 302 lines / modulationCurves.ts 255 (≤400 kept).
+
+**Every kernel effect now accepts paramCurves** (audio-shaping params).
+Remaining follow-ups: per-kernel UI (FX envelope lane authoring
+paramCurves), and curves for any FUTURE kernels follow the A6c/A6d
+pattern + scope rule (audio-shaping sweepable; time-base/detector/
+structural static, anchored).
