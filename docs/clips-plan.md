@@ -70,6 +70,23 @@ retained). Overlaps impossible by construction (kernels clamp).
 Gates: unit (reducers) + e2e: import → split at cursor → drag second
 half right → undo ×2 → duplicate → play.
 
+### M9d1 — DONE: doc-model flip (channels → clips + assets record)
+
+- project.ts: TrackState.clips (AudioClip[]), ProjectState.assets,
+  createProjectTrack (factory + zero-copy asset registration),
+  trackChannels (lanePcm fast path → asset by reference for single-full-
+  clip lanes; render fallback mono-preserving), duration/mix over clip
+  timelines, sweepAssets. Profile regression caught by the M8a anchor
+  (1534 ms > 1500 budget) → fast path restored 347–399 ms.
+- history.ts: {kind:'setClips'} op + entry.clipAssets (undo resurrects
+  swept assets); projectEditor.executeClipEdit (bounce bytes charge).
+- clipAssets.bounceLaneRegion (project adapter, no mutation).
+- app: ensureProject/import/record/restore register assets; resync
+  re-points lane 1 asset + resets arrangement (M8 mirror); export v2
+  renders; playback → startClips; commitTrackChannels = full-lane COW
+  bounce + sweep; safeTrackEdit/EffectDialog routed through it.
+- gates: 530 unit (62 files) / 34 e2e UNTOUCHED / lint 0 / build 0.96 s.
+
 ### M9d breakdown (analysis 2026-09-25 — code walk: project.ts,
 ### projectEditor.ts, waveDraw.ts, TrackLanes.tsx, projectActions.ts)
 
