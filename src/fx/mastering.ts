@@ -217,6 +217,73 @@ export function truePeakLimit(
   });
 }
 
+import { fxTable } from './fxCurves';
+import type { AutomationCurve } from '../engine/automation';
+
+/**
+ * A6c: truePeakLimit with a per-sample ceilingDb curve (lookahead and
+ * release are detector time constants — not sweepable). No curves →
+ * exactly the static limiter.
+ */
+export function truePeakLimitSwept(
+  channels: Float32Array[],
+  sampleRate: number,
+  params: LimitParams,
+  curves: Record<string, AutomationCurve>,
+): Float32Array[] {
+  if (!curves || Object.keys(curves).length === 0) return truePeakLimit(channels, sampleRate, params);
+  const len = channels[0]?.length ?? 0;
+  if (len === 0) return channels.map(() => new Float32Array(0));
+  const ceiling = fxTable(curves, 'ceilingDb', len);
+  if (!ceiling) return truePeakLimit(channels, sampleRate, params);
+
+  const lookahead = Math.max(1, Math.round((sampleRate * params.lookaheadMs) / 1000));
+  const releaseSlow = 1 - Math.exp(-1 / Math.max(1e-4, (sampleRate * params.releaseMs) / 1000));
+  const releaseFast = 1 - Math.exp(-1 / Math.max(1e-4, sampleRate * 0.005));
+  const fastAfter = Math.round(sampleRate * 0.02);
+
+  const phases = phaseTaps(designOversampleTaps());
+  const envelopes = channels.map((ch) => truePeakEnvelope(ch, phases));
+  const target = new Float64Array(len);
+  for (let i = 0; i < len; ++i) {
+    const thr = Math.pow(10, ceiling[i]! / 20);
+    let needed = 1;
+    for (const env of envelopes) {
+      const tp = env[i] ?? 0;
+      if (tp > thr) {
+        const g = thr / tp;
+        if (g < needed) needed = g;
+      }
+    }
+    target[i] = needed;
+  }
+
+  const ahead = slidingMin(target, lookahead);
+
+  const gain = new Float64Array(len);
+  let current = 1;
+  let quiet = 0;
+  for (let i = 0; i < len; ++i) {
+    const m = ahead[i] ?? 1;
+    if (m < current) {
+      current = m;
+      quiet = 0;
+    } else {
+      const gr = 1 - current;
+      quiet = gr < 0.109 ? quiet + 1 : 0;
+      const coef = quiet > fastAfter ? releaseFast : releaseSlow;
+      current = Math.min(m, current + (1 - current) * coef);
+    }
+    gain[i] = current;
+  }
+
+  return channels.map((ch) => {
+    const out = new Float32Array(len);
+    for (let i = 0; i < len; ++i) out[i] = (ch[i] ?? 0) * (gain[i] ?? 0);
+    return out;
+  });
+}
+
 /**
  * Flat gain ΔL = target − measured (clamped ±24 dB), optionally followed
  * by a true-peak ceiling pass. Exported separately for direct testing.

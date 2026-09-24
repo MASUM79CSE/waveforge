@@ -12,6 +12,9 @@ import {
   tremoloProcess,
   vibratoProcess,
 } from './modulation';
+import { compressKernelSwept } from './compressor';
+import { noiseGateSwept } from './gate';
+import { truePeakLimitSwept } from './mastering';
 import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq, processParamEqSwept } from './paramEq';
 import { reverb2Process } from './reverb2';
 import { nr3Process } from './nr3';
@@ -67,15 +70,21 @@ const DEFS: EffectDef[] = [
     id: 'fx.compressor',
     labelKey: 'fxCompressor',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      compressKernel(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const curves = ctx?.paramCurves;
+      const p = {
         thresholdDb: Number(params.thresholdDb),
         ratio: Number(params.ratio),
         kneeDb: Number(params.kneeDb),
         attackMs: Number(params.attackMs),
         releaseMs: Number(params.releaseMs),
         makeupDb: Number(params.makeupDb),
-      }),
+      };
+      if (curves && Object.keys(curves).length > 0) {
+        return compressKernelSwept(channels, sampleRate, p, curves);
+      }
+      return compressKernel(channels, sampleRate, p);
+    },
     specs: [
       num('thresholdDb', 'paramThreshold', -60, 0, 1, -24),
       num('kneeDb', 'paramKnee', 0, 24, 1, 6),
@@ -89,12 +98,18 @@ const DEFS: EffectDef[] = [
     id: 'fx.limiter',
     labelKey: 'fxLimiter',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      truePeakLimit(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const curves = ctx?.paramCurves;
+      const p = {
         ceilingDb: Number(params.ceilingDb),
         lookaheadMs: Number(params.lookaheadMs),
         releaseMs: Number(params.releaseMs),
-      }),
+      };
+      if (curves && Object.keys(curves).length > 0) {
+        return truePeakLimitSwept(channels, sampleRate, p, curves);
+      }
+      return truePeakLimit(channels, sampleRate, p);
+    },
     specs: [
       num('ceilingDb', 'paramCeiling', -24, 0, 0.1, -1),
       num('lookaheadMs', 'paramLookahead', 1, 30, 1, 5),
@@ -315,13 +330,19 @@ const DEFS: EffectDef[] = [
     id: 'fx.gate',
     labelKey: 'fxGate',
     kind: 'kernel',
-    process: (channels, sampleRate, params) =>
-      noiseGate(channels, sampleRate, {
+    process: (channels, sampleRate, params, ctx) => {
+      const curves = ctx?.paramCurves;
+      const p = {
         thresholdDb: Number(params.thresholdDb),
         ratio: Number(params.ratio),
         attackMs: Number(params.attackMs),
         releaseMs: Number(params.releaseMs),
-      }),
+      };
+      if (curves && Object.keys(curves).length > 0) {
+        return noiseGateSwept(channels, sampleRate, p, curves);
+      }
+      return noiseGate(channels, sampleRate, p);
+    },
     specs: [
       num('thresholdDb', 'paramThreshold', -80, -10, 1, -50),
       num('ratio', 'paramRatio', 1, 6, 0.1, 2.5),

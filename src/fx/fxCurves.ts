@@ -7,8 +7,23 @@
  * the same value the static `.value` build sets, so constant == static at
  * the schedule level. No curves → no calls at all (the A2/A3 guard).
  */
-import { evalCurve } from '../engine/automation';
+import { evalCurve, mulTable } from '../engine/automation';
 import type { AutomationCurve } from '../engine/automation';
+
+/**
+ * Curve table for one param key, or null when the key has no curve
+ * (A6 kernels treat null as "ride the static value"). mulTable semantics:
+ * on-point owns the sample, endpoint clamps — swept values == evalCurve.
+ */
+export function fxTable(
+  curves: Record<string, AutomationCurve>,
+  key: string,
+  len: number,
+): Float64Array | null {
+  const curve = curves[key];
+  if (!curve || curve.length === 0) return null;
+  return mulTable(curve, len);
+}
 
 /** Scheduling surface of a WebAudio AudioParam (duck-typed for tests). */
 export interface AudioParamSched {
