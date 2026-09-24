@@ -358,4 +358,53 @@ pending — record with the E2 phase.
       "Applied: Chorus", duration preserved (9.27 s), Ctrl+Z undo +
       Ctrl+Y redo (suite 14 → 15).
 
+### E4 — reverb v2 (Studio Reverb): seeded IR set + pure partitioned convolver
+
+- [x] **Pure DSP stack** (`src/fx/fft.ts`, `reverbIr.ts`, `convolver.ts`,
+      `reverb2.ts`): radix-2 float64 FFT with cached tables; seeded IR
+      synthesis (mulberry32 only — envelope `g(n)=10^(−3n/(RT60·Fs))` is
+      exactly −60 dB at n=RT60·Fs; plate = damped white tail + 5 ms
+      diffusion ramp; room/hall = 8–16 / 16–24 seeded ER taps
+      (5–35 / 20–80 ms, exponential density) over a stochastic tail;
+      spring = 3 parallel feedback combs through 2 all-passes); partitioned
+      overlap-save convolver (hop 8192, per-channel spectral FIFOs,
+      conjugate-half accumulation, stereo packed into one complex FFT via
+      L+iR ⇒ one forward + one inverse per block); reverb2 kernel =
+      IR → convolve → predelay (exact leading silence) → wet/dry mix,
+      output length == input length.
+- [x] **Analytic anchors** (18 unit tests): convolver vs direct ≤1e-6
+      (single AND stereo-packed paths, 2-partition random IRs); RT60 via
+      Schroeder −5→−35 dB within ±5 % for 1/2/4/8 s (plate) and all four
+      types @2 s; predelay 25 ms → leading silence 1102 ± 1 samples;
+      same seed → bit-identical IR; stereo decorrelation; ER spans; ≥3
+      spring comb notches ≥12 dB; ctx-IR routing + 15 s import cap;
+      mix-0 bit-exact bypass; 30 s worst-case stability; `[profile]`
+      **1281 ms** / 60 s stereo uninstrumented (budget 1.5 s ✓).
+- [x] **Tail mechanism (§0)**: `KernelEffectDef.tail?: (params, ctx) =>
+      number` + `EffectRunContext` (imported-IR side channel);
+      `fxActions.kernelProcess` slices len + tail·sr frames (post-region
+      context where audio follows, zero-padded past doc end) and the
+      overwrite paste grows the document — undo restores the exact
+      original duration.
+- [x] **Wiring**: `fx.reverb2` kernel def (type / useImported / RT60
+      0.2–12 s / damping / predelay 0–120 ms / mix / seed), i18n, command,
+      menu row after legacy Reverb, registry order + kinds + tail tests.
+- [x] **Reverb2Dialog**: generic param rows + IR import (decode via the
+      existing decodeAudioData pipeline → resample to doc rate → 15 s
+      cap → ctx), A/B preview and Apply through the same kernel path.
+      *Plan deviation (intent kept): preview uses the pure kernel wet
+      instead of ConvolverNode — preview == apply by construction.*
+- [x] **e2e**: Studio Reverb grows the status-bar duration 9.27 →
+      ~11.11 s (region growth asserted) and Ctrl+Z restores 9.27 s
+      (suite 15 → 16).
+
+**Plan corrections recorded during E4**
+
+- "Partitioned OLA at 2048 ≈ a few hundred ms" measured **2.7 s** for 60 s
+  stereo; shipped CONV_BLOCK 8192 + half-spectrum MACs + L·iR packing →
+  1281 ms uninstrumented (no B1 worker route needed).
+- Spring "3 cascaded combs" would convolve into a t²·e^(−at) ramp and miss
+  the ±5 % RT60 gate → parallel combs, each individually carrying the full
+  RT60 (per-iteration feedback `c = 10^(−3·D_sec/RT60)`).
+
 ## M7+ — see Build Plan §10 (roadmap)
