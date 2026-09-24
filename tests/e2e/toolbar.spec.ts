@@ -121,3 +121,37 @@ test('D6: Help → Keyboard Shortcuts overlay lists legacy + standard bindings',
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
 });
+
+test('D8: channel strips drive per-channel volume/pan and mute; playback keeps working', async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await page.goto('/');
+  await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
+  await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
+
+  const rVol = page.getByRole('slider', { name: 'Right volume' });
+  const rPan = page.getByRole('slider', { name: 'Right pan' });
+  await expect(rVol).toBeVisible();
+  await expect(rPan).toBeVisible();
+
+  // pan R hard left, drop its volume — engine graph stays live
+  await rPan.fill('-1');
+  await rPan.dispatchEvent('input');
+  await rVol.fill('0.2');
+  await rVol.dispatchEvent('input');
+
+  // play through the modified graph, then stop
+  await page.keyboard.press('Space');
+  await page.waitForTimeout(600);
+  await page.keyboard.press('Space');
+  expect(consoleErrors).toEqual([]);
+
+  // mute L via its strip button
+  const lMute = page.getByRole('button', { name: 'Left — mute' });
+  await lMute.click();
+  await expect(lMute).toHaveAttribute('aria-pressed', 'true');
+  await lMute.click();
+  await expect(lMute).toHaveAttribute('aria-pressed', 'false');
+});

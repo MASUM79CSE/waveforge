@@ -547,6 +547,12 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
       set in `docs/design/`; all gates green (424 unit @ 96.09/75.06,
       25 e2e, build, lint)
 
+- [x] **D8** channel strips (G13 closed): per-channel **volume** (0..1.5)
+      and **pan** (-1..1) sliders + M mute in AudioMass-style strips; engine
+      graph splitter → gain → **StereoPanner** → merger with click-free
+      10 ms setTargetAtTime ramps; unit + playback e2e. Also: Escape now
+      closes the doctor + shortcuts dialogs (gap caught by re-verification).
+
 **D-series complete.** WaveForge now wears the AudioMass design system
 (tokens, control row, canvas, zoom/beat bars, shortcuts overlay) on the
 WaveForge engine — with the effects/UX advances retained (21 effects,

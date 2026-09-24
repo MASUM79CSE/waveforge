@@ -1,7 +1,21 @@
 import { useEffect, useState } from 'preact/hooks';
-import { cursorPos, docInfo, looping, playing, channelMutes, channelsSwapped } from '../state';
+import {
+  channelMutes,
+  channelPans,
+  channelVolumes,
+  channelsSwapped,
+  cursorPos,
+  docInfo,
+  looping,
+  playing,
+} from '../state';
 import { transport } from '../actions';
-import { toggleChannelMute, toggleChannelsSwapped } from '../editActions';
+import {
+  setChannelPan,
+  setChannelVolume,
+  toggleChannelMute,
+  toggleChannelsSwapped,
+} from '../editActions';
 import { toggleRecord } from '../recordActions';
 import { recording, recLevel, recSeconds } from '../state';
 import { engine } from '../runtime';
@@ -66,25 +80,14 @@ export function TransportBar() {
       <div class="transport-spacer" />
 
       {stereo && (
-        <div class="channel-controls" title="Channel mute / swap (playback)">
-          <button
-            class={`chbtn ${channelMutes.value[0] ? 'muted' : ''}`}
-            onClick={() => toggleChannelMute(0)}
-            title={t().channelLeft}
-          >
-            L
-          </button>
-          <button
-            class={`chbtn ${channelMutes.value[1] ? 'muted' : ''}`}
-            onClick={() => toggleChannelMute(1)}
-            title={t().channelRight}
-          >
-            R
-          </button>
+        <div class="toolbar-group strips" role="group" aria-label="Channel strips">
+          <ChannelStrip ch={0} label={t().channelLeft} mute={channelMutes.value[0] ?? false} />
+          <ChannelStrip ch={1} label={t().channelRight} mute={channelMutes.value[1] ?? false} />
           <button
             class={`chbtn ${channelsSwapped.value ? 'active' : ''}`}
             onClick={() => toggleChannelsSwapped()}
             title={t().channelSwap}
+            aria-label={t().channelSwap}
           >
             ⇄
           </button>
@@ -124,6 +127,53 @@ export function TransportBar() {
         />
       </div>
     </div>
+  );
+}
+
+/** One AudioMass-style channel strip: M mute, volume, pan (D8). */
+function ChannelStrip({ ch, label, mute }: { ch: number; label: string; mute: boolean }) {
+  const tag = ch === 0 ? 'L' : 'R';
+  return (
+    <span class="strip">
+      <span class="strip-head">
+        <span class={`strip-tag ${mute ? 'dim' : ''}`}>{tag}</span>
+        <button
+          class={`chbtn ${mute ? 'muted' : ''}`}
+          onClick={() => toggleChannelMute(ch)}
+          title={`${label} — mute`}
+          aria-label={`${label} — mute`}
+          aria-pressed={mute}
+        >
+          M
+        </button>
+      </span>
+      <label class="strip-row">
+        <span class="strip-lab">vol</span>
+        <input
+          type="range"
+          class="strip-slider"
+          min="0"
+          max="1.5"
+          step="0.01"
+          value={channelVolumes.value[ch] ?? 1}
+          aria-label={`${label} volume`}
+          onInput={(e) => setChannelVolume(ch, Number((e.target as HTMLInputElement).value))}
+        />
+      </label>
+      <label class="strip-row">
+        <span class="strip-lab">pan</span>
+        <input
+          type="range"
+          class="strip-slider"
+          min="-1"
+          max="1"
+          step="0.01"
+          value={channelPans.value[ch] ?? 0}
+          aria-label={`${label} pan`}
+          onInput={(e) => setChannelPan(ch, Number((e.target as HTMLInputElement).value))}
+        />
+      </label>
+    </span>
   );
 }
 

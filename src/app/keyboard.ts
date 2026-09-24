@@ -1,8 +1,22 @@
 import { runCommand } from './commands';
-import { closeEffectDialog, edit, transport, view } from './actions';
+import {
+  closeDoctor,
+  closeEffectDialog,
+  closeShortcuts,
+  edit,
+  transport,
+  view,
+} from './actions';
 import { resolveShortcut } from './shortcuts';
 import * as EA from './editActions';
-import { aboutOpen, welcomeOpen, urlOpen, effectDialogId } from './state';
+import {
+  aboutOpen,
+  doctorOpen,
+  effectDialogId,
+  shortcutsOpen,
+  urlOpen,
+  welcomeOpen,
+} from './state';
 
 function isTypingTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
@@ -18,6 +32,8 @@ export function bindKeyboard(): void {
     if (event.key === 'Escape') {
       if (effectDialogId.value) closeEffectDialog();
       else if (urlOpen.value) urlOpen.value = false;
+      else if (doctorOpen.value) closeDoctor();
+      else if (shortcutsOpen.value) closeShortcuts();
       else if (aboutOpen.value) aboutOpen.value = false;
       else if (welcomeOpen.value) welcomeOpen.value = false;
       return;

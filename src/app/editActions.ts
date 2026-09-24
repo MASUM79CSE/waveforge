@@ -283,6 +283,20 @@ export function toggleChannelMute(ch: number): void {
   engine.setChannelMute(ch, mutes[ch] ?? false);
 }
 
+export function setChannelVolume(ch: number, volume: number): void {
+  const vols: [number, number] = [...S.channelVolumes.value];
+  vols[ch] = S.clampChannelVolume(volume);
+  S.channelVolumes.value = vols;
+  engine.setChannelVolume(ch, vols[ch] ?? 1);
+}
+
+export function setChannelPan(ch: number, pan: number): void {
+  const pans: [number, number] = [...S.channelPans.value];
+  pans[ch] = S.clampPan(pan);
+  S.channelPans.value = pans;
+  engine.setChannelPan(ch, pans[ch] ?? 0);
+}
+
 export function toggleChannelsSwapped(): void {
   const next = !S.channelsSwapped.value;
   S.channelsSwapped.value = next;

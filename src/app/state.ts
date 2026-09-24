@@ -75,6 +75,19 @@ export const exportProgress = signal<number | null>(null);
 export const exportCancel = signal<{ cancelled: boolean } | null>(null);
 export const channelMutes = signal<[boolean, boolean]>([false, false]);
 export const channelsSwapped = signal(false);
+/** D8: per-channel playback volume (0..1.5) and pan (-1..1). */
+export const channelVolumes = signal<[number, number]>([1, 1]);
+export const channelPans = signal<[number, number]>([0, 0]);
+
+export function clampChannelVolume(v: number): number {
+  if (Number.isNaN(v)) return 1;
+  return Math.min(1.5, Math.max(0, v));
+}
+
+export function clampPan(v: number): number {
+  if (Number.isNaN(v)) return 0;
+  return Math.min(1, Math.max(-1, v));
+}
 
 // analysis (M5)
 export interface BpmResult {

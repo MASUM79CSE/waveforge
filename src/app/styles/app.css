@@ -389,6 +389,56 @@
   padding: 0 4px;
 }
 
+.strips {
+  gap: var(--s2);
+  padding: 4px var(--s2) !important;
+  height: auto !important;
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 108px;
+}
+
+.strip-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.strip-tag {
+  font-weight: 700;
+  color: var(--ac);
+  font-size: 12px;
+  width: 12px;
+}
+
+.strip-tag.dim {
+  color: var(--fg-3);
+}
+
+.strip-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.strip-lab {
+  color: var(--fg-2);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: 22px;
+}
+
+.strip-slider {
+  width: 74px;
+  height: 10px;
+  accent-color: var(--ac);
+}
+
 /* Status bar */
 .statusbar {
   display: flex;

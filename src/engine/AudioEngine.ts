@@ -19,6 +19,10 @@ export class AudioEngine {
   private splitter: ChannelSplitterNode | null = null;
   private merger: ChannelMergerNode | null = null;
   private chGains: GainNode[] = [];
+  private chPans: StereoPannerNode[] = [];
+  private chMuteState: boolean[] = [false, false];
+  private chVolState: number[] = [1, 1];
+  private panState: number[] = [0, 0];
   private swapped = false;
   private doc: AudioDocument | null = null;
   private source: AudioBufferSourceNode | null = null;
@@ -55,15 +59,19 @@ export class AudioEngine {
       this.splitter = this.ctx.createChannelSplitter(STEREO);
       this.merger = this.ctx.createChannelMerger(STEREO);
       this.chGains = [this.ctx.createGain(), this.ctx.createGain()];
+      this.chPans = [this.ctx.createStereoPanner(), this.ctx.createStereoPanner()];
       for (let ch = 0; ch < STEREO; ++ch) {
         const gain = this.chGains[ch];
-        if (!gain) continue;
-        // BOTH legs are required: splitter→gain feeds the chain, gain→merger
+        const pan = this.chPans[ch];
+        if (!gain || !pan) continue;
+        // BOTH legs are required: splitter→gain feeds the chain, pan→merger
         // drains it. (Missing the first leg left stereo documents silent.)
+        // Chain: splitter → gain (mute/volume) → panner → merger.
         this.splitter.connect(gain, ch, 0);
-        gain.connect(this.merger, 0, ch);
+        gain.connect(pan, 0, 0);
       }
       this.merger.connect(this.master);
+      this.applyAllChannels();
       this.routeChannels();
       return this.ctx;
     } catch (error: unknown) {
@@ -75,16 +83,40 @@ export class AudioEngine {
   private routeChannels(): void {
     if (!this.merger) return;
     for (let ch = 0; ch < STEREO; ++ch) {
-      const gain = this.chGains[ch];
-      if (!gain) continue;
+      const pan = this.chPans[ch];
+      if (!pan) continue;
       try {
-        gain.disconnect();
+        pan.disconnect();
       } catch {
         /* not yet connected */
       }
       const target = this.swapped ? (ch === 0 ? 1 : 0) : ch;
-      gain.connect(this.merger, 0, target);
+      pan.connect(this.merger, 0, target);
     }
+  }
+
+  /** Push mute×volume for one channel into its gain node. */
+  private applyChannelGain(ch: number): void {
+    const ctx = this.ctx;
+    const gain = this.chGains[ch];
+    if (!ctx || !gain) return;
+    const muted = this.chMuteState[ch] ?? false;
+    const vol = this.chVolState[ch] ?? 1;
+    gain.gain.setTargetAtTime(muted ? 0 : vol, ctx.currentTime, 0.01);
+  }
+
+  private applyAllChannels(): void {
+    for (let ch = 0; ch < STEREO; ++ch) {
+      this.applyChannelGain(ch);
+      this.routeChannelPan(ch);
+    }
+  }
+
+  private routeChannelPan(ch: number): void {
+    const ctx = this.ctx;
+    const pan = this.chPans[ch];
+    if (!ctx || !pan) return;
+    pan.pan.setTargetAtTime(this.panState[ch] ?? 0, ctx.currentTime, 0.01);
   }
 
   onBlocked: (() => void) | null = null;
@@ -152,10 +184,23 @@ export class AudioEngine {
 
   /** Mute/unmute a stereo channel (playback routing, not destructive). */
   setChannelMute(ch: number, muted: boolean): void {
-    const ctx = this.ensureContext();
-    const gain = this.chGains[ch];
-    if (!ctx || !gain) return;
-    gain.gain.value = muted ? 0 : 1;
+    this.ensureContext();
+    this.chMuteState[ch] = muted;
+    this.applyChannelGain(ch);
+  }
+
+  /** Per-channel playback volume 0..1.5 (D8). */
+  setChannelVolume(ch: number, volume: number): void {
+    this.ensureContext();
+    this.chVolState[ch] = Math.max(0, Math.min(1.5, volume));
+    this.applyChannelGain(ch);
+  }
+
+  /** Per-channel pan -1 (left) .. 1 (right) (D8). */
+  setChannelPan(ch: number, pan: number): void {
+    this.ensureContext();
+    this.panState[ch] = Math.max(-1, Math.min(1, pan));
+    this.routeChannelPan(ch);
   }
 
   /** Swap left/right output routing (flip channels). */
