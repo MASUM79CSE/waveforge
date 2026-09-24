@@ -78,6 +78,8 @@ export default defineConfig({
         // E2 parametric EQ (effects v2)
         'src/fx/biquad.ts',
         'src/fx/paramEq.ts',
+        // E3 modulation (effects v2)
+        'src/fx/modulation.ts',
         // M5 pure kernels
         'src/engine/lufs.ts',
         'src/engine/bpm.ts',

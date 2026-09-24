@@ -5,6 +5,13 @@
  */
 import { FX_MAX_FEEDBACK, FX_MIN_TAIL_GAIN, GEQ20_HZ } from '../core/constants';
 import { applyNormalizeLufs, truePeakLimit } from './mastering';
+import {
+  chorusProcess,
+  flangerProcess,
+  phaserProcess,
+  tremoloProcess,
+  vibratoProcess,
+} from './modulation';
 import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq } from './paramEq';
 import { registerEffect } from './registry';
 import { compressKernel } from './compressor';
@@ -133,6 +140,94 @@ const DEFS: EffectDef[] = [
       num('decay', 'paramDecay', 0.5, 10, 0.1, 2.5),
       num('mix', 'paramMix', 0, 1, 0.01, 0.35),
       bool('reverse', 'paramReverse', false),
+    ],
+  },
+  {
+    id: 'fx.chorus',
+    labelKey: 'fxChorus',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      chorusProcess(channels, sampleRate, {
+        baseMs: Number(params.baseMs),
+        depthMs: Number(params.depthMs),
+        rateHz: Number(params.rateHz),
+        mix: Number(params.mix),
+      }),
+    specs: [
+      num('baseMs', 'paramBaseMs', 0, 60, 0.1, 20),
+      num('depthMs', 'paramDepthMs', 0, 30, 0.1, 4),
+      num('rateHz', 'paramRate', 0.05, 10, 0.05, 0.8),
+      num('mix', 'paramMix', 0, 1, 0.01, 0.5),
+    ],
+  },
+  {
+    id: 'fx.flanger',
+    labelKey: 'fxFlanger',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      flangerProcess(channels, sampleRate, {
+        baseMs: Number(params.baseMs),
+        depthMs: Number(params.depthMs),
+        rateHz: Number(params.rateHz),
+        feedback: Number(params.feedback),
+        mix: Number(params.mix),
+      }),
+    specs: [
+      num('baseMs', 'paramBaseMs', 0, 20, 0.1, 2),
+      num('depthMs', 'paramDepthMs', 0, 10, 0.1, 4),
+      num('rateHz', 'paramRate', 0.05, 5, 0.05, 0.15),
+      num('feedback', 'paramFeedback', 0, 0.95, 0.01, 0.6),
+      num('mix', 'paramMix', 0, 1, 0.01, 0.5),
+    ],
+  },
+  {
+    id: 'fx.phaser',
+    labelKey: 'fxPhaser',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      phaserProcess(channels, sampleRate, {
+        stages: Number(params.stages),
+        rateHz: Number(params.rateHz),
+        centerHz: Number(params.centerHz),
+        feedback: Number(params.feedback),
+        mix: Number(params.mix),
+      }),
+    specs: [
+      num('stages', 'paramStages', 2, 8, 1, 6),
+      num('rateHz', 'paramRate', 0.05, 8, 0.05, 0.5),
+      num('centerHz', 'paramCenterHz', 100, 4000, 10, 800),
+      num('feedback', 'paramFeedback', 0, 0.9, 0.01, 0.6),
+      num('mix', 'paramMix', 0, 1, 0.01, 0.5),
+    ],
+  },
+  {
+    id: 'fx.tremolo',
+    labelKey: 'fxTremolo',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      tremoloProcess(channels, sampleRate, {
+        rateHz: Number(params.rateHz),
+        depth: Number(params.depth),
+        shape: Number(params.shape),
+      }),
+    specs: [
+      num('rateHz', 'paramRate', 0.5, 20, 0.1, 5),
+      num('depth', 'paramDepth', 0, 1, 0.01, 0.5),
+      num('shape', 'paramShape', 0, 1, 1, 0),
+    ],
+  },
+  {
+    id: 'fx.vibrato',
+    labelKey: 'fxVibrato',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      vibratoProcess(channels, sampleRate, {
+        rateHz: Number(params.rateHz),
+        depthMs: Number(params.depthMs),
+      }),
+    specs: [
+      num('rateHz', 'paramRate', 0.1, 14, 0.1, 5),
+      num('depthMs', 'paramDepthMs', 0, 30, 0.1, 4),
     ],
   },
   {

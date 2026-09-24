@@ -79,3 +79,20 @@ test('effects: true-peak Limiter applies and undoes cleanly', async ({ page }) =
   await page.keyboard.press('Shift+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
 });
+
+test('effects: Chorus (E3 modulation) applies via generic dialog and undoes', async ({
+  page,
+}) => {
+  await loadSample(page);
+  await applyEffect(page, /^Chorus/);
+  await expect(page.locator('.toast-msg').last()).toContainText(/Applied: Chorus/i, {
+    timeout: 15_000,
+  });
+  // modulation kernels are length-preserving
+  await expect(page.getByText(/9\.27 s/)).toBeVisible();
+  // standard user-facing shortcut contract: Ctrl+Z undoes the effect
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+  await page.keyboard.press('Control+y');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Redid/i, { timeout: 8000 });
+});
