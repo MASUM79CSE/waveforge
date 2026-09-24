@@ -111,6 +111,16 @@ lanes):**
   not already charged (dedup by asset id within the entry). Slice-op
   EditOutcome path retires with `channels`.
 
+**M9d2 — DONE: interactions** — clipActions.ts (pure hitTest/dragMode/
+snapClipPosition + editor-explicit arrange cores riding ONE history entry
+per gesture; signal layer: activeClip/dragPreview/split-at-cursor/dup/
+delete with doc-delete fallback), shortcuts +3 (Ctrl+D, plain S, Del —
+single-source resolver), commands +3, ClipLaneCanvas.tsx (per-ASSET
+bucket envelopes, block tint/border/name/edge handles, selection outline,
+pointer gestures with live drag preview → commit on pointer-up; snap via
+D5 beats), theme +4 clip tokens (dark+light). Gates: 542 unit (63 files),
+34 e2e untouched, lint 0, build 1.18 s.
+
 **M9d2 — interactions:** click clip = select (per-lane active clip);
 drag body = move (kernel-clamped into the free gap; snap to beats when
 SNAP on, else free samples); edge handles = trim (kernel bounds);
