@@ -13,6 +13,7 @@ import { NrPrintDialog } from './NrPrintDialog';
 import { StretchPitchDialog } from './StretchPitchDialog';
 import {
   draftSaveOpen,
+  doctorOpen,
   effectDialogId,
   exportOpen,
   metadataOpen,
@@ -25,6 +26,7 @@ import { MetadataDialog } from './MetadataDialog';
 import { DraftsDialog } from './DraftsDialog';
 import { SaveDraftDialog } from './SaveDraftDialog';
 import { RestoreBanner } from './RestoreBanner';
+import { DoctorPanel } from './DoctorPanel';
 import { UpdateBanner } from './UpdateBanner';
 
 export function App() {
@@ -58,6 +60,7 @@ export function App() {
       {exportOpen.value && <ExportDialog />}
       {recordSettingsOpen.value && <RecordSettingsDialog />}
       {metadataOpen.value && <MetadataDialog />}
+      {doctorOpen.value && <DoctorPanel />}
       {draftSaveOpen.value && <SaveDraftDialog />}
       <DraftsDialog />
       <UpdateBanner />

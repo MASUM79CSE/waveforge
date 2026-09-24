@@ -50,6 +50,7 @@ export const loadingProgress = signal<number | null>(null);
 // dialogs
 export const welcomeOpen = signal(true);
 export const aboutOpen = signal(false);
+export const doctorOpen = signal(false);
 export const urlOpen = signal(false);
 export const gainPromptOpen = signal(false);
 export const normalizePromptOpen = signal(false);

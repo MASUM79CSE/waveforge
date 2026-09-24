@@ -208,6 +208,7 @@ export const en = {
 
   helpWelcome: 'Welcome Message',
   helpAbout: 'About',
+  helpDoctor: 'Diagnostics',
 
   // transport
   play: 'Play',

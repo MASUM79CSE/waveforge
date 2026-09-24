@@ -79,6 +79,14 @@ export function closeAbout(): void {
   S.aboutOpen.value = false;
 }
 
+export function openDoctor(): void {
+  S.doctorOpen.value = true;
+}
+
+export function closeDoctor(): void {
+  S.doctorOpen.value = false;
+}
+
 export function openUrlDialog(): void {
   S.urlOpen.value = true;
 }

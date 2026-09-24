@@ -168,6 +168,7 @@ export const commands: Command[] = [
   // Help
   { id: 'help.welcome', label: () => t().helpWelcome, run: () => A.openWelcome() },
   { id: 'help.about', label: () => t().helpAbout, run: () => A.openAbout() },
+  { id: 'help.doctor', label: () => t().helpDoctor, run: () => A.openDoctor() },
 ];
 
 export function runCommand(id: string): void {

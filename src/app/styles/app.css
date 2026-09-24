@@ -869,3 +869,41 @@
 .fx-ir-file {
   display: none;
 }
+
+/* ---- M7 doctor panel (§6.3 #7) ---- */
+.doctor-running {
+  margin: 24px 0;
+  color: var(--text-dim, #8a929e);
+}
+.doctor-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.doctor-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+}
+.doctor-status {
+  width: 22px;
+  font-weight: 700;
+}
+.doctor-ok .doctor-status {
+  color: #4fc479;
+}
+.doctor-fail .doctor-status {
+  color: #e05a4e;
+}
+.doctor-label {
+  white-space: nowrap;
+  color: var(--text, #d6dae2);
+}
+.doctor-detail {
+  color: var(--text-dim, #8a929e);
+}
+.doctor-ms {
+  text-align: right;
+  color: var(--text-dim, #8a929e);
+  white-space: nowrap;
+}
