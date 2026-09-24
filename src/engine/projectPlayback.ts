@@ -7,6 +7,7 @@
  * The single-document AudioEngine path is untouched.
  */
 import { panGains, trackEffectiveGain } from './project';
+import { evalCurve } from './automation';
 import {
   expandClipPass,
   type ClipPlaybackTrack,
@@ -32,6 +33,9 @@ const RAMP_TAU = 0.01; // D8 click-free convention
 
 interface AudioParamLike {
   value: number;
+  setValueAtTime(value: number, startTime: number): void;
+  linearRampToValueAtTime(value: number, endTime: number): void;
+  cancelScheduledValues(cancelTime: number): void;
   setTargetAtTime(value: number, startTime: number, timeConstant: number): void;
 }
 
@@ -99,6 +103,7 @@ export class ProjectPlayback {
   private readonly sampleRate: number;
   private nodes: TrackNodes[] = [];
   private clipTracks: ClipPlaybackTrack[] | null = null;
+  private clipAnySolo = false;
   private clipLegs: GainLegs[] = [];
   private clipSources: GraphSource[] = [];
   private merger: GraphSplitter | null = null;
@@ -201,6 +206,10 @@ export class ProjectPlayback {
     const n = Math.min(tracks.length, legs.length);
     for (let i = 0; i < n; ++i) {
       const t = tracks[i]!;
+      const auto = (t as ClipPlaybackTrack).automation;
+      if (auto && (((auto.volume?.length ?? 0) > 0) || ((auto.pan?.length ?? 0) > 0))) {
+        continue; // A3: automation owns these legs until the next (re)start
+      }
       const node = legs[i]!;
       const geff = trackEffectiveGain(t, anySolo);
       const [pl, pr] = panGains(t.pan);
@@ -266,6 +275,7 @@ export class ProjectPlayback {
 
     const anySolo = tracks.some((t) => t.solo);
     this.clipTracks = [...tracks];
+    this.clipAnySolo = anySolo;
     this.clipLegs = tracks.map((t) => this.makeLeg(t, anySolo));
 
     const winStart = this.loopRegion ? Math.max(begin, this.loopRegion.start) : begin;
@@ -322,7 +332,62 @@ export class ProjectPlayback {
       const restart = this.loopRegion !== null;
       bestSrc.onended = restart ? () => this.handlePassEnded() : () => this.handleEnded();
     }
+    this.stampClipLegs(passStart, winEnd);
     return list.length;
+  }
+
+  /**
+   * A3: stamp automation curves onto the clip legs for one pass. Piecewise-
+   * linear breakpoints in the sample domain map to ctx time
+   * `now + (at/sr − passStart)`; the param holds after the last knot (matches
+   * evalCurve's endpoint clamp). No curves → NO param calls at all (zero extra
+   * scheduling, the bit-identity guard carries over to the monitor path).
+   * Monitor tolerance: WebAudio ramps are control-rate (≈per audio block), so
+   * playback may deviate from the per-sample render between knots by design —
+   * the render (mixdown) is the reference.
+   */
+  private stampClipLegs(passStart: number, winEnd: number): void {
+    const tracks = this.clipTracks;
+    if (!tracks) return;
+    const now = this.ctx.currentTime;
+    const sr = this.sampleRate;
+    for (let i = 0; i < this.clipLegs.length; ++i) {
+      const t = tracks[i]!;
+      const vol = t.automation?.volume;
+      const panC = t.automation?.pan;
+      const hasVol = !!vol && vol.length > 0;
+      const hasPan = !!panC && panC.length > 0;
+      if (!hasVol && !hasPan) continue; // zero extra calls
+      const geff = trackEffectiveGain(t, this.clipAnySolo);
+      // merged, sorted knot seconds strictly inside (passStart, winEnd]
+      const knots = new Set<number>();
+      if (hasVol) for (const pt of vol!) knots.add(pt.at / sr);
+      if (hasPan) for (const pt of panC!) knots.add(pt.at / sr);
+      const sorted = [...knots].filter((s) => s > passStart && s <= winEnd).sort((a, b) => a - b);
+      const valueAt = (side: 'L' | 'R') => (pos: number): number => {
+        const p = hasPan ? evalCurve(panC!, pos * sr) : t.pan;
+        const [gl, gr] = panGains(p);
+        const m = hasVol ? evalCurve(vol!, pos * sr) : 1;
+        return (side === 'L' ? gl : gr) * geff * m;
+      };
+      this.stampParam(this.clipLegs[i]!.gL.gain, valueAt('L'), sorted, passStart, now);
+      this.stampParam(this.clipLegs[i]!.gR.gain, valueAt('R'), sorted, passStart, now);
+    }
+  }
+
+  /** One leg param: cancel pending, re-anchor at passStart, ramp the knots. */
+  private stampParam(
+    param: AudioParamLike,
+    valueAt: (pos: number) => number,
+    knots: number[],
+    passStart: number,
+    now: number,
+  ): void {
+    param.cancelScheduledValues(now);
+    param.setValueAtTime(valueAt(passStart), now);
+    for (const s of knots) {
+      param.linearRampToValueAtTime(valueAt(s), now + (s - passStart));
+    }
   }
 
   /** A loop pass finished → schedule the next pass anchored at loop start. */

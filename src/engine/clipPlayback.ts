@@ -15,6 +15,9 @@ export interface ClipPlaybackTrack {
   pan: number;
   mute: boolean;
   solo: boolean;
+  /** A3: per-param automation curves ('volume', 'pan'); empty/missing =
+   * static mixer value owns the legs. */
+  automation?: Record<string, import('./automation').AutomationCurve>;
 }
 
 /** One scheduled source: clip span buffer, started at `ctx.currentTime + when`. */

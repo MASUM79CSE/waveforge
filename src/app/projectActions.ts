@@ -573,6 +573,7 @@ function playbackViews(): ClipPlaybackTrack[] {
     pan: t.pan,
     mute: t.mute,
     solo: t.solo,
+    automation: t.automation,
   }));
 }
 
