@@ -63,7 +63,10 @@ function clampPan(p: number): number {
  * Effective linear gain under the classic mixer rule: muted → 0; if any
  * track soloed, non-soloed tracks → 0; otherwise the strip gain.
  */
-export function trackEffectiveGain(track: TrackState, anySolo: boolean): number {
+export function trackEffectiveGain(
+  track: Pick<TrackState, 'gain' | 'mute' | 'solo'>,
+  anySolo: boolean,
+): number {
   if (track.mute) return 0;
   if (anySolo && !track.solo) return 0;
   return track.gain;
