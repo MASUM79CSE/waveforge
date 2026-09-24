@@ -547,6 +547,12 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
       set in `docs/design/`; all gates green (424 unit @ 96.09/75.06,
       25 e2e, build, lint)
 
+- [x] **D9** theming beyond AudioMass: **light theme** + 5 accents
+      (cyan/teal/green/amber/magenta) via `<html data-theme data-accent>`
+      token blocks; canvas palette moved to `--cv-*` vars with a
+      version-checked cache so painters re-read on change; View menu
+      toggles; persisted; AA gate 5/5 on light surfaces; unit + e2e
+      (playback + reload persistence).
 - [x] **D8** channel strips (G13 closed): per-channel **volume** (0..1.5)
       and **pan** (-1..1) sliders + M mute in AudioMass-style strips; engine
       graph splitter → gain → **StereoPanner** → merger with click-free

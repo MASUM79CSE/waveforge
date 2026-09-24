@@ -155,3 +155,37 @@ test('D8: channel strips drive per-channel volume/pan and mute; playback keeps w
   await lMute.click();
   await expect(lMute).toHaveAttribute('aria-pressed', 'false');
 });
+
+test('D9: light theme + accent cycling apply to <html>, persist, and redraw the canvas', async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await page.goto('/');
+  await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
+  await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
+
+  // accent cycle
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^Accent — Cyan$/ }).click();
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => document.documentElement.dataset.accent)).toBe('teal');
+
+  // light theme
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('menuitem', { name: /Light Theme/ }).click();
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('light');
+  expect(await page.evaluate(() => localStorage.getItem('waveforge.theme'))).toBe('light');
+
+  // playback still works on the light canvas (palette re-read without errors)
+  await page.keyboard.press('Space');
+  await page.waitForTimeout(500);
+  await page.keyboard.press('Space');
+  expect(consoleErrors).toEqual([]);
+
+  // persisted across reload
+  await page.reload();
+  await page.waitForTimeout(800);
+  expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('light');
+});

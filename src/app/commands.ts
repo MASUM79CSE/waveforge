@@ -132,6 +132,18 @@ export const commands: Command[] = [
     isChecked: () => A.isZeroCrossOn(),
   },
   {
+    id: 'view.theme',
+    label: () => t().viewLightTheme,
+    run: () => A.toggleLightTheme(),
+    check: true,
+    isChecked: () => A.isLightTheme(),
+  },
+  {
+    id: 'view.accent',
+    label: () => `${t().viewAccent} — ${A.accentLabel()}`,
+    run: () => A.cycleAccentColor(),
+  },
+  {
     id: 'view.axis',
     label: () => t().viewAmplitudeAxis,
     run: () => A.toggleAmplitudeAxis(),

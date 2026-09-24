@@ -11,6 +11,7 @@ import { clamp, niceTickFor, pickPeakLevel } from '../core/zoom';
 import type { AudioDocument } from './AudioDocument';
 import type { PeakClient } from './peakClient';
 import { tilesForRange } from './protocol';
+import { paletteVersionNow } from '../app/theme';
 import * as V from './viewState';
 
 export const RULER_H = 28;
@@ -33,7 +34,7 @@ interface Theme {
   beatLine: string;
 }
 
-const THEME: Theme = {
+const THEME_FALLBACK: Theme = {
   bg: '#07080a',
   laneBg: '#050608',
   wave: '#9dff6a',
@@ -47,6 +48,45 @@ const THEME: Theme = {
   pending: '#101318',
   beatLine: 'rgba(90, 200, 250, 0.25)',
 };
+
+// D9: the palette lives in tokens.css (--cv-*) so themes apply everywhere;
+// cached here and re-read only when the applied theme version changes.
+const CV_KEYS: Array<[keyof Theme, string]> = [
+  ['bg', '--cv-bg'],
+  ['laneBg', '--cv-lane'],
+  ['wave', '--cv-wave'],
+  ['center', '--cv-center'],
+  ['rulerBg', '--cv-ruler-bg'],
+  ['rulerText', '--cv-ruler-text'],
+  ['rulerLine', '--cv-ruler-line'],
+  ['playhead', '--cv-playhead'],
+  ['selection', '--cv-selection'],
+  ['selectionBorder', '--cv-selection-border'],
+  ['pending', '--cv-pending'],
+  ['beatLine', '--cv-beat'],
+];
+
+let cachedTheme = THEME_FALLBACK;
+let cachedAtVersion = -1;
+
+function currentTheme(): Theme {
+  const version = paletteVersionNow();
+  if (version === cachedAtVersion) return cachedTheme;
+  cachedAtVersion = version;
+  if (typeof getComputedStyle !== 'function') return (cachedTheme = THEME_FALLBACK);
+  const style = getComputedStyle(document.documentElement);
+  const read = (name: string): string | null => {
+    const v = style.getPropertyValue(name).trim();
+    return v.length > 0 ? v : null;
+  };
+  const next: Theme = { ...THEME_FALLBACK };
+  for (const [key, cssName] of CV_KEYS) {
+    const value = read(cssName);
+    if (value) next[key] = value;
+  }
+  cachedTheme = next;
+  return next;
+}
 
 /** Everything a painter needs, bundled once per frame. */
 export interface WaveDrawCtx {
@@ -76,17 +116,19 @@ type FullCtx = Omit<WaveDrawCtx, 'doc' | 'env'> & { doc: AudioDocument; env: V.V
 
 /** Paint one full frame: background, ruler, rail, lanes, beats, selection, playhead, axis. */
 export function drawFrame(ctx: WaveDrawCtx): void {
+  const theme = currentTheme(); // refreshes the cache when the theme changed
+  void theme;
   const { g, cssW: W, cssH: H } = ctx;
   const rail = ctx.axis ? RAIL_W : 0;
   const axisH = ctx.axis ? AXIS_H : 0;
   g.setTransform(ctx.dpr, 0, 0, ctx.dpr, 0, 0);
-  g.fillStyle = THEME.bg;
+  g.fillStyle = currentTheme().bg;
   g.fillRect(0, 0, W, H);
   if (!ctx.doc || !ctx.env) {
     // no document: ruler chrome only
-    g.fillStyle = THEME.rulerBg;
+    g.fillStyle = currentTheme().rulerBg;
     g.fillRect(0, 0, W, RULER_H);
-    g.fillStyle = THEME.rulerLine;
+    g.fillStyle = currentTheme().rulerLine;
     g.fillRect(0, RULER_H - 1, W, 1);
     return;
   }
@@ -110,7 +152,7 @@ function drawBeats(ctx: FullCtx, H: number): void {
   if (ctx.beats.length === 0) return;
   const rail = ctx.axis ? RAIL_W : 0;
   const axisH = ctx.axis ? AXIS_H : 0;
-  g.fillStyle = THEME.beatLine ?? 'rgba(90, 200, 250, 0.25)';
+  g.fillStyle = currentTheme().beatLine;
   for (const t of ctx.beats) {
     const x = Math.round(V.xAtTime(ctx.view, ctx.env, t)) + 0.5 + rail;
     if (x < rail || x > W) continue;
@@ -121,13 +163,13 @@ function drawBeats(ctx: FullCtx, H: number): void {
 function drawRuler(ctx: FullCtx): void {
   const { g, cssW: W } = ctx;
   const rail = ctx.axis ? RAIL_W : 0;
-  g.fillStyle = THEME.rulerBg;
+  g.fillStyle = currentTheme().rulerBg;
   g.fillRect(0, 0, W, RULER_H);
-  g.fillStyle = THEME.rulerLine;
+  g.fillStyle = currentTheme().rulerLine;
   g.fillRect(0, RULER_H - 1, W, 1);
 
   const tick = niceTickFor(ctx.view.spp, ctx.doc.sampleRate);
-  g.fillStyle = THEME.rulerText;
+  g.fillStyle = currentTheme().rulerText;
   g.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
   g.textBaseline = 'middle';
 
@@ -157,9 +199,9 @@ function drawLanes(ctx: FullCtx, lanesH: number): void {
     const mid = y0 + laneH / 2;
     const amp = (laneH / 2) * 0.92 * ctx.vzoom;
 
-    g.fillStyle = THEME.laneBg;
+    g.fillStyle = currentTheme().laneBg;
     g.fillRect(rail, y0, laneW, laneH);
-    g.fillStyle = THEME.center;
+    g.fillStyle = currentTheme().center;
     g.fillRect(rail, Math.round(mid), laneW, 1);
 
     if (ctx.view.spp < 1) {
@@ -167,16 +209,16 @@ function drawLanes(ctx: FullCtx, lanesH: number): void {
       continue;
     }
 
-    g.fillStyle = THEME.wave;
+    g.fillStyle = currentTheme().wave;
     for (let x = 0; x < laneW; ++x) {
       const sample = ctx.view.start * doc.sampleRate + x * ctx.view.spp;
       const value = peaks.bucketValue(ch, level, Math.floor(sample / level));
       if (!value) {
         missing = true;
         tileReqs.push(...tilesForRange(ch, level, Math.max(0, sample), Math.max(0, sample) + ctx.view.spp));
-        g.fillStyle = THEME.pending;
+        g.fillStyle = currentTheme().pending;
         g.fillRect(rail + x, y0, 1, laneH);
-        g.fillStyle = THEME.wave;
+        g.fillStyle = currentTheme().wave;
         continue;
       }
       const yMin = clamp(mid - value.max * amp, y0 + 1, y0 + laneH - 1);
@@ -226,7 +268,7 @@ function drawRawLane(
     if (x === 0) g.moveTo(x, y);
     else g.lineTo(x, y);
   }
-  g.strokeStyle = THEME.wave;
+  g.strokeStyle = currentTheme().wave;
   g.lineWidth = 1;
   g.stroke();
   return false;
@@ -240,9 +282,9 @@ function drawSelection(ctx: FullCtx, H: number): void {
   const x1 = V.xAtTime(ctx.view, ctx.env, sel.start) + rail;
   const x2 = V.xAtTime(ctx.view, ctx.env, sel.end) + rail;
   const axisH = ctx.axis ? AXIS_H : 0;
-  g.fillStyle = THEME.selection;
+  g.fillStyle = currentTheme().selection;
   g.fillRect(x1, RULER_H, x2 - x1, H - RULER_H - axisH);
-  g.fillStyle = THEME.selectionBorder;
+  g.fillStyle = currentTheme().selectionBorder;
   g.fillRect(Math.round(x1) - 1, RULER_H, 1, H - RULER_H - axisH);
   g.fillRect(Math.round(x2), RULER_H, 1, H - RULER_H - axisH);
 }
@@ -253,7 +295,7 @@ function drawPlayhead(ctx: FullCtx, H: number): void {
   const axisH = ctx.axis ? AXIS_H : 0;
   const x = Math.round(V.xAtTime(ctx.view, ctx.env, ctx.cursor)) + 0.5 + rail;
   if (x < rail - 2 || x > ctx.cssW + 2) return;
-  g.fillStyle = THEME.playhead;
+  g.fillStyle = currentTheme().playhead;
   g.fillRect(x, 3, 1, H - 3 - axisH);
   g.beginPath();
   g.moveTo(x - 5, 2);
@@ -266,9 +308,9 @@ function drawPlayhead(ctx: FullCtx, H: number): void {
 /** Left rail: black strip with per-channel labels (L/R). */
 function drawRail(ctx: FullCtx): void {
   const { g, cssH: H, doc } = ctx;
-  g.fillStyle = THEME.rulerBg;
+  g.fillStyle = currentTheme().rulerBg;
   g.fillRect(0, 0, RAIL_W, H);
-  g.fillStyle = THEME.rulerLine;
+  g.fillStyle = currentTheme().rulerLine;
   g.fillRect(RAIL_W - 1, 0, 1, H);
 
   const axisH = AXIS_H;
@@ -279,7 +321,7 @@ function drawRail(ctx: FullCtx): void {
   g.textAlign = 'center';
   for (let ch = 0; ch < doc.channels; ++ch) {
     const mid = RULER_H + ch * laneH + laneH / 2;
-    g.fillStyle = THEME.rulerText;
+    g.fillStyle = currentTheme().rulerText;
     g.fillText(ch === 0 ? 'L' : 'R', RAIL_W / 2, mid - 6);
     g.fillStyle = '#6a7380';
     g.fillText('ON', RAIL_W / 2, mid + 6);
@@ -290,13 +332,13 @@ function drawRail(ctx: FullCtx): void {
 /** Bottom amplitude axis: dBFS labels, 2 dB steps, AudioMass style. */
 function drawAmplitudeAxis(ctx: FullCtx): void {
   const { g, cssW: W, cssH: H } = ctx;
-  g.fillStyle = THEME.rulerBg;
+  g.fillStyle = currentTheme().rulerBg;
   g.fillRect(0, H - AXIS_H, W, AXIS_H);
-  g.fillStyle = THEME.rulerLine;
+  g.fillStyle = currentTheme().rulerLine;
   g.fillRect(0, H - AXIS_H, W, 1);
   g.fillRect(RAIL_W - 1, H - AXIS_H, 1, AXIS_H);
 
-  g.fillStyle = THEME.rulerText;
+  g.fillStyle = currentTheme().rulerText;
   g.font = '9px ' + 'ui-monospace, SFMono-Regular, Menlo, monospace';
   g.textBaseline = 'middle';
   g.textAlign = 'center';

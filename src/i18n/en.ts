@@ -169,6 +169,8 @@ export const en = {
   paramBand: 'Band gain',
   paramFactor: 'Rate factor',
   viewAmplitudeAxis: 'Amplitude Axis',
+  viewLightTheme: 'Light Theme',
+  viewAccent: 'Accent',
   zeroCrossSnap: 'Zero-Cross Selection',
 
   // edit toasts + errors

@@ -81,8 +81,91 @@
   --font-ui: var(--ff);
   --font-mono: var(--ff-mono);
 
+  /* canvas palette (D9) — painters read these so themes stay consistent */
+  --cv-bg: #07080a;
+  --cv-lane: #050608;
+  --cv-center: #1d3336;
+  --cv-wave: #9dff6a;
+  --cv-ruler-bg: #000000;
+  --cv-ruler-text: #d9d955;
+  --cv-ruler-line: #365457;
+  --cv-playhead: #ff8c35;
+  --cv-selection: rgba(90, 242, 255, 0.14);
+  --cv-selection-border: rgba(90, 242, 255, 0.55);
+  --cv-pending: #101318;
+  --cv-beat: rgba(90, 200, 250, 0.25);
+
   /* layout */
   --menubar-h: 38px;
   --transport-h: 56px;
   --statusbar-h: 26px;
+}
+
+/* ---- accent variants (D9) ---- */
+:root[data-accent='teal'] {
+  --ac: #2dd4bf;
+  --ac-2: #99c2c6;
+  --ac-soft: rgba(45, 212, 191, 0.12);
+  --ac-glow: rgba(45, 212, 191, 0.45);
+  --bd-h: rgba(45, 212, 191, 0.4);
+  --accent-line: rgba(45, 212, 191, 0.55);
+}
+
+:root[data-accent='green'] {
+  --ac: #6ecc87;
+  --ac-2: #9dff6a;
+  --ac-soft: rgba(110, 204, 135, 0.12);
+  --ac-glow: rgba(110, 204, 135, 0.45);
+  --bd-h: rgba(110, 204, 135, 0.4);
+  --accent-line: rgba(110, 204, 135, 0.55);
+}
+
+:root[data-accent='amber'] {
+  --ac: #f5c542;
+  --ac-2: #ffb35c;
+  --ac-soft: rgba(245, 197, 66, 0.12);
+  --ac-glow: rgba(245, 197, 66, 0.45);
+  --bd-h: rgba(245, 197, 66, 0.4);
+  --accent-line: rgba(245, 197, 66, 0.55);
+}
+
+:root[data-accent='magenta'] {
+  --ac: #f557d2;
+  --ac-2: #b9c6ff;
+  --ac-soft: rgba(245, 87, 210, 0.12);
+  --ac-glow: rgba(245, 87, 210, 0.45);
+  --bd-h: rgba(245, 87, 210, 0.4);
+  --accent-line: rgba(245, 87, 210, 0.55);
+}
+
+/* ---- light theme (D9) — the WaveForge advance beyond AudioMass ---- */
+:root[data-theme='light'] {
+  --bg-0: #e7ebf0;
+  --bg-1: #eef1f5;
+  --bg-2: #f3f5f8;
+  --bg-3: #f8fafc;
+  --bg-4: #ffffff;
+  --fg-0: #1a2129;
+  --fg-1: #46525e;
+  --fg-2: #6b7683;
+  --fg-3: #a7b0ba;
+  --ac-ink: #04262b;
+  --rec: #d92045;
+  --solo: #0ea5e9;
+  --bd: rgba(10, 16, 24, 0.12);
+  --bd-s: rgba(10, 16, 24, 0.07);
+  --glow: 0 0 0 1px var(--bd-h), 0 0 10px var(--ac-glow);
+  --inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --cv-bg: #dde3e9;
+  --cv-lane: #e9edf2;
+  --cv-center: #b8c4cc;
+  --cv-wave: #2f9e44;
+  --cv-ruler-bg: #f8fafc;
+  --cv-ruler-text: #7a6a12;
+  --cv-ruler-line: #b8c4cc;
+  --cv-playhead: #e8590c;
+  --cv-selection: rgba(2, 132, 160, 0.16);
+  --cv-selection-border: rgba(2, 132, 160, 0.6);
+  --cv-pending: #d5dbe2;
+  --cv-beat: rgba(2, 100, 160, 0.3);
 }

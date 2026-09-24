@@ -75,6 +75,46 @@ export const exportProgress = signal<number | null>(null);
 export const exportCancel = signal<{ cancelled: boolean } | null>(null);
 export const channelMutes = signal<[boolean, boolean]>([false, false]);
 export const channelsSwapped = signal(false);
+/** D9: theme ('dark' | 'light') + accent id — persisted, applied via <html> data attrs. */
+export type ThemeName = 'dark' | 'light';
+export const ACCENTS = ['cyan', 'teal', 'green', 'amber', 'magenta'] as const;
+export type AccentName = (typeof ACCENTS)[number];
+
+function readStoredString(key: string, fallback: string): string {
+  try {
+    return localStorage.getItem(`${STORAGE_PREFIX}.${key}`) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStoredString(key: string, value: string): void {
+  try {
+    localStorage.setItem(`${STORAGE_PREFIX}.${key}`, value);
+  } catch {
+    return; // private mode — preferences stay in-memory
+  }
+}
+
+export const theme = signal<ThemeName>(
+  readStoredString('theme', 'dark') === 'light' ? 'light' : 'dark',
+);
+export const accent = signal<AccentName>(
+  (ACCENTS as readonly string[]).includes(readStoredString('accent', 'cyan'))
+    ? (readStoredString('accent', 'cyan') as AccentName)
+    : 'cyan',
+);
+
+export function setThemeName(value: ThemeName): void {
+  theme.value = value;
+  writeStoredString('theme', value);
+}
+
+export function setAccent(value: AccentName): void {
+  accent.value = value;
+  writeStoredString('accent', value);
+}
+
 /** D8: per-channel playback volume (0..1.5) and pan (-1..1). */
 export const channelVolumes = signal<[number, number]>([1, 1]);
 export const channelPans = signal<[number, number]>([0, 0]);

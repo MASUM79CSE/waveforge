@@ -1,4 +1,5 @@
 import { Brand } from '../brand';
+import { cycleAccent, toggleTheme } from './theme';
 import { TOAST_ERROR_MS, TOAST_INFO_MS } from '../core/constants';
 import { getErrorMessage, isWaveForgeError, makeError, redactContext } from '../core/errors';
 import { logger } from '../core/logger-instance';
@@ -93,6 +94,22 @@ export function openDoctor(): void {
 
 export function closeDoctor(): void {
   S.doctorOpen.value = false;
+}
+
+export function toggleLightTheme(): void {
+  toggleTheme();
+}
+
+export function cycleAccentColor(): void {
+  cycleAccent();
+}
+
+export function isLightTheme(): boolean {
+  return S.theme.value === 'light';
+}
+
+export function accentLabel(): string {
+  return S.accent.value.charAt(0).toUpperCase() + S.accent.value.slice(1);
 }
 
 export function openShortcuts(): void {

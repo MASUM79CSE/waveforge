@@ -26,11 +26,13 @@ import { MetadataDialog } from './MetadataDialog';
 import { DraftsDialog } from './DraftsDialog';
 import { SaveDraftDialog } from './SaveDraftDialog';
 import { RestoreBanner } from './RestoreBanner';
+import { applyTheme } from '../theme';
 import { DoctorPanel } from './DoctorPanel';
 import { ShortcutsOverlay } from './ShortcutsOverlay';
 import { UpdateBanner } from './UpdateBanner';
 
 export function App() {
+  applyTheme(); // mirror persisted theme/accent onto <html> before first paint
   return (
     <div class="shell">
       <RestoreBanner />
