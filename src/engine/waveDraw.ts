@@ -32,6 +32,10 @@ interface Theme {
   selectionBorder: string;
   pending: string;
   beatLine: string;
+  clipBg: string;
+  clipBorder: string;
+  clipEdge: string;
+  clipSelected: string;
 }
 
 const THEME_FALLBACK: Theme = {
@@ -47,6 +51,10 @@ const THEME_FALLBACK: Theme = {
   selectionBorder: 'rgba(90, 242, 255, 0.55)',
   pending: '#101318',
   beatLine: 'rgba(90, 200, 250, 0.25)',
+  clipBg: 'rgba(255, 255, 255, 0.045)',
+  clipBorder: 'rgba(255, 255, 255, 0.28)',
+  clipEdge: 'rgba(90, 242, 255, 0.5)',
+  clipSelected: 'rgba(90, 242, 255, 0.9)',
 };
 
 // D9: the palette lives in tokens.css (--cv-*) so themes apply everywhere;
@@ -64,6 +72,10 @@ const CV_KEYS: Array<[keyof Theme, string]> = [
   ['selectionBorder', '--cv-selection-border'],
   ['pending', '--cv-pending'],
   ['beatLine', '--cv-beat'],
+  ['clipBg', '--cv-clip-bg'],
+  ['clipBorder', '--cv-clip-border'],
+  ['clipEdge', '--cv-clip-edge'],
+  ['clipSelected', '--cv-clip-selected'],
 ];
 
 let cachedTheme = THEME_FALLBACK;

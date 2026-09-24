@@ -86,6 +86,26 @@ describe('non-shortcuts must not hijack the browser', () => {
   });
 });
 
+describe('M9d2 arrangement shortcuts (single-source)', () => {
+  test('Ctrl+D duplicates the selected clip; plain S splits at the cursor', () => {
+    expect(std('d', { ctrl: true })).toBe('clip.duplicate');
+    expect(std('D', { meta: true })).toBe('clip.duplicate');
+    expect(std('s')).toBe('clip.split');
+    expect(std('S')).toBe('clip.split');
+  });
+
+  test('Delete/Backspace route to clip.delete (doc fallback decided by the command)', () => {
+    expect(std('Delete')).toBe('clip.delete');
+    expect(std('Backspace')).toBe('clip.delete');
+  });
+
+  test('plain letters stay untouched except the arrangement keys', () => {
+    expect(std('z')).toBeNull();
+    expect(std('a')).toBeNull();
+    expect(std('x')).toBeNull();
+  });
+});
+
 describe('platform-aware menu hints', () => {
   test('generic (Windows/Linux) form', () => {
     expect(kbdHints(false)).toMatchObject({

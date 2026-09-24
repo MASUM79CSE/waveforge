@@ -1,40 +1,13 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
+import { activeTrackId, projectOpen, projectTracks } from '../state';
 import {
-  accent,
-  activeTrackId,
-  cursorPos,
-  docInfo,
-  projectOpen,
-  projectTracks,
-  projectVersion,
-  theme,
-  viewSpp,
-  viewStart,
-} from '../state';
-import {
-  getTrackChannels,
   importToTrack,
   removeTrack,
   setActiveTrack,
   updateTrackMix,
 } from '../projectActions';
-import { laneBuckets, lanePeaksFromBuckets, type LaneBuckets } from '../../engine/lanePeaks';
-import { currentTheme } from '../../engine/waveDraw';
-import { paletteVersionNow } from '../theme';
 import { t } from '../../i18n';
-
-/** Bucket envelope cache: rebuilt once per (lane, project version). */
-const bucketCache = new Map<string, { version: number; buckets: LaneBuckets }>();
-
-function bucketsFor(trackId: string, version: number): LaneBuckets | null {
-  const hit = bucketCache.get(trackId);
-  if (hit && hit.version === version) return hit.buckets;
-  const channels = getTrackChannels(trackId);
-  if (!channels) return null;
-  const buckets = laneBuckets(channels);
-  bucketCache.set(trackId, { version, buckets });
-  return buckets;
-}
+import { LaneCanvas } from './ClipLaneCanvas';
 
 /**
  * Multitrack lane stack (M8d): strips + waveform lanes mirroring the main
@@ -183,113 +156,5 @@ function Lane({ snap, active }: { snap: Snap; active: boolean }) {
       <LaneCanvas trackId={snap.id} />
     </div>
   );
-}
-
-/** Lane waveform: mirrors the doc view; envelope cached, playhead cheap. */
-function LaneCanvas({ trackId }: { trackId: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    interface EnvCache {
-      key: string;
-      min: Float32Array;
-      max: Float32Array;
-    }
-    let cache: EnvCache | null = null;
-    const ctx2d = canvas.getContext('2d');
-
-    const draw = (cursorOnly: boolean): void => {
-      if (!ctx2d) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      if (w === 0 || h === 0) return;
-      const spp = viewSpp.value;
-      const start = viewStart.value; // seconds (viewState convention)
-      const sr = docInfo.value?.sampleRate ?? 44100;
-      const themeVer = paletteVersionNow();
-
-      // envelope cache: view/theme/project changes rebuild, cursor doesn't
-      const key = `${trackId}|${spp}|${start}|${w}|${sr}|${projectVersion.value}|${themeVer}`;
-      let min: Float32Array;
-      let max: Float32Array;
-      if (cache?.key === key) {
-        min = cache.min;
-        max = cache.max;
-      } else {
-        // M8g: aggregate coarse buckets (instant zoom/pan); zoomed-in views
-        // fall back to the bounded direct scan inside fromBuckets
-        const buckets = bucketsFor(trackId, projectVersion.value);
-        const peaks = buckets
-          ? lanePeaksFromBuckets(buckets, Math.max(1, Math.round(spp)), Math.round(start * sr), w)
-          : null;
-        min = peaks?.min ?? new Float32Array(w);
-        max = peaks?.max ?? new Float32Array(w);
-        cache = { key, min, max };
-      }
-
-      ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const px = Math.round(w * dpr);
-      const py = Math.round(h * dpr);
-      if (canvas.width !== px || canvas.height !== py) {
-        canvas.width = px;
-        canvas.height = py;
-      }
-      const theme = currentTheme();
-      if (!cursorOnly) {
-        ctx2d.fillStyle = theme.laneBg;
-        ctx2d.fillRect(0, 0, w, h);
-        ctx2d.strokeStyle = theme.center;
-        ctx2d.beginPath();
-        ctx2d.moveTo(0, h / 2);
-        ctx2d.lineTo(w, h / 2);
-        ctx2d.stroke();
-        ctx2d.fillStyle = theme.wave;
-        for (let x = 0; x < w; ++x) {
-          const lo = min[x]!;
-          const hi = max[x]!;
-          if (lo === 0 && hi === 0) continue;
-          const y1 = ((1 - hi) * h) / 2;
-          const y2 = ((1 - lo) * h) / 2;
-          ctx2d.fillRect(x, y1, 1, Math.max(1, y2 - y1));
-        }
-      }
-      // playhead (shared timeline; x from the viewState convention)
-      const x = xAtTimePx(cursorPos.value, start, sr, spp);
-      ctx2d.strokeStyle = theme.playhead;
-      ctx2d.beginPath();
-      ctx2d.moveTo(x, 0);
-      ctx2d.lineTo(x, h);
-      ctx2d.stroke();
-    };
-
-    const full = (): void => draw(false);
-    const cursor = (): void => draw(true);
-    full();
-    const subs = [
-      viewSpp.subscribe(full),
-      viewStart.subscribe(full),
-      cursorPos.subscribe(cursor),
-      projectVersion.subscribe(full),
-      theme.subscribe(full),
-      accent.subscribe(full),
-    ];
-    const onResize = (): void => full();
-    window.addEventListener('resize', onResize);
-    return () => {
-      for (const un of subs) un();
-      window.removeEventListener('resize', onResize);
-    };
-  }, [trackId]);
-
-  return <canvas ref={canvasRef} class="lane-canvas" />;
-}
-
-/** Pixel x for time t given the viewState convention (start seconds, spp). */
-function xAtTimePx(t: number, startSec: number, sr: number, spp: number): number {
-  if (spp <= 0) return -1;
-  return ((t - startSec) * sr) / spp;
 }
 

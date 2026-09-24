@@ -25,7 +25,10 @@ export type ShortcutCommand =
   | 'edit.copy'
   | 'edit.paste'
   | 'edit.selectAll'
-  | 'edit.insertSilence';
+  | 'edit.insertSilence'
+  | 'clip.split'
+  | 'clip.delete'
+  | 'clip.duplicate';
 
 function isMacLike(): boolean {
   return typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform ?? '');
@@ -43,7 +46,6 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
   if (event.alt) return null;
   const key = event.key.toLowerCase();
   const mod = event.ctrl || event.meta;
-  if (!mod && !event.shift) return null;
 
   if (mod) {
     switch (key) {
@@ -61,13 +63,26 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
         return 'edit.selectAll';
       case 'o':
         return 'file.open';
+      case 'd':
+        return 'clip.duplicate';
       default:
         return null;
     }
   }
 
-  // legacy AudioMass shift-letter layer (no ctrl/meta)
-  if (!event.shift) return null;
+  // arrangement plain keys (typing guards are the caller's job) — then the
+  // legacy AudioMass shift-letter layer
+  if (!event.shift) {
+    switch (key) {
+      case 's':
+        return 'clip.split';
+      case 'delete':
+      case 'backspace':
+        return 'clip.delete';
+      default:
+        return null;
+    }
+  }
   switch (key) {
     case 'z':
       return 'edit.undo';
@@ -90,6 +105,7 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
 
 export interface KbdHints {
   open: string;
+  duplicateClip?: string;
   undo: string;
   redo: string;
   cut: string;
@@ -107,6 +123,7 @@ export function kbdHints(mac = isMacLike()): KbdHints {
   if (mac) {
     return {
       open: '⌘O',
+      duplicateClip: '⌘D',
       undo: '⌘Z',
       redo: '⇧⌘Z',
       cut: '⌘X',
@@ -118,6 +135,7 @@ export function kbdHints(mac = isMacLike()): KbdHints {
   }
   return {
     open: 'Ctrl+O',
+    duplicateClip: 'Ctrl+D',
     undo: 'Ctrl+Z',
     redo: 'Ctrl+Y',
     cut: 'Ctrl+X',

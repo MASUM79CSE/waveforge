@@ -18,6 +18,7 @@ import {
   type TrackState,
 } from '../engine/project';
 import { bounceLaneRegion } from '../engine/clipAssets';
+import type { AudioClip } from '../engine/clips';
 import { ProjectPlayback, type ClipPlaybackTrack, type GraphContext } from '../engine/projectPlayback';
 import { decodeBlob, getSharedContext } from '../io/decode';
 import { resample } from '../fx/resample';
@@ -180,6 +181,27 @@ export async function importToTrack(file: File): Promise<void> {
 }
 
 /** Add a fully-formed track (import/record path — undoable). */
+/** The live project editor (null when no project) — arrangement ops use it. */
+export function projectEditor(): AudioProjectEditor | null {
+  return proj;
+}
+
+/** Stamp + bump after a direct arrangement edit (clip actions). */
+export function syncProject(): void {
+  lastProjectOpAt = Date.now();
+  sync();
+}
+
+/** Live clip arrangement of a lane (null when unknown). */
+export function clipArrangement(trackId: string): AudioClip[] | null {
+  return proj?.project.tracks.find((t) => t.id === trackId)?.clips ?? null;
+}
+
+/** Backing PCM of a clip asset (zero-copy; null when unknown). */
+export function assetPcm(assetId: string): Float32Array[] | null {
+  return proj?.project.assets[assetId]?.channels ?? null;
+}
+
 /** Register a lane's backing asset (zero-copy) — call before addProjectTrack. */
 export function registerLaneAsset(trackId: string, channels: Float32Array[]): void {
   const project = requireEditor().project;

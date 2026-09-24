@@ -4,6 +4,9 @@ import { kbdHints } from './shortcuts';
 
 const HINTS = kbdHints();
 import * as EA from './editActions';
+import * as CA from './clipActions';
+import { projectOpen } from './state';
+import { toastInfo } from './toast';
 
 /**
  * Command registry — one place where menus and keyboard shortcuts meet.
@@ -187,6 +190,32 @@ export const commands: Command[] = [
 
   // Help
   { id: 'help.welcome', label: () => t().helpWelcome, run: () => A.openWelcome() },
+  // Clip arrangement (M9d2) — keyboard-first; canvas gestures commit here too
+  {
+    id: 'clip.split',
+    label: () => t().clipSplit,
+    kbd: () => 'S',
+    run: () => {
+      if (!CA.splitSelectedAtCursor() && projectOpen.value) toastInfo(t().clipNone);
+    },
+  },
+  {
+    id: 'clip.duplicate',
+    label: () => t().clipDuplicate,
+    kbd: () => HINTS.duplicateClip ?? 'Ctrl+D',
+    run: () => {
+      if (!CA.duplicateSelectedClip()) toastInfo(t().clipNone);
+    },
+  },
+  {
+    id: 'clip.delete',
+    label: () => t().clipDelete,
+    kbd: () => 'Del',
+    run: () => {
+      // doc fallback: with no clip selected, Delete keeps its M1 meaning
+      if (!CA.deleteSelectedClip()) EA.deleteSelection();
+    },
+  },
   { id: 'help.about', label: () => t().helpAbout, run: () => A.openAbout() },
   { id: 'help.doctor', label: () => t().helpDoctor, run: () => A.openDoctor() },
   { id: 'help.shortcuts', label: () => t().helpShortcuts, run: () => A.openShortcuts() },

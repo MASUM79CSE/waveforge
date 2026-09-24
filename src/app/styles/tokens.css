@@ -94,6 +94,10 @@
   --cv-selection-border: rgba(90, 242, 255, 0.55);
   --cv-pending: #101318;
   --cv-beat: rgba(90, 200, 250, 0.25);
+  --cv-clip-bg: rgba(255, 255, 255, 0.045);
+  --cv-clip-border: rgba(255, 255, 255, 0.28);
+  --cv-clip-edge: rgba(90, 242, 255, 0.5);
+  --cv-clip-selected: rgba(90, 242, 255, 0.9);
 
   /* layout */
   --menubar-h: 38px;
@@ -168,4 +172,8 @@
   --cv-selection-border: rgba(2, 132, 160, 0.6);
   --cv-pending: #d5dbe2;
   --cv-beat: rgba(2, 100, 160, 0.3);
+  --cv-clip-bg: rgba(0, 0, 0, 0.05);
+  --cv-clip-border: rgba(0, 0, 0, 0.35);
+  --cv-clip-edge: rgba(2, 132, 160, 0.55);
+  --cv-clip-selected: rgba(2, 132, 160, 0.95);
 }
