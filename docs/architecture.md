@@ -10,7 +10,8 @@ UI (Preact + Signals)  —— commands ▼ / events ▲ ——  Application (TS)
 Engine (imperative, UI-free)                      Workers (typed, supervised)
    AudioEngine · AudioDocument + EDL                 peaks · wav · mp3 · flac · tempo
    EffectRegistry (offline render + preview)         AudioWorklet recorder
-   WaveRenderer (canvas) · Analyzer kernels
+   WaveRenderer (canvas lifecycle + interaction) · waveDraw (painting)
+   Analyzer kernels
                                                                 │
 Platform: Web Audio · Canvas · IndexedDB · File System · Service Worker (PWA)
 ```

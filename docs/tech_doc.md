@@ -26,6 +26,12 @@ vercel.json static deploy. Details: `adr/000`.
 - Every catch: **recover, rethrow typed, or report** — empty catches fail review
 - Logger (`core/logger.ts`) is the only console consumer; keeps last 100 events,
   context redacted (basename paths, no audio bytes)
+- Local error log (`app/errorLog.ts`, §6.3 #8): last 100 runtime errors in a
+  ring buffer; export-to-JSON from the doctor panel — **no network telemetry**
+- Doctor panel (`app/doctor.ts` + `DoctorPanel.tsx`, §6.3 #7): Help →
+  Diagnostics runs capability self-tests (WebAudio render, worklet, IDB, wasm,
+  CompressionStream, storage estimate, save picker, OffscreenCanvas,
+  same-origin fetch) and renders a local pass/fail report
 
 ## Style gates (CI-enforced)
 
