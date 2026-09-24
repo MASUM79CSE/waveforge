@@ -288,3 +288,59 @@ test('arrangement: split at cursor, drag right, undo x2, duplicate, play (M9d)',
 
   expect(consoleErrors).toEqual([]);
 });
+
+test('drafts v3: arranged project survives save/reload with clip lists (M9f)', async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') consoleErrors.push(m.text());
+  });
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await loadSample(page);
+
+  // project + 3 s take lane, then arrange it (split at 50% of the view)
+  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  const chooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: /Import audio/ }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({ name: 'take9.wav', mimeType: 'audio/wav', buffer: wavBytes(3) });
+  const lane = page.locator('.lane', { hasText: 'take9' });
+  await lane.click();
+  const clipsOf = page.getByTestId('clips-take9');
+  await expect(clipsOf).toHaveText('1');
+
+  const doc = page.locator('canvas.wave-canvas');
+  const box = await doc.boundingBox();
+  // 20% of the view ≈ 1.9 s — inside the 3 s take9 clip (0..32%)
+  await page.mouse.click(box!.x + 26 + 0.2 * (box!.width - 26), box!.y + box!.height / 2);
+  await page.keyboard.press('s');
+  await expect(clipsOf).toHaveText('2');
+
+  // save as a draft (v3: clips + assets ride the payload)
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: /save draft/i }).click();
+  const saveDialog = page.getByRole('dialog', { name: /save draft/i });
+  await saveDialog.locator('#draft-name').fill('arranged e2e');
+  await saveDialog.getByRole('button', { name: /save draft/i }).click();
+  await expect(page.locator('.toast-msg').last()).toContainText(/Draft saved/i, {
+    timeout: 10_000,
+  });
+
+  // reload → reopen → the ARRANGEMENT is back (two clips on the take lane)
+  await page.reload();
+  await page.mouse.click(4, 400);
+  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: /drafts/i }).click();
+  const manager = page.getByTestId('drafts-dialog');
+  await manager.getByTestId('draft-arranged e2e').getByRole('button', { name: 'Open' }).click();
+  await expect(page.locator('.lane', { hasText: 'take9' })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByTestId('clips-take9')).toHaveText('2');
+
+  // the arranged lane still plays through the clip scheduling path
+  await page.getByRole('button', { name: /^Play \(Space\)/ }).click();
+  await expect(page.getByRole('button', { name: /^Pause \(Space\)/ })).toBeVisible();
+  await page.getByRole('button', { name: /^Pause \(Space\)/ }).click();
+
+  expect(consoleErrors).toEqual([]);
+});

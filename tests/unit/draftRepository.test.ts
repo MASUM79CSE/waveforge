@@ -95,3 +95,52 @@ describe('IdbDraftRepository', () => {
     expect(await b.findAll()).toHaveLength(0);
   });
 });
+
+describe('M9f: v3 repository round-trip (clips + deduped assets)', () => {
+  test('save with assets → findById returns v3 record with clips + assets', async () => {
+    const repo = await makeRepo();
+    const assetCh = [new Float32Array(1000).fill(0.5), new Float32Array(1000).fill(0.5)];
+    const saved = await repo.save({
+      ...meta,
+      length: 1000,
+      audio: assetCh,
+      tracks: [
+        {
+          meta: {
+            id: 't1', name: 'A', gain: 1, pan: 0, mute: false, solo: false, channels: 2, length: 1000,
+            clips: [{ id: 'a1', assetId: 'asset_shared', start: 0, offset: 0, duration: 1000 }],
+          },
+          channels: assetCh,
+          clips: [{ id: 'a1', assetId: 'asset_shared', start: 0, offset: 0, duration: 1000 }],
+        },
+        {
+          meta: {
+            id: 't2', name: 'B', gain: 1, pan: 0, mute: false, solo: false, channels: 2, length: 1400,
+            clips: [
+              { id: 'c1', assetId: 'asset_shared', start: 0, offset: 0, duration: 600 },
+              { id: 'c2', assetId: 'asset_shared', start: 800, offset: 600, duration: 400 },
+            ],
+          },
+          channels: assetCh,
+          clips: [
+            { id: 'c1', assetId: 'asset_shared', start: 0, offset: 0, duration: 600 },
+            { id: 'c2', assetId: 'asset_shared', start: 800, offset: 600, duration: 400 },
+          ],
+        },
+      ],
+      assets: [
+        {
+          meta: { id: 'asset_shared', sampleRate: 44100, channels: 2, length: 1000 },
+          channels: assetCh,
+        },
+      ],
+    });
+    const loaded = await repo.findById(saved.id);
+    expect(loaded?.assets).toHaveLength(1);
+    expect(loaded?.assets![0]!.channels[0]).toEqual(assetCh[0]);
+    expect(loaded?.tracks![1]!.clips).toHaveLength(2);
+    expect(loaded?.header.v).toBe(3);
+    // the decoded track channels render from the clip list
+    expect(loaded?.tracks![1]!.channels[0]!.length).toBe(1200);
+  });
+});
