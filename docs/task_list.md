@@ -590,4 +590,27 @@ package ADR 007, RNNoise).
       retained. E7b RNNoise "AI Voice" mode parked (`@echogarden/
       rnnoise-wasm`, BSD-3-Clause — sole license-clean vendor).
 
+## M8 — multitrack (lanes, docs/multitrack-plan.md)
+
+Analysis `docs/multitrack-analysis.md` (2026-09 market: BandLab 16-track/
+15-min cap, Soundtrap ~5-track free tier, openDAW AGPL validates the
+no-account lane; decision: lane-based single timeline, not clips).
+
+- [x] **M8a** project core (`src/engine/project.ts`, `5e51993`): TrackState/
+      ProjectState, deterministic mix kernel (fixed-order Float64 → single
+      f32 round) + bit-exact reference, balance-law pan (center unity,
+      hard side exact zero), classic mute/solo rule; 11 anchors; 6×3-min
+      mix ≈ 400 ms (budget 500 uninstrumented)
+- [x] **M8b** ProjectPlayback (`src/engine/projectPlayback.ts`, `d1384a8`):
+      per-track source → splitter → L/R balance gains → shared merger,
+      SAME kernels as mixdown (playback ≡ render parity), live τ=0.01 mix
+      updates, loop regions, longest-track natural end; single-doc engine
+      path untouched; 6 fake-ctx anchors
+- [x] **M8c** AudioProjectEditor (`src/engine/projectEditor.ts`, `e568019`):
+      trackId-tagged slice-op history + structural add/remove-track ops in
+      one LIFO stack (History gains optional trackId/projectUndo/projectRedo);
+      cross-track interleaved undo/redo bit-exact; 8 anchors
+- [ ] M8d UI (lane stack + strips) → M8e persistence/io → M8f effects on
+      tracks → M8g hardening/close
+
 ## M8+ — post-v1 (see Build Plan §10 roadmap)
