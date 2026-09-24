@@ -8,6 +8,7 @@
  * single-clip lane over a fresh asset (zero-copy — the M9b bridge).
  */
 import { renderClipTrack, type AudioAsset, type AudioClip } from './clips';
+import { mulTable, panWeights, type AutomationCurve } from './automation';
 
 export type { AudioAsset, AudioClip };
 export type { ClipTrack } from './clips';
@@ -24,6 +25,9 @@ export interface TrackState {
   solo: boolean;
   /** Sorted non-overlapping clips (sample domain; see clips.ts kernels). */
   clips: AudioClip[];
+  /** A2: automation curves per param key ('volume', 'pan'); empty/missing
+   * = no automation for that param. */
+  automation?: Record<string, AutomationCurve>;
 }
 
 export interface ProjectState {
@@ -230,10 +234,29 @@ export function mixTracks(project: ProjectState): Float32Array[] {
     const [gl, gr] = panGains(t.pan);
     const l = ch[0]!;
     const r = ch[1] ?? ch[0]!;
+    const volCurve = t.automation?.volume;
+    const panCurve = t.automation?.pan;
+    const vol = volCurve && volCurve.length > 0 ? mulTable(volCurve, l.length) : null;
+    const panW = panCurve && panCurve.length > 0 ? panWeights(panCurve, l.length) : null;
     const wl = gl * geff;
     const wr = gr * geff;
-    for (let i = 0; i < l.length; ++i) accL[i] = accL[i]! + l[i]! * wl;
-    for (let i = 0; i < r.length; ++i) accR[i] = accR[i]! + r[i]! * wr;
+    if (!vol && !panW) {
+      // existing scalar path — byte-for-byte unchanged (bit-identity guard)
+      for (let i = 0; i < l.length; ++i) accL[i] = accL[i]! + l[i]! * wl;
+      for (let i = 0; i < r.length; ++i) accR[i] = accR[i]! + r[i]! * wr;
+      continue;
+    }
+    // automated path: same Float64 accumulation, per-sample weights
+    for (let i = 0; i < l.length; ++i) {
+      const m = vol ? vol[i]! : 1;
+      const wli = panW ? wl * m * panW.gl[i]! : wl * m;
+      accL[i] = accL[i]! + l[i]! * wli;
+    }
+    for (let i = 0; i < r.length; ++i) {
+      const m = vol ? vol[i]! : 1;
+      const wri = panW ? wr * m * panW.gr[i]! : wr * m;
+      accR[i] = accR[i]! + r[i]! * wri;
+    }
   }
 
   const outL = new Float32Array(maxLen);
@@ -267,8 +290,25 @@ export function mixdownReference(project: ProjectState): Float32Array[] {
     const [gl, gr] = panGains(t.pan);
     const l = ch[0]!;
     const r = ch[1] ?? ch[0]!;
-    for (let i = 0; i < l.length; ++i) outL[i] = outL[i]! + l[i]! * (gl * geff);
-    for (let i = 0; i < r.length; ++i) outR[i] = outR[i]! + r[i]! * (gr * geff);
+    const volCurve = t.automation?.volume;
+    const panCurve = t.automation?.pan;
+    const vol = volCurve && volCurve.length > 0 ? mulTable(volCurve, l.length) : null;
+    const panW = panCurve && panCurve.length > 0 ? panWeights(panCurve, l.length) : null;
+    if (!vol && !panW) {
+      for (let i = 0; i < l.length; ++i) outL[i] = outL[i]! + l[i]! * (gl * geff);
+      for (let i = 0; i < r.length; ++i) outR[i] = outR[i]! + r[i]! * (gr * geff);
+      continue;
+    }
+    for (let i = 0; i < l.length; ++i) {
+      const m = vol ? vol[i]! : 1;
+      const wl = panW ? gl * geff * m * panW.gl[i]! : gl * geff * m;
+      outL[i] = outL[i]! + l[i]! * wl;
+    }
+    for (let i = 0; i < r.length; ++i) {
+      const m = vol ? vol[i]! : 1;
+      const wr = panW ? gr * geff * m * panW.gr[i]! : gr * geff * m;
+      outR[i] = outR[i]! + r[i]! * wr;
+    }
   }
 
   const resL = new Float32Array(maxLen);

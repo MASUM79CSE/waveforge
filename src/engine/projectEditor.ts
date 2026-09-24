@@ -9,6 +9,7 @@
  * buffers for transport/UI are built by the app layer.
  */
 import type { AudioAsset, AudioClip } from './clips';
+import type { AutomationPoint } from './automation';
 import { History, type HistoryEntry, type HistoryOptions } from './history';
 import { createTrack, trackChannels, type ProjectState, type TrackState } from './project';
 
@@ -92,6 +93,34 @@ export class AudioProjectEditor {
     });
   }
 
+  /** Set/remove one automation curve (A2). Undoable, 0-byte entry. */
+  executeAutomationEdit(
+    trackId: string,
+    paramKey: string,
+    before: AutomationPoint[],
+    after: AutomationPoint[],
+    label: string,
+  ): void {
+    const track = this.state.tracks.find((t) => t.id === trackId);
+    if (!track) throw new Error(`executeAutomationEdit: unknown track ${trackId}`);
+    const apply = (points: AutomationPoint[]): void => {
+      if (points.length === 0) {
+        if (track.automation) delete track.automation[paramKey];
+      } else {
+        (track.automation ??= {})[paramKey] = points;
+      }
+    };
+    apply(after);
+    this.history.push({
+      label,
+      bytes: 0,
+      undoOps: [],
+      redoOps: [],
+      projectUndo: { kind: 'setAutomation', trackId, paramKey, points: before },
+      projectRedo: { kind: 'setAutomation', trackId, paramKey, points: after },
+    });
+  }
+
   /** Add a lane (undoable — the track data rides the entries). */
   addTrack(track: TrackState): void {
     this.state.tracks.push(track);
@@ -142,6 +171,16 @@ export class AudioProjectEditor {
     if (projectOp.kind === 'removeTrackById') {
       const i = this.state.tracks.findIndex((t) => t.id === projectOp.trackId);
       if (i >= 0) this.state.tracks.splice(i, 1);
+      return;
+    }
+    if (projectOp.kind === 'setAutomation') {
+      const lane = this.state.tracks.find((t) => t.id === projectOp.trackId);
+      if (!lane) throw new Error(`history: track ${projectOp.trackId} missing during ${dir}`);
+      if (projectOp.points.length === 0) {
+        if (lane.automation) delete lane.automation[projectOp.paramKey];
+      } else {
+        (lane.automation ??= {})[projectOp.paramKey] = projectOp.points;
+      }
       return;
     }
     if (projectOp.kind === 'setClips') {

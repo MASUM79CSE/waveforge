@@ -10,7 +10,15 @@ export type ProjectHistoryOp =
   | { kind: 'removeTrackById'; trackId: string }
   | { kind: 'addTrackAt'; index: number; track: import('./project').TrackState }
   /** M9d1: clip-arrangement snapshot for one lane (assets ride the entry). */
-  | { kind: 'setClips'; trackId: string; clips: import('./clips').AudioClip[] };
+  | { kind: 'setClips'; trackId: string; clips: import('./clips').AudioClip[] }
+  /** A2: automation curve for one (track, param); each side carries ITS points
+   * (empty points = automation removed for that param). */
+  | {
+      kind: 'setAutomation';
+      trackId: string;
+      paramKey: string;
+      points: import('./automation').AutomationPoint[];
+    };
 
 export interface HistoryEntry {
   label: string;
