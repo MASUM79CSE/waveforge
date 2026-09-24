@@ -650,4 +650,21 @@ histories — still fully local, no account, no track cap. Deferred backlog:
 clip/arrangement model (M9+), automation package (ADR 007), RNNoise mode
 (E7b).
 
+## M9 — clips/arrangement (docs/clips-plan.md; analysis docs/clips-analysis.md)
+
+Market: region editing is the 2026 norm (BandLab regions: move/trim/split/
+copy + per-region gain/fades). Decision: tracks hold sorted non-overlapping
+clips referencing shared immutable assets (copy-on-write bounces for
+destructive ops); every M8 lane becomes a single-clip track (compat, no
+migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
+
+- [x] **M9a** clip core (`src/engine/clips.ts`): placement kernels
+      (sorted insert w/ overlap refusal, split w/ offset accumulation,
+      neighbour-clamped move/trim, duplicate, remove) + render kernels
+      (stereo Float64 fixed-order render, region render for the bounce
+      path, slow bit-exact reference). 13 anchors; render 60 s single-clip
+      ≈ 75 ms, 200-clip ≈ 29 ms (budgets 120/400 uninstrumented)
+- [ ] M9b asset store + lane bridge → M9c clip playback → M9d arrangement
+      UI → M9e history/commands → M9f persistence v3 + export parity
+
 ## M8+ — post-v1 (see Build Plan §10 roadmap)
