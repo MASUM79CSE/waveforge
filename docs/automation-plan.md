@@ -142,3 +142,24 @@ package ships.
   regressions to M0–M9 flows; D-series visuals; pure client-side;
   RED→GREEN per phase; conventional commits per phase; ≤400-line files;
   every existing e2e stays green untouched.
+
+## Status stamp (A1–A5 SHIPPED, 2026-09-25)
+
+| Phase | State | Evidence |
+| --- | --- | --- |
+| A1 kernel | ✅ `d5049a8` | 11 unit anchors (eval/insert/move/remove/mulTable/panWeights; constant-curve all-exact-ones guard) |
+| A2 model+render | ✅ `a7839b6`/`e2713d0` | bit-identity: constant curves == no-automation byte-for-byte (fast + reference); 0-byte history entries; interleave with clip ops |
+| A3 playback | ✅ `55a64e8`/`beb4110` | leg ramps re-stamped per loop pass; zero param calls without curves; updateMix yields on automated legs; monitor-vs-render tolerance documented in-code |
+| A4 envelope UI | ✅ `fe6cf9e`/`d463c70` | `A` toggles (single-source shortcuts); per-lane VOL/PAN picker; overlay claims pointers only in mode; one entry/gesture; +2 tokens `--cv-automation`/`--cv-automation-line` |
+| A5 persistence | ✅ `ac56e65`/`f51a2e6` | drafts v2/v3 optional `automation` (≤4096 pts, integral `at`), no version bump; round-trip renders bit-identically; 37th e2e draw→play→save→reload |
+| A6 FX params | ⏳ follow-up package | deviation logged above (graph-kind ramps first, then kernel-kind per-kernel) |
+
+Final gates at A5: **596/596 unit (71 files), 37/37 e2e, lint 0, build
+1.19 s, Lighthouse 99/100/100/100** (FCP 1.5 s, LCP 1.8 s; br transfer
+96.5 KiB vs M9's 95 KiB — +1.5 KiB for the whole feature).
+LH artifact: `docs/perf/lighthouse-a5.json`.
+
+A6 lesson stamped for the follow-up: the A2 bit-identity pattern
+(constant curve == no-automation, byte-for-byte) transfers directly to
+graph-kind FX params; per-kernel literal anchors follow §8 of
+`docs/effects-v2-plan.md`.

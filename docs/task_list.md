@@ -678,3 +678,17 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
       UI → M9e history/commands → M9f persistence v3 + export parity
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)
+
+## 2026-09-25 — Automation package A1–A5 SHIPPED (A6 follow-up tracked)
+
+- A1 kernel `d5049a8` · A2 model/history/mixdown `a7839b6`+`e2713d0`
+  (bit-identity gate green) · A3 leg ramps `55a64e8`+`beb4110` ·
+  A4 envelope UI `fe6cf9e`+`d463c70` · A5 drafts+37th e2e
+  `ac56e65`+`f51a2e6`.
+- Final: 596/596 unit (71 files), 37/37 e2e, lint 0, build 1.19 s,
+  LH 99/100/100/100 (docs/perf/lighthouse-a5.json).
+- A6 (effect-param automation: graph-kind ramps → kernel-kind) remains
+  a separate follow-up per docs/automation-plan.md deviation note.
+- LH recipe re-verified after restore: /tmp/lh-server.cjs regenerated
+  (br q5, 404 non-nav, immutable /assets); ALWAYS verify br transfer
+  via curl (~96.5 KiB this run) before trusting a number.
