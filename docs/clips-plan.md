@@ -52,7 +52,7 @@ original channels bit-exact); bounce write-back (single-clip region ==
 in-place edit result bit-exact; shared-asset bounce leaves the sibling
 clip's audio untouched).
 
-## M9c — playback (`ProjectPlayback` clip scheduling)
+## M9c — playback (`ProjectPlayback` clip scheduling) — DONE
 
 One source per clip; balance gains per track unchanged; seek maps to
 per-clip offsets; loop restarts (parity with current restart-on-loop).

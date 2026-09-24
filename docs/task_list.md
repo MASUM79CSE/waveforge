@@ -658,6 +658,9 @@ clips referencing shared immutable assets (copy-on-write bounces for
 destructive ops); every M8 lane becomes a single-clip track (compat, no
 migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
 
+- [x] **M9c** clip playback: pure pass expansion (`clipPlayback.ts`) +
+      `startClips` (one source per audible clip, restart-on-loop, shared
+      gain kernels + position math). 11 anchors; channels path untouched
 - [x] **M9a** clip core (`src/engine/clips.ts`): placement kernels
       (sorted insert w/ overlap refusal, split w/ offset accumulation,
       neighbour-clamped move/trim, duplicate, remove) + render kernels
