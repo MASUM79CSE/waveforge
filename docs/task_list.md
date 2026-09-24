@@ -481,4 +481,35 @@ pending — record with the E2 phase.
       it). Registry 21 effects; e2e suite 18 → 19 (hidden until enabled,
       then View → Stretch / Pitch → ×1.25 → 11.5 s → Ctrl+Z).
 
-## M7+ — see Build Plan §10 (roadmap)
+## M7 — Hardening & release ✅
+
+- [x] **a11y / focus management**: base modal traps focus (initial focus on
+      the first focusable, Tab/Shift+Tab wrap, unmount restores the opener);
+      `--text-faint` contrast bumped 2.78 → 5.29:1 on panel backgrounds.
+- [x] **Local error log** (§6.3 #8): last 100 errors ring-buffered in memory
+      (window error + unhandledrejection + crash boundary), export-to-JSON via
+      the doctor panel. No network telemetry.
+- [x] **Doctor diagnostics** (§6.3 #7): Help → Diagnostics runs capability
+      self-tests (WebAudio offline render, AudioWorklet addModule, IndexedDB
+      write, wasm instantiate, CompressionStream, storage estimate, save
+      picker, OffscreenCanvas, same-origin fetch) with pass/fail + timing;
+      unit-tested runner, e2e via the real menu with the §2.3
+      zero-console-errors assertion.
+- [x] **Refactor pass**: `WaveRenderer.ts` (478 lines) split — painting
+      extracted to `engine/waveDraw.ts` (239) behind a `WaveDrawCtx`; the
+      renderer keeps lifecycle/zoom/interaction (281). All source files now
+      within the ≤400-line budget; remaining >50-line functions are JSX
+      render components and hot DSP kernels already reviewed at their
+      milestones (splitting them would churn reviewed code for no gain).
+- [x] **Perf / Lighthouse gate** (§2.3, mobile emulation — the strict preset):
+      **99 Performance / 100 Accessibility / 100 Best Practices / 100 SEO**
+      against the production build served with brotli (report:
+      `docs/perf/lighthouse-mobile.json`). Pre-fix runs: 93/96/100/100 —
+      perf was capped by the sandbox's uncompressed static server, a11y by
+      the contrast token (fixed).
+- [x] **Legal + deploy**: `LICENSE` (MIT), `THIRD_PARTY_NOTICES.md` with the
+      AudioMass MIT attribution, and `vercel.json` (build/output, cleanUrls,
+      immutable asset cache, nosniff / frame-guard / referrer-policy) shipped
+      at M0 — verified present and complete.
+
+## M8+ — post-v1 (see Build Plan §10 roadmap)
