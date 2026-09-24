@@ -1,37 +1,88 @@
-/* Design tokens — the rebrand skin. Change these + brand.ts to rebrand. */
+/* Design tokens — the rebrand skin. Change these + brand.ts to rebrand.
+ *
+ * D1 (design-parity-plan.md): converged on the AudioMass design system —
+ * 5-step surface ladder, 4-step text ladder, cyan accent with glow/ink
+ * roles, 2/4/8 px radii, 4/8/12/16 px spacing, 160 ms eased motion,
+ * glow + inset elevation. Legacy WaveForge token names are kept as
+ * aliases at the bottom so existing components keep working unchanged.
+ * AA note: body-text roles stay >=4.5:1 on their real backgrounds;
+ * fg-2/fg-3 are decoration/disabled-only (WCAG-exempt).
+ */
 :root {
-  /* surfaces */
-  --bg: #0d1117;
-  --panel: #131a23;
-  --panel-raised: #18212c;
-  --line: #232d3a;
-  --canvas-bg: #0a0e13;
+  /* surfaces — AudioMass bg ladder */
+  --bg-0: #07080a;
+  --bg-1: #0e1013;
+  --bg-2: #14171c;
+  --bg-3: #1c2026;
+  --bg-4: #262b32;
 
-  /* text */
-  --text: #dbe4ee;
-  --text-dim: #8b96a5;
-  --text-faint: #8a94a2; /* >=4.5:1 on panel + page backgrounds (M7 a11y) */
+  /* text — AudioMass fg ladder */
+  --fg-0: #e8edf0;
+  --fg-1: #9aa3ad;
+  --fg-2: #6a7380; /* decoration/disabled only (3.9:1) */
+  --fg-3: #3a414a; /* hairline glyphs only */
 
-  /* accent (teal) */
-  --accent: #3ddad0;
-  --accent-dim: rgba(61, 218, 208, 0.14);
-  --accent-line: rgba(61, 218, 208, 0.55);
+  /* accent — cyan */
+  --ac: #5af2ff;
+  --ac-2: #99c2c6;
+  --ac-soft: rgba(90, 242, 255, 0.12);
+  --ac-glow: rgba(90, 242, 255, 0.45);
+  --ac-ink: #041014;
 
   /* status */
-  --playhead: #ffb454;
-  --danger: #ff6b6b;
-  --ok: #58d68d;
+  --rec: #ff3355;
+  --rec-glow: rgba(255, 51, 85, 0.45);
+  --solo: #28c8f0;
+  --solo-glow: rgba(40, 200, 240, 0.45);
+  --warn: #f5c542;
+  --ok: #6ecc87;
+  --pl: #ff8c35; /* playhead / cursor */
 
-  /* shape */
-  --radius: 8px;
-  --radius-sm: 5px;
+  /* borders */
+  --bd: rgba(255, 255, 255, 0.07);
+  --bd-s: rgba(255, 255, 255, 0.04);
+  --bd-h: rgba(90, 242, 255, 0.4);
+
+  /* shape + rhythm */
+  --r: 2px;
+  --r-md: 4px;
+  --r-lg: 8px;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --tr: 160ms var(--ease);
+
+  /* elevation */
+  --glow: 0 0 0 1px var(--bd-h), 0 0 10px var(--ac-glow);
+  --inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
   /* type */
-  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ff: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ff-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* ---- legacy aliases (component-facing names, stable) ---- */
+  --bg: var(--bg-1);
+  --panel: var(--bg-2);
+  --panel-raised: var(--bg-3);
+  --line: var(--bd);
+  --canvas-bg: var(--bg-0);
+  --text: var(--fg-0);
+  --text-dim: var(--fg-1);
+  --text-faint: var(--fg-1); /* >=4.5:1 on panel + page backgrounds (AA) */
+  --accent: var(--ac);
+  --accent-dim: var(--ac-soft);
+  --accent-line: rgba(90, 242, 255, 0.55);
+  --playhead: var(--pl);
+  --danger: var(--rec);
+  --radius: var(--r-md);
+  --radius-sm: var(--r);
+  --font-ui: var(--ff);
+  --font-mono: var(--ff-mono);
 
   /* layout */
   --menubar-h: 38px;
-  --transport-h: 46px;
+  --transport-h: 56px;
   --statusbar-h: 26px;
 }

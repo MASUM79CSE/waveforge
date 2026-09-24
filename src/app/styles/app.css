@@ -68,14 +68,23 @@
 
 .menu-title {
   padding: 4px 9px;
-  border-radius: var(--radius-sm);
-  color: var(--text-dim);
+  border-radius: var(--r);
+  color: var(--fg-1);
+  transition:
+    background var(--tr),
+    color var(--tr),
+    box-shadow var(--tr);
 }
 
-.menu-title:hover,
+.menu-title:hover {
+  background: var(--bg-3);
+  color: var(--fg-0);
+}
+
 .menu-title.open {
-  background: var(--panel-raised);
-  color: var(--text);
+  background: var(--ac);
+  color: var(--ac-ink);
+  box-shadow: 0 0 12px var(--ac-glow);
 }
 
 .menu-dropdown {
@@ -86,11 +95,13 @@
   min-width: 232px; /* widest label ("Playback Rate (varispeed)…") + kbd, one line */
   max-height: calc(100vh - 88px); /* never run past the viewport bottom */
   overflow-y: auto;
-  background: var(--panel-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 4px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  background: var(--bg-2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  padding: var(--s1);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--bd-s);
 }
 
 .menu-item {
@@ -138,16 +149,24 @@
 .transport {
   display: flex;
   align-items: center;
-  gap: 14px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--line);
-  padding: 0 12px;
+  gap: var(--s3);
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--bd);
+  padding: 0 var(--s3);
+  min-height: var(--transport-h);
 }
 
 .transport-group {
   display: flex;
   align-items: center;
   gap: 2px;
+  align-self: center;
+  height: 46px;
+  padding: 0 var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+  box-shadow: var(--inset-hi);
 }
 
 .tbtn {
@@ -156,27 +175,34 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: var(--radius-sm);
-  color: var(--text-dim);
+  border-radius: var(--r);
+  color: var(--fg-1);
+  transition:
+    background var(--tr),
+    color var(--tr),
+    box-shadow var(--tr);
 }
 
 .tbtn:hover:enabled {
-  background: var(--panel-raised);
-  color: var(--text);
+  background: var(--bg-4);
+  color: var(--fg-0);
 }
 
 .tbtn-play {
-  color: var(--accent);
+  color: var(--ac);
+  filter: drop-shadow(0 0 6px var(--ac-glow));
 }
 
 .transport-time {
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-dim);
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  color: var(--fg-1);
 }
 
 .time-cursor {
-  color: var(--accent);
+  color: var(--ac);
+  text-shadow: 0 0 8px var(--ac-glow);
 }
 
 .time-sep {
@@ -200,8 +226,8 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--panel);
-  border-top: 1px solid var(--line);
+  background: var(--bg-1);
+  border-top: 1px solid var(--bd);
   padding: 0 12px;
   font-size: 11.5px;
   color: var(--text-dim);
@@ -232,8 +258,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--panel-raised);
-  border: 1px solid var(--line);
+  background: var(--bg-3);
+  border: 1px solid var(--bd);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius-sm);
   padding: 8px 10px;
@@ -269,7 +295,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(5, 8, 12, 0.62);
+  background: rgba(4, 6, 9, 0.72);
 }
 
 .modal-panel {
@@ -277,10 +303,12 @@
   max-height: calc(100vh - 48px); /* tall dialogs scroll instead of clipping */
   display: flex;
   flex-direction: column;
-  background: var(--panel-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  background: var(--bg-2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px var(--bd-s);
   overflow: hidden;
 }
 
@@ -353,15 +381,17 @@
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: #082421;
+  background: var(--ac);
+  color: var(--ac-ink);
   font-weight: 600;
   padding: 8px 18px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r);
+  transition: box-shadow var(--tr), filter var(--tr);
 }
 
 .btn-primary:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
+  box-shadow: 0 0 12px var(--ac-glow);
 }
 
 /* Waveform canvas */
@@ -456,8 +486,9 @@
 }
 
 .tbtn.active {
-  color: var(--accent);
-  background: var(--accent-dim);
+  color: var(--ac);
+  background: var(--ac-soft);
+  box-shadow: inset 0 0 0 1px var(--bd-h);
 }
 
 /* Crash screen (ErrorBoundary fallback) */
@@ -544,7 +575,7 @@
 .fx-num {
   width: 76px;
   flex: none;
-  background: var(--bg-raised);
+  background: var(--bg-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -566,8 +597,13 @@
 
 /* Recording (M4) */
 .tbtn.recording {
-  color: var(--danger);
-  border-color: var(--danger);
+  color: var(--rec);
+  background: var(--rec);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--rec-glow);
+}
+.tbtn.recording svg {
+  fill: #fff;
 }
 
 .rec-meter {
@@ -619,7 +655,7 @@
 .export-bar {
   height: 6px;
   border-radius: 3px;
-  background: var(--bg-raised);
+  background: var(--bg-3);
   overflow: hidden;
 }
 
