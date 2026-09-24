@@ -95,6 +95,14 @@ export function closeDoctor(): void {
   S.doctorOpen.value = false;
 }
 
+export function openShortcuts(): void {
+  S.shortcutsOpen.value = true;
+}
+
+export function closeShortcuts(): void {
+  S.shortcutsOpen.value = false;
+}
+
 export function openUrlDialog(): void {
   S.urlOpen.value = true;
 }

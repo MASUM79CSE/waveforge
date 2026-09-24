@@ -105,3 +105,19 @@ test('D5: zoom bar drives horizontal + vertical zoom; beat bar toggles', async (
   await snap.click();
   await expect(snap).toHaveAttribute('aria-pressed', 'false');
 });
+
+test('D6: Help → Keyboard Shortcuts overlay lists legacy + standard bindings', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
+  await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
+
+  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  await page.getByRole('menuitem', { name: /keyboard shortcuts/i }).click();
+  const panel = page.getByRole('dialog', { name: /keyboard shortcuts/i });
+  await expect(panel).toBeVisible();
+  await expect(panel.getByText('Shift+Z')).toBeVisible();
+  await expect(panel.getByText('Ctrl+Y')).toBeVisible();
+  await expect(panel.getByRole('heading', { name: /legacy/i })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+});

@@ -102,6 +102,6 @@ export const menus: MenuDef[] = [
   {
     id: 'help',
     title: () => t().menuHelp,
-    items: ['help.welcome', 'help.about', 'help.doctor'],
+    items: ['help.welcome', 'help.shortcuts', 'help.about', 'help.doctor'],
   },
 ];

@@ -35,6 +35,7 @@ export function WelcomeDialog() {
           </button>
         </div>
         <p class="welcome-privacy">{t().welcomePrivacy}</p>
+        <p class="welcome-tips">{t().welcomeTips}</p>
         <p class="welcome-attribution">{Brand.attribution}</p>
       </div>
     </Modal>

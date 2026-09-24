@@ -1074,6 +1074,63 @@
   display: none;
 }
 
+.welcome-tips {
+  margin: 10px 0 0;
+  color: var(--fg-1);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+}
+
+@media (max-width: 640px) {
+  .shortcuts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shortcuts-title {
+  margin: 0 0 var(--s2);
+  color: var(--ac);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.shortcuts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shortcuts-table td {
+  padding: 4px 0;
+  vertical-align: middle;
+}
+
+.shortcuts-key kbd {
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid var(--bd);
+  border-bottom-width: 2px;
+  border-radius: var(--r);
+  background: var(--bg-3);
+  color: var(--fg-0);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.shortcuts-label {
+  color: var(--fg-1);
+  font-size: 12.5px;
+  padding-left: var(--s2) !important;
+}
+
 /* ---- M7 doctor panel (§6.3 #7) ---- */
 .doctor-running {
   margin: 24px 0;

@@ -27,6 +27,7 @@ import { DraftsDialog } from './DraftsDialog';
 import { SaveDraftDialog } from './SaveDraftDialog';
 import { RestoreBanner } from './RestoreBanner';
 import { DoctorPanel } from './DoctorPanel';
+import { ShortcutsOverlay } from './ShortcutsOverlay';
 import { UpdateBanner } from './UpdateBanner';
 
 export function App() {
@@ -61,6 +62,7 @@ export function App() {
       {recordSettingsOpen.value && <RecordSettingsDialog />}
       {metadataOpen.value && <MetadataDialog />}
       {doctorOpen.value && <DoctorPanel />}
+      <ShortcutsOverlay />
       {draftSaveOpen.value && <SaveDraftDialog />}
       <DraftsDialog />
       <UpdateBanner />

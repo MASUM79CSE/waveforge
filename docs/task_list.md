@@ -539,7 +539,9 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
 - [x] **D5** zoom bar (floating, horiz ±/R + **vertical ±** with `vzoom`
       0.5..3 persisted state) + BEAT/SNAP control-row group (markers,
       snap-to-beat gate, live BPM readout); unit + 4 e2e
-- [ ] **D6** dialog/overlay restyle + keyboard-shortcuts overlay
+- [x] **D6** welcome tips line (Shift-key note, AM parity) + Help →
+      Keyboard Shortcuts overlay (4 groups from `shortcutCatalog.ts`,
+      unit-pinned; Escape closes; e2e-verified)
 - [ ] **D7** hardening: Lighthouse ≥95/95/100/100 holds, screenshots, docs
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)
