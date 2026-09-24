@@ -39,7 +39,7 @@ Gates (§M9a, literal):
 - [profile] 60 s single-clip track render ≤ 120 ms; 200-clip timeline
   render of 60 s audio ≤ 400 ms (smoke 1.5 s).
 
-## M9b — asset store + lane bridge (`src/engine/assets.ts` + project glue)
+## M9b — asset store + lane bridge (`src/engine/clipAssets.ts`) — DONE (aa8580b)
 
 `AssetLibrary` (Map + refcounts), `addAsset`, `releaseAsset` (GC when
 refcount 0), `ensureLaneClip(project)` — every M8 lane gets an implicit
