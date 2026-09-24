@@ -419,7 +419,9 @@ pending — record with the E2 phase.
       `|Ŝ(k)| = max(|Y(k)| − α·|N̂(k)|, β·|Y(k)|)`, phase = noisy phase;
       print routed via `EffectRunContext.noisePrint`; empty/missing print
       = bit-exact identity. α 1–4 (2), β 0.01–0.2 (0.05). In-session hold
-      ships; draft-store persistence deferred to M7 (schema change).
+      ships; draft-store persistence landed in M7 (optional `noisePrint`
+      header field, autosave ring + drafts both carry it, cleared when a
+      fresh document loads — e2e flow #5c).
 - [x] **E6a anchors**: α=0 WOLA reconstruction ≤1e-6 (sample 1..n−1 —
       Hann(0)=0 by definition); +6 dB SNR tone+noise → SNR gain ≥10 dB;
       tone-peak loss ≤1 dB; musical-noise frame-energy variance ratio
@@ -507,6 +509,11 @@ pending — record with the E2 phase.
       `docs/perf/lighthouse-mobile.json`). Pre-fix runs: 93/96/100/100 —
       perf was capped by the sandbox's uncompressed static server, a11y by
       the contrast token (fixed).
+- [x] **NR print persistence** (E6 deferral closed): the learned noise
+      print rides in draft + autosave headers (`noisePrint` bins array,
+      backward-compatible schema), is restored with the document, and the
+      NR dialog shows "Print restored from draft". New document loads
+      clear it (a print belongs to its audio).
 - [x] **Legal + deploy**: `LICENSE` (MIT), `THIRD_PARTY_NOTICES.md` with the
       AudioMass MIT attribution, and `vercel.json` (build/output, cleanUrls,
       immutable asset cache, nosniff / frame-guard / referrer-policy) shipped
