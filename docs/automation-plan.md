@@ -136,6 +136,41 @@ renders); then kernel-kind per-kernel curve support with per-kernel
 literal anchors (biquads first). Tracked in task list after this
 package ships.
 
+### A6 build addendum (ratified scope, build-level API)
+
+**A6a — graph-kind ramps.** `BuiltGraph` gains `auto?: Record<string,
+GraphAutoTarget>` — `{ params: [{param, apply(v)}], min, max }` — so
+builders expose exactly the automatable AudioParams (delay: time /
+feedback / mix→wet+dry equal-power law; reverb: mix; pgeq: 3 gains +
+midFreq + midQ; geq10/20: band gains; distortion: NONE — WaveShaper
+curve is an attribute, not a-rate). Pure scheduler `src/fx/
+fxCurves.ts` (`scheduleFxAuto`): no curves → ZERO calls; constant
+curve → single `setValueAtTime` at t=0 (== the static `.value` path);
+otherwise anchor + `linearRampToValueAtTime` per knot at `at/sr`,
+knots beyond the render window (frames incl. tail) ignored, values
+clamped to the target domain. `renderEffectOffline(..., curves?)`
+calls it; curve `at` is REGION-relative samples. Anchor style: unit
+anchors on the SCHEDULE (recording fakes); real-render between-knot
+behavior is WebAudio's ramp (deterministic per engine) — documented,
+not unit-anchored.
+
+**A6b — kernel-kind (biquads first).** `EffectRunContext.paramCurves?`
+(Record<paramKey, curve>; keys `b{I}Freq|Gain|Q` for pgeq8). Per-sample
+coefficient recomputation via the EXISTING `designBiquad`, recursion =
+the existing TDF with state carried across coefficient updates;
+per-sample values from `mulTable` (the A1 table — same on-point/
+endpoint-clamp semantics, so sweep tables == evalCurve exactly).
+Non-swept bands take the static section path (bit-identical); constant
+curves must equal `processParamEq` bit-for-bit. Anchors: independent
+test-side reference (per-sample design + TDF), hold-after-last,
+cascade continuity (24 dB/oct), sweep-direction RMS check. Other
+kernels get curves in later per-kernel follow-ups (each needs its own
+anchors).
+
+**Gates:** constant curve == static path everywhere (graph: schedule
+level; kernel: bit-for-bit audio); RED→GREEN per part; all existing
+gates stay green.
+
 ## Standing constraints (unchanged)
 
 - Shortcuts single-source (`A` goes through `resolveShortcut`); no
