@@ -5,11 +5,21 @@
  */
 import type { SliceOp } from './editOps';
 
+/** M8c: project-structural op riding beside (or instead of) slice-ops. */
+export type ProjectHistoryOp =
+  | { kind: 'removeTrackById'; trackId: string }
+  | { kind: 'addTrackAt'; index: number; track: import('./project').TrackState };
+
 export interface HistoryEntry {
   label: string;
   bytes: number;
   undoOps: SliceOp[];
   redoOps: SliceOp[];
+  /** M8c: slice-op entries name the track they belong to. */
+  trackId?: string;
+  /** M8c: structural add/remove-track entries carry project ops instead. */
+  projectUndo?: ProjectHistoryOp;
+  projectRedo?: ProjectHistoryOp;
 }
 
 export interface HistoryOptions {
