@@ -11,9 +11,11 @@ import {
   decodeDraft,
   draftHeaderSchema,
   encodeDraft,
+  encodeDraftProject,
   encodeDraftTracks,
   hashPcm,
   supportsCompression,
+  type DraftAssetPayload,
   type DraftHeader,
   type DraftTrackPayload,
 } from './draftPayload';
@@ -41,8 +43,11 @@ export interface DraftInput {
   selection?: { start: number; end: number };
   /** E6a noise print (per-bin magnitudes) — persisted via the header (M7). */
   noisePrint?: number[];
-  /** M8e: v2 lanes (track 1 included) — encoded as per-track PCM blocks. */
+  /** M8e: v2 lanes (track 1 included) — encoded as per-track PCM blocks.
+   * M9f: when `assets` is present the snapshot upgrades to v3 (clips ride
+   * the track metas; PCM = deduped per-asset blocks). */
   tracks?: DraftTrackPayload[];
+  assets?: DraftAssetPayload[];
 }
 
 export interface DraftRecord {
@@ -50,6 +55,8 @@ export interface DraftRecord {
   channels: Float32Array[];
   /** M8e: present when the draft was saved from a multitrack project. */
   tracks?: DraftTrackPayload[];
+  /** M9f: present on v3 records — deduped per-asset PCM blocks. */
+  assets?: DraftAssetPayload[];
 }
 
 export const AUTOSAVE_ID = 'ring';
@@ -99,13 +106,49 @@ export class IdbDraftRepository {
     ]);
   }
 
-  /** M8e: multitrack snapshot — header v2 + per-track PCM blocks. */
+  /** M8e/M9f: project snapshot — v2 per-track blocks, or v3 per-ASSET
+   * blocks + clip lists when `input.assets` is present. */
   private async writeSnapshotTracks(
     input: DraftInput,
     now: number,
     id: string,
   ): Promise<DraftMetaRow> {
     const primary = input.tracks![0]!;
+    if (input.assets) {
+      const header3: DraftHeader = draftHeaderSchema.parse({
+        v: 3,
+        name: input.name,
+        sampleRate: input.sampleRate,
+        channels: primary.channels.length === 1 ? 1 : 2,
+        length: primary.channels[0]?.length ?? 0,
+        savedAt: now,
+        tracks: input.tracks!.map((t) => ({ ...t.meta, clips: t.clips ?? t.meta.clips })),
+        assets: input.assets.map((a) => a.meta),
+      });
+      const payload3 = await encodeDraftProject(header3, input.tracks!, input.assets, {
+        compress: supportsCompression(),
+      });
+      const hash3 = await hashPcm(input.assets.flatMap((a) => a.channels));
+      const meta3: DraftMetaRow = {
+        id,
+        name: input.name,
+        createdAt: now,
+        updatedAt: now,
+        sampleRate: input.sampleRate,
+        channels: header3.channels,
+        length: header3.length,
+        hash: hash3,
+        payloadBytes: payload3.length,
+        compressed: supportsCompression(),
+      };
+      const tx3 = this.db.transaction(['drafts', 'draftBlobs'], 'readwrite');
+      await Promise.all([
+        tx3.objectStore('drafts').put(meta3),
+        tx3.objectStore('draftBlobs').put(payload3, id),
+        tx3.done,
+      ]);
+      return meta3;
+    }
     const header: DraftHeader = draftHeaderSchema.parse({
       v: 2,
       name: input.name,
@@ -145,19 +188,38 @@ export class IdbDraftRepository {
   async writeAutosave(input: DraftInput): Promise<void> {
     if (input.tracks) {
       const primaryT = input.tracks[0]!;
-      const headerT: DraftHeader = draftHeaderSchema.parse({
-        v: 2,
-        name: input.name,
-        sampleRate: input.sampleRate,
-        channels: primaryT.channels.length === 1 ? 1 : 2,
-        length: primaryT.channels[0]?.length ?? 0,
-        savedAt: Date.now(),
-        tracks: input.tracks.map((t) => t.meta),
-      });
-      const payloadT = await encodeDraftTracks(headerT, input.tracks, {
-        compress: supportsCompression(),
-      });
-      const hashT = await hashPcm(input.tracks.flatMap((t) => t.channels));
+      const headerT: DraftHeader = draftHeaderSchema.parse(
+        input.assets
+          ? {
+              v: 3,
+              name: input.name,
+              sampleRate: input.sampleRate,
+              channels: primaryT.channels.length === 1 ? 1 : 2,
+              length: primaryT.channels[0]?.length ?? 0,
+              savedAt: Date.now(),
+              tracks: input.tracks.map((t) => ({ ...t.meta, clips: t.clips ?? t.meta.clips })),
+              assets: input.assets!.map((a) => a.meta),
+            }
+          : {
+              v: 2,
+              name: input.name,
+              sampleRate: input.sampleRate,
+              channels: primaryT.channels.length === 1 ? 1 : 2,
+              length: primaryT.channels[0]?.length ?? 0,
+              savedAt: Date.now(),
+              tracks: input.tracks.map((t) => t.meta),
+            },
+      );
+      const payloadT = input.assets
+        ? await encodeDraftProject(headerT, input.tracks, input.assets, {
+            compress: supportsCompression(),
+          })
+        : await encodeDraftTracks(headerT, input.tracks, {
+            compress: supportsCompression(),
+          });
+      const hashT = input.assets
+        ? await hashPcm(input.assets.flatMap((a) => a.channels))
+        : await hashPcm(input.tracks.flatMap((t) => t.channels));
       const metaT: DraftMetaRow = {
         id: AUTOSAVE_ID,
         name: input.name,

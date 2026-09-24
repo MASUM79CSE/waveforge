@@ -9,8 +9,19 @@
  */
 import { z } from 'zod';
 import { makeError } from '../core/errors';
+import { renderClipTrack } from '../engine/clips';
 
-/** M8e: one lane's mixer state (audio rides in the PCM block sequence). */
+/** M9f: one clip of a lane's arrangement (sample domain, asset-referencing). */
+export const draftClipSchema = z.object({
+  id: z.string().min(1).max(128),
+  assetId: z.string().min(1).max(256),
+  start: z.number().int().nonnegative(),
+  offset: z.number().int().nonnegative(),
+  duration: z.number().int().positive(),
+});
+
+/** M8e: one lane's mixer state (audio rides in the PCM block sequence).
+ * M9f: v3 lanes carry their clip arrangement (channels render from clips). */
 export const draftTrackSchema = z.object({
   id: z.string().min(1).max(64),
   name: z.string().max(200),
@@ -20,10 +31,22 @@ export const draftTrackSchema = z.object({
   solo: z.boolean(),
   channels: z.union([z.literal(1), z.literal(2)]),
   length: z.number().int().nonnegative(),
+  clips: z.array(draftClipSchema).max(4096).optional(),
 });
 
+/** M9f: one shared immutable take (PCM block; deduped by id). */
+export const draftAssetSchema = z.object({
+  id: z.string().min(1).max(256),
+  sampleRate: z.number().int().positive().max(384_000),
+  channels: z.union([z.literal(1), z.literal(2)]),
+  length: z.number().int().nonnegative(),
+});
+
+export type DraftAsset = z.infer<typeof draftAssetSchema>;
+export type DraftClip = z.infer<typeof draftClipSchema>;
+
 export const draftHeaderSchema = z.object({
-  v: z.union([z.literal(1), z.literal(2)]),
+  v: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   name: z.string().min(1).max(200),
   sampleRate: z.number().int().positive().max(384_000),
   channels: z.union([z.literal(1), z.literal(2)]),
@@ -35,6 +58,8 @@ export const draftHeaderSchema = z.object({
   noisePrint: z.array(z.number()).max(8192).optional(),
   /** M8e: v2 lanes; PCM = per-track blocks in this order. */
   tracks: z.array(draftTrackSchema).max(64).optional(),
+  /** M9f: v3 shared assets; PCM = per-ASSET blocks in this order (deduped). */
+  assets: z.array(draftAssetSchema).max(256).optional(),
 });
 
 export type DraftHeader = z.infer<typeof draftHeaderSchema>;
@@ -107,10 +132,11 @@ export async function encodeDraft(
   return raw;
 }
 
-/** Per-lane audio + meta (M8e). */
+/** Per-lane audio + meta (M8e); v3 adds the clip list (M9f). */
 export interface DraftTrackPayload {
   meta: DraftTrack;
   channels: Float32Array[];
+  clips?: DraftClip[];
 }
 
 /**
@@ -144,6 +170,49 @@ export async function encodeDraftTracks(
   return raw;
 }
 
+/** M9f: per-asset PCM block + meta. */
+export interface DraftAssetPayload {
+  meta: DraftAsset;
+  channels: Float32Array[];
+}
+
+/**
+ * Encode a v3 project snapshot: PCM = each UNIQUE asset's interleaved block,
+ * concatenated in `assets` order (dedup is the caller's — exportProjectClips).
+ * Track metas carry their clip lists; asset metas carry channel counts.
+ */
+export async function encodeDraftProject(
+  header: DraftHeader,
+  tracks: Array<{ meta: DraftTrack; clips?: DraftClip[]; channels: Float32Array[] }>,
+  assets: DraftAssetPayload[],
+  opts: { compress: boolean },
+): Promise<Uint8Array> {
+  const parsed = draftHeaderSchema.parse({
+    ...header,
+    v: 3,
+    tracks: tracks.map((t) => ({ ...t.meta, clips: t.clips ?? t.meta.clips })),
+    assets: assets.map((a) => a.meta),
+  });
+  if (parsed.v !== 3 || !parsed.assets) throw corrupt('v3 encode without assets');
+  const parts: Float32Array[] = [];
+  let total = 0;
+  for (const a of assets) {
+    const block = interleave(a.channels);
+    total += block.length;
+    parts.push(block);
+  }
+  const pcm = new Float32Array(total);
+  let at = 0;
+  for (const block of parts) {
+    pcm.set(block, at);
+    at += block.length;
+  }
+  const raw = writeRawRecord(parsed, pcm);
+  if (opts.compress && supportsCompression()) return gzip(raw);
+  new DataView(raw.buffer).setUint32(0, MAGIC_RAW, false);
+  return raw;
+}
+
 /** Decode a snapshot; every structural problem throws WF-E402. */
 export type DraftTrack = z.infer<typeof draftTrackSchema>;
 
@@ -151,6 +220,8 @@ export async function decodeDraft(bytes: Uint8Array): Promise<{
   header: DraftHeader;
   channels: Float32Array[];
   tracks?: DraftTrackPayload[];
+  /** M9f: present on v3 — per-asset PCM blocks (deduped). */
+  assets?: DraftAssetPayload[];
 }> {
   let raw = bytes;
   if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
@@ -175,8 +246,10 @@ export async function decodeDraft(bytes: Uint8Array): Promise<{
     throw corrupt(error);
   }
 
-  const trackMetas = header.v === 2 ? header.tracks : undefined;
+  const assetMetas = header.v === 3 ? header.assets : undefined;
+  const trackMetas = header.v === 2 || header.v === 3 ? header.tracks : undefined;
   const totalFloats =
+    assetMetas?.reduce((acc, a) => acc + a.length * a.channels, 0) ??
     trackMetas?.reduce((acc, t) => acc + t.length * t.channels, 0) ??
     header.length * header.channels;
   const expected = totalFloats * 4;
@@ -192,6 +265,49 @@ export async function decodeDraft(bytes: Uint8Array): Promise<{
     for (let i = 0; i < header.length; ++i) data[i] = interleaved[i * header.channels + ch] ?? 0;
     channels.push(data);
   }
+  if (assetMetas) {
+    // v3: split the block sequence per ASSET, then render track channels
+    // from their clip lists (pure — the doc block mirrors track 1)
+    const assets: DraftAssetPayload[] = [];
+    let at = 0;
+    const assetMap = new Map<string, import('../engine/clips').AudioAsset>();
+    for (const meta of assetMetas) {
+      const per = meta.length * meta.channels;
+      const block = interleaved.subarray(at, at + per);
+      at += per;
+      const chans: Float32Array[] = [];
+      for (let ch = 0; ch < meta.channels; ++ch) {
+        const data = new Float32Array(meta.length);
+        for (let i = 0; i < meta.length; ++i) data[i] = block[i * meta.channels + ch] ?? 0;
+        chans.push(data);
+      }
+      assets.push({ meta, channels: chans });
+      assetMap.set(meta.id, { id: meta.id, sampleRate: meta.sampleRate, channels: chans });
+    }
+    const tracksV3: DraftTrackPayload[] = [];
+    for (const meta of trackMetas ?? []) {
+      const clips =
+        meta.clips ??
+        [
+          {
+            id: `clip_${meta.id}`,
+            assetId: `asset_${meta.id}`,
+            start: 0,
+            offset: 0,
+            duration: meta.length,
+          },
+        ];
+      const rendered = renderClipTrack({ clips }, assetMap);
+      tracksV3.push({ meta, channels: rendered, clips });
+    }
+    return {
+      header,
+      channels: tracksV3[0]?.channels ?? channels,
+      tracks: tracksV3,
+      assets,
+    };
+  }
+
   if (!trackMetas) return { header, channels };
 
   // v2: split the block sequence per track; `channels` mirrors track 1

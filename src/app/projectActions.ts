@@ -23,7 +23,7 @@ import { ProjectPlayback, type ClipPlaybackTrack, type GraphContext } from '../e
 import { decodeBlob, getSharedContext } from '../io/decode';
 import { resample } from '../fx/resample';
 import { resolveFxTarget } from './fxTarget';
-import { getErrorMessage } from '../core/errors';
+import { getErrorMessage, makeError } from '../core/errors';
 import { toastInfo } from './toast';
 import { t, tError } from '../i18n';
 import * as S from './state';
@@ -314,6 +314,171 @@ export function restoreProjectTracks(
   }
   fresh.activeTrackId = fresh.tracks[0]?.id ?? null;
   proj.adopt(fresh);
+  sync();
+}
+
+/** Clip-arrangement export for drafts v3 (M9f): tracks with clip lists +
+ * deduped asset payloads (PCM blocks in first-reference order). */
+export interface ClipProjectExport {
+  tracks: Array<{
+    meta: ProjectTrackExport['meta'] & {
+      clips?: Array<{ id: string; assetId: string; start: number; offset: number; duration: number }>;
+    };
+    clips?: Array<{ id: string; assetId: string; start: number; offset: number; duration: number }>;
+    channels: Float32Array[];
+  }>;
+  assets: Array<{
+    meta: { id: string; sampleRate: number; channels: 1 | 2; length: number };
+    channels: Float32Array[];
+  }>;
+}
+
+/** Build the v3 payload from an explicit project (unit-friendly) or the live one. */
+export function exportProjectClips(source?: ProjectState): ClipProjectExport | null {
+  const project = source ?? proj?.project;
+  if (!project || project.tracks.length === 0) return null;
+  const tracks: ClipProjectExport['tracks'] = project.tracks.map((t) => {
+    const channels = trackChannels(project, t.id) ?? [];
+    return {
+      meta: {
+        id: t.id,
+        name: t.name,
+        gain: t.gain,
+        pan: t.pan,
+        mute: t.mute,
+        solo: t.solo,
+        channels: project.assets[t.clips[0]?.assetId ?? '']?.channels.length === 1 ? 1 : 2,
+        length: channels[0]?.length ?? 0,
+        clips: t.clips.map((c) => ({
+          id: c.id,
+          assetId: c.assetId,
+          start: c.start,
+          offset: c.offset,
+          duration: c.duration,
+        })),
+      },
+      clips: t.clips.map((c) => ({
+        id: c.id,
+        assetId: c.assetId,
+        start: c.start,
+        offset: c.offset,
+        duration: c.duration,
+      })),
+      channels,
+    };
+  });
+  // deduped assets in first-reference order
+  const seen = new Map<string, Float32Array[]>();
+  for (const t of project.tracks) {
+    for (const c of t.clips) {
+      if (seen.has(c.assetId)) continue;
+      const asset = project.assets[c.assetId];
+      if (asset) seen.set(c.assetId, asset.channels);
+    }
+  }
+  const assets: ClipProjectExport['assets'] = [];
+  for (const [id, channels] of seen) {
+    assets.push({
+      meta: {
+        id,
+        sampleRate: project.sampleRate,
+        channels: channels.length === 1 ? 1 : 2,
+        length: channels[0]?.length ?? 0,
+      },
+      channels,
+    });
+  }
+  return { tracks, assets };
+}
+
+/**
+ * Build a fresh ProjectState from a v3 (or v2) draft payload (M9f).
+ * Lane 1 mirrors the live document (single full clip over `docChannels`);
+ * lanes ≥ 2 take their stored clip arrangements; assets register as-is.
+ * Missing asset references are corrupt drafts (WF-E402).
+ */
+/** Shape of a decoded draft record's project parts (v3 or v2). */
+export type ClipProjectPayload = {
+  tracks?: Array<{
+    meta: ProjectTrackExport['meta'] & {
+      clips?: Array<{ id: string; assetId: string; start: number; offset: number; duration: number }>;
+    };
+    channels: Float32Array[];
+  }>;
+  assets?: Array<{
+    meta: { id: string; sampleRate: number; channels: 1 | 2; length: number };
+    channels: Float32Array[];
+  }>;
+};
+
+export function buildClipProject(
+  payload: ClipProjectPayload,
+  sampleRate: number,
+  docChannels: Float32Array[] | null,
+): ProjectState {
+  const fresh = newProject(sampleRate, []);
+  const rows = payload.tracks ?? [];
+  for (const a of payload.assets ?? []) {
+    fresh.assets[a.meta.id] = {
+      id: a.meta.id,
+      sampleRate: a.meta.sampleRate,
+      channels: a.channels,
+    };
+  }
+  for (const [i, p] of rows.entries()) {
+    if (i === 0 && docChannels) {
+      // doc mirror: one full clip over the live document
+      const track = createTrack(docChannels, { id: p.meta.id, name: p.meta.name, gain: p.meta.gain, pan: p.meta.pan, mute: p.meta.mute, solo: p.meta.solo, sampleRate });
+      fresh.assets[`asset_${track.id}`] = laneAsset(track.id, docChannels, sampleRate);
+      fresh.tracks.push(track);
+      continue;
+    }
+    const clips = (p.meta.clips ?? []).map((c) => ({ ...c }));
+    for (const c of clips) {
+      if (!fresh.assets[c.assetId]) {
+        throw makeError('WF-E402', { detail: `clip ${c.id} references missing asset ${c.assetId}` });
+      }
+    }
+    // v2-shaped lanes (no stored clips) become a single full clip over
+    // their own PCM block; v3 lanes keep the stored arrangement
+    const arrangement =
+      clips.length > 0
+        ? clips
+        : [
+            {
+              id: `clip_${p.meta.id}`,
+              assetId: `asset_${p.meta.id}`,
+              start: 0,
+              offset: 0,
+              duration: p.channels[0]?.length ?? 0,
+            },
+          ];
+    const track = createTrack([], {
+      id: p.meta.id,
+      name: p.meta.name,
+      gain: p.meta.gain,
+      pan: p.meta.pan,
+      mute: p.meta.mute,
+      solo: p.meta.solo,
+      sampleRate,
+      clips: arrangement,
+    });
+    if (clips.length === 0) {
+      fresh.assets[`asset_${track.id}`] = laneAsset(track.id, p.channels, sampleRate);
+    }
+    fresh.tracks.push(track);
+  }
+  fresh.activeTrackId = fresh.tracks[0]?.id ?? null;
+  return fresh;
+}
+
+/** Adopt a decoded v3/v2 payload as the live project (lanes ≥ 2 arranged). */
+export function restoreProjectClips(payload: ClipProjectPayload): void {
+  ensureProject();
+  if (!proj) return;
+  const sampleRate = proj.project.sampleRate;
+  const docChannels = getDocChannels();
+  proj.adopt(buildClipProject(payload, sampleRate, docChannels));
   sync();
 }
 

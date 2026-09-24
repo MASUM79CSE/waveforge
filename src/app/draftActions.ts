@@ -11,11 +11,16 @@ import { AudioDocument } from '../engine/AudioDocument';
 import { t } from '../i18n';
 import { AutosaveController } from '../storage/autosave';
 import { openDraftDb } from '../storage/db';
-import { encodeDraft, encodeDraftTracks } from '../storage/draftPayload';
+import {
+  draftHeaderSchema,
+  encodeDraft,
+  encodeDraftProject,
+  encodeDraftTracks,
+} from '../storage/draftPayload';
 import { IdbDraftRepository } from '../storage/DraftRepository';
 import type { DraftSummary } from '../storage/DraftRepository';
 import { toastError, toastInfo } from './actions';
-import { exportProjectTracks, restoreProjectTracks } from './projectActions';
+import { exportProjectClips, exportProjectTracks, restoreProjectClips, restoreProjectTracks } from './projectActions';
 import { currentChannels } from './editActions';
 import { bufferFactory, getDoc, installDoc, engine } from './runtime';
 import * as S from './state';
@@ -103,7 +108,12 @@ export async function confirmSaveDraft(name: string): Promise<void> {
       noisePrint: S.sessionNoisePrint.value
         ? Array.from(S.sessionNoisePrint.value)
         : undefined,
-      tracks: exportProjectTracks() ?? undefined,
+      ...(S.projectOpen.value
+        ? (() => {
+            const payload = exportProjectClips()!;
+            return { tracks: payload.tracks, assets: payload.assets };
+          })()
+        : { tracks: exportProjectTracks() ?? undefined }),
     });
     toastInfo(t().draftSaved(trimmed));
     S.draftSaveOpen.value = false;
@@ -128,7 +138,9 @@ export async function openDraft(id: string): Promise<void> {
         source: 'draft',
       }),
     );
-    if (record.tracks && record.tracks.length > 0) {
+    if (record.assets && record.tracks && record.tracks.length > 0) {
+      restoreProjectClips(record); // M9f: arranged lanes ride v3 drafts
+    } else if (record.tracks && record.tracks.length > 0) {
       restoreProjectTracks(record.tracks); // M8e: lanes ride the draft
     }
     if (record.header.cursor !== undefined) engine.seek(record.header.cursor);
@@ -182,7 +194,12 @@ export const autosave = new AutosaveController({
       noisePrint: S.sessionNoisePrint.value
         ? Array.from(S.sessionNoisePrint.value)
         : undefined,
-      tracks: exportProjectTracks() ?? undefined,
+      ...(S.projectOpen.value
+        ? (() => {
+            const payload = exportProjectClips()!;
+            return { tracks: payload.tracks, assets: payload.assets };
+          })()
+        : { tracks: exportProjectTracks() ?? undefined }),
     });
   },
   clear: async () => {
@@ -192,6 +209,15 @@ export const autosave = new AutosaveController({
     const record = await (await repo()).readAutosave();
     if (!record) return null;
     // payload already validated by decode; encode back for the generic read
+    if (record.assets && record.tracks) {
+      const header3 = draftHeaderSchema.parse({
+        ...record.header,
+        v: 3,
+        tracks: record.tracks.map((t) => ({ ...t.meta, clips: t.clips ?? t.meta.clips })),
+        assets: record.assets.map((a) => a.meta),
+      });
+      return encodeDraftProject(header3, record.tracks, record.assets, { compress: false });
+    }
     if (record.tracks) {
       return encodeDraftTracks(record.header, record.tracks, { compress: false });
     }
@@ -221,7 +247,9 @@ export async function restoreAutosave(): Promise<void> {
       source: 'draft',
     }),
   );
-  if (record.tracks && record.tracks.length > 0) {
+  if (record.assets && record.tracks && record.tracks.length > 0) {
+    restoreProjectClips(record); // M9f: arranged lanes ride v3 autosaves
+  } else if (record.tracks && record.tracks.length > 0) {
     restoreProjectTracks(record.tracks); // M8e: lanes ride the autosave
   }
   if (record.header.cursor !== undefined) engine.seek(record.header.cursor);

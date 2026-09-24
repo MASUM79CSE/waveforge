@@ -65,7 +65,9 @@ export function createTrack(
   channels: Float32Array[],
   opts: CreateTrackOptions = {},
 ): TrackState {
-  if (channels.length < 1 || channels.length > 2) {
+  // M9f: draft loading builds clip lanes without their own PCM (channels
+  // may be empty when an explicit clip arrangement is provided)
+  if (channels.length > 2 || (channels.length < 1 && !opts.clips)) {
     throw new Error(`createTrack: 1 or 2 channels required, got ${channels.length}`);
   }
   const id = opts.id ?? makeId();
