@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { menus } from '../menus';
 import { commands, type Command } from '../commands';
+import { experimentalFx } from '../state';
 import { Brand } from '../../brand';
 
 export function MenuBar() {
   const [openId, setOpenId] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  // true when the current menu was opened by hovering another title —
+  // a click on the freshly-switched title must keep it open (native
+  // menu behaviour), not toggle it straight back closed
+  const hoverSwitched = useRef(false);
 
   useEffect(() => {
     const close = (e: MouseEvent): void => {
@@ -26,26 +31,36 @@ export function MenuBar() {
         <div class="menu" key={menu.id}>
           <button
             class={`menu-title ${openId === menu.id ? 'open' : ''}`}
-            onClick={() => setOpenId(openId === menu.id ? null : menu.id)}
+            onClick={() => {
+              if (openId === menu.id) {
+                if (hoverSwitched.current) {
+                  hoverSwitched.current = false; // opened by the hover switch — keep open
+                } else {
+                  setOpenId(null);
+                }
+              } else {
+                hoverSwitched.current = false;
+                setOpenId(menu.id);
+              }
+            }}
             onPointerEnter={() => {
-              if (openId !== null) setOpenId(menu.id);
+              if (openId !== null && openId !== menu.id) {
+                hoverSwitched.current = true;
+                setOpenId(menu.id);
+              }
             }}
           >
             {menu.title()}
           </button>
           {openId === menu.id && (
             <div class="menu-dropdown" role="menu">
-              {menu.items.map((item, i) =>
-                item === '-' ? (
-                  <div class="menu-sep" key={`sep-${i}`} />
-                ) : (
-                  <MenuItem
-                    key={item}
-                    cmd={commands.find((c) => c.id === item)!}
-                    onRun={() => setOpenId(null)}
-                  />
-                ),
-              )}
+              {menu.items.map((item, i) => {
+                if (item === '-') return <div class="menu-sep" key={`sep-${i}`} />;
+                const cmd = commands.find((c) => c.id === item);
+                if (!cmd) return null;
+                if (cmd.experimental && !experimentalFx.value) return null;
+                return <MenuItem key={item} cmd={cmd} onRun={() => setOpenId(null)} />;
+              })}
             </div>
           )}
         </div>

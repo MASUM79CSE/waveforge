@@ -25,6 +25,7 @@ const EXPECTED_ORDER = [
   'fx.deesser',
   'fx.nrPrint',
   'fx.rate',
+  'fx.stretch',
 ];
 
 describe('fx registry', () => {
@@ -91,6 +92,7 @@ describe('fx definitions hygiene', () => {
       'fx.deesser': 'kernel',
       'fx.nrPrint': 'kernel',
       'fx.rate': 'kernel',
+      'fx.stretch': 'kernel',
     });
     for (const def of defs) {
       if (def.kind === 'kernel') expect(typeof def.process).toBe('function');

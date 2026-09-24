@@ -88,6 +88,8 @@ export default defineConfig({
         // E6 spectral repair (effects v2)
         'src/fx/nrPrint.ts',
         'src/fx/deesser.ts',
+        // E5 WSOLA stretch/pitch (effects v2, experimental)
+        'src/fx/wsola.ts',
         // M5 pure kernels
         'src/engine/lufs.ts',
         'src/engine/bpm.ts',

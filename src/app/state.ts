@@ -146,6 +146,15 @@ export function setZeroCrossEnabled(value: boolean): void {
   writeStoredBool('zerocross', value);
 }
 
+// E5 experimental effects gate (effects v2 plan): menu items flagged
+// `experimental` stay hidden until enabled here. Off by default.
+export const experimentalFx = signal(readStoredBool('experimentalfx', false));
+
+export function setExperimentalFx(value: boolean): void {
+  experimentalFx.value = value;
+  writeStoredBool('experimentalfx', value);
+}
+
 // toasts
 export const toasts = signal<Toast[]>([]);
 

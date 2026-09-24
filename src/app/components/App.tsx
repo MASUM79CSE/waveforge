@@ -10,6 +10,7 @@ import { EffectDialog } from './EffectDialog';
 import { Pgeq8Dialog } from './Pgeq8Dialog';
 import { Reverb2Dialog } from './Reverb2Dialog';
 import { NrPrintDialog } from './NrPrintDialog';
+import { StretchPitchDialog } from './StretchPitchDialog';
 import {
   draftSaveOpen,
   effectDialogId,
@@ -49,6 +50,8 @@ export function App() {
         <Reverb2Dialog />
       ) : effectDialogId.value === 'fx.nrPrint' ? (
         <NrPrintDialog />
+      ) : effectDialogId.value === 'fx.stretch' ? (
+        <StretchPitchDialog />
       ) : (
         <EffectDialog />
       )}

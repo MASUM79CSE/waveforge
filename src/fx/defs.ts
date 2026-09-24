@@ -16,6 +16,7 @@ import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq } from './paramEq';
 import { reverb2Process } from './reverb2';
 import { nrProcess } from './nrPrint';
 import { deesserProcess } from './deesser';
+import { wsolaStretch } from './wsola';
 import { registerEffect } from './registry';
 import { compressKernel } from './compressor';
 import { noiseGate } from './gate';
@@ -357,6 +358,24 @@ const DEFS: EffectDef[] = [
     kind: 'kernel',
     process: (channels, _sampleRate, params) => resample(channels, Number(params.factor)),
     specs: [num('factor', 'paramFactor', 0.25, 4, 0.05, 1)],
+  },
+  {
+    id: 'fx.stretch',
+    labelKey: 'fxStretch',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) => {
+      const stretch = Number(params.stretchPct) / 100;
+      const semitones = Number(params.semitones);
+      if (stretch === 1 && semitones === 0) return channels.map((ch) => ch.slice());
+      const pitch = Math.pow(2, semitones / 12);
+      const stretched = wsolaStretch(channels, sampleRate, stretch * pitch);
+      return semitones === 0 ? stretched : resample(stretched, pitch);
+    },
+    specs: [
+      num('stretchPct', 'paramStretchPct', 50, 200, 1, 100),
+      num('semitones', 'paramSemitones', -12, 12, 1, 0),
+      bool('independent', 'paramIndependent', false),
+    ],
   },
 ];
 

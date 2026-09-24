@@ -17,6 +17,8 @@ export interface Command {
   check?: boolean; // renders with a checkmark state
   isChecked?: () => boolean;
   sep?: boolean; // separator after this entry
+  /** Hidden unless settings.experimentalFx is on (E5 gate, effects v2). */
+  experimental?: boolean;
 }
 
 export const commands: Command[] = [
@@ -96,6 +98,7 @@ export const commands: Command[] = [
   { id: 'fx.deesser', label: () => t().fxDeesser, run: () => A.openEffectDialog('fx.deesser') },
   { id: 'fx.nrPrint', label: () => t().fxNrPrint, run: () => A.openEffectDialog('fx.nrPrint') },
   { id: 'fx.rate', label: () => t().fxRate, run: () => A.openEffectDialog('fx.rate') },
+  { id: 'fx.stretch', label: () => t().fxStretch, run: () => A.openEffectDialog('fx.stretch'), experimental: true },
 
   // View
   { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: () => '+', run: () => A.view.zoomIn() },
@@ -127,6 +130,13 @@ export const commands: Command[] = [
     run: () => A.toggleZeroCross(),
     check: true,
     isChecked: () => A.isZeroCrossOn(),
+  },
+  {
+    id: 'view.experimental',
+    label: () => t().viewExperimental,
+    run: () => A.toggleExperimentalFx(),
+    check: true,
+    isChecked: () => A.isExperimentalFxOn(),
   },
 
   // Analyze (M5)

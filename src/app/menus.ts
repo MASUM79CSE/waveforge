@@ -69,6 +69,7 @@ export const menus: MenuDef[] = [
       'fx.deesser',
       'fx.nrPrint',
       'fx.rate',
+      'fx.stretch',
       '-',
       'fx.gain',
       'fx.fadeIn',
@@ -96,7 +97,7 @@ export const menus: MenuDef[] = [
   {
     id: 'view',
     title: () => t().menuView,
-    items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', '-', 'view.center', '-', 'view.follow', 'view.zerocross'],
+    items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', '-', 'view.center', '-', 'view.follow', 'view.zerocross', 'view.experimental'],
   },
   {
     id: 'help',
