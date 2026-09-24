@@ -7,7 +7,14 @@ import { AboutDialog, WelcomeDialog } from './Dialogs';
 import { UrlDialog } from './UrlDialog';
 import { GainDialog, NormalizeDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
-import { draftSaveOpen, exportOpen, metadataOpen, recordSettingsOpen } from '../state';
+import { Pgeq8Dialog } from './Pgeq8Dialog';
+import {
+  draftSaveOpen,
+  effectDialogId,
+  exportOpen,
+  metadataOpen,
+  recordSettingsOpen,
+} from '../state';
 import { ExportDialog } from './ExportDialog';
 import { RecordSettingsDialog } from './RecordSettingsDialog';
 import { AnalysisPanel } from './AnalysisPanel';
@@ -34,7 +41,7 @@ export function App() {
       <UrlDialog />
       <GainDialog />
       <NormalizeDialog />
-      <EffectDialog />
+      {effectDialogId.value === 'fx.pgeq8' ? <Pgeq8Dialog /> : <EffectDialog />}
       {exportOpen.value && <ExportDialog />}
       {recordSettingsOpen.value && <RecordSettingsDialog />}
       {metadataOpen.value && <MetadataDialog />}

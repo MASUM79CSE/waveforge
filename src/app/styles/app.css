@@ -783,3 +783,56 @@
   border-radius: 6px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
+
+/* ---- parametric EQ dialog (E2) ---- */
+
+.eq-dialog {
+  min-width: 620px;
+  max-width: 720px;
+}
+
+.eq-curve {
+  display: block;
+  width: 100%;
+  height: 140px;
+  border: 1px solid #1a222c;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.eq-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.eq-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.eq-type {
+  width: 110px;
+}
+
+.eq-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #8b96a5;
+}
+
+.eq-cell span {
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.eq-cell input,
+.eq-cell select {
+  width: 70px;
+}

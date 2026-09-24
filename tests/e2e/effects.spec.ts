@@ -45,6 +45,29 @@ test('effects: LUFS Normalize applies at full length', async ({ page }) => {
   await expect(page.getByText(/9\.27 s/)).toBeVisible();
 });
 
+test('effects: 8-band parametric EQ renders curve, applies, undoes', async ({ page }) => {
+  await loadSample(page);
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: /Parametric EQ \(8-band\)/i }).click();
+  const panel = page.getByRole('dialog');
+  await expect(panel).toBeVisible();
+  // the analytic response curve canvas is mounted
+  await expect(panel.locator('.eq-curve')).toBeVisible();
+  // 8 band rows with type selects
+  expect(await panel.locator('.eq-row').count()).toBe(8);
+  // boost band 1 to +6 dB — the curve must change (redraw on param change)
+  const gainInput = panel.locator('.eq-row').nth(0).locator('input').nth(1);
+  await gainInput.fill('6');
+  await gainInput.dispatchEvent('change');
+  // apply through the generic kernel plumbing
+  await panel.getByRole('button', { name: 'Apply' }).click();
+  await expect(page.locator('.toast-msg').last()).toContainText(/Applied/i, { timeout: 15_000 });
+  await expect(page.getByText(/9\.27 s/)).toBeVisible(); // length preserved
+  // Ctrl+Z undoes it (standard shortcut, user-facing contract)
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+});
+
 test('effects: true-peak Limiter applies and undoes cleanly', async ({ page }) => {
   await loadSample(page);
   await applyEffect(page, /^Hard Limiter/);

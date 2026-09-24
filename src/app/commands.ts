@@ -79,6 +79,7 @@ export const commands: Command[] = [
   { id: 'fx.removeSilence', label: () => t().fxRemoveSilence, run: () => EA.applyRemoveSilence() },
   { id: 'fx.compressor', label: () => t().fxCompressor, run: () => A.openEffectDialog('fx.compressor') },
   { id: 'fx.limiter', label: () => t().fxLimiter, run: () => A.openEffectDialog('fx.limiter') },
+  { id: 'fx.pgeq8', label: () => t().fxPgeq8, run: () => A.openEffectDialog('fx.pgeq8') },
   { id: 'fx.pgeq', label: () => t().fxPGEQ, run: () => A.openEffectDialog('fx.pgeq') },
   { id: 'fx.geq10', label: () => t().fxGEQ10, run: () => A.openEffectDialog('fx.geq10') },
   { id: 'fx.geq20', label: () => t().fxGEQ20, run: () => A.openEffectDialog('fx.geq20') },

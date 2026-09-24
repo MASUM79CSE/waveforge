@@ -5,6 +5,7 @@
  */
 import { FX_MAX_FEEDBACK, FX_MIN_TAIL_GAIN, GEQ20_HZ } from '../core/constants';
 import { applyNormalizeLufs, truePeakLimit } from './mastering';
+import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq } from './paramEq';
 import { registerEffect } from './registry';
 import { compressKernel } from './compressor';
 import { noiseGate } from './gate';
@@ -36,6 +37,18 @@ function delayTailSeconds(params: Params): number {
 }
 
 const OCTAVE_HZ = [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+
+/** 4 flat numeric params per band — the generic registry/validation layer. */
+function pgeq8Specs(): ParamSpec[] {
+  const specs: ParamSpec[] = [];
+  for (let b = 0; b < EQ_BAND_COUNT; ++b) {
+    specs.push(num(`b${b}Type`, 'paramEqType', 0, 5, 1, 0));
+    specs.push(num(`b${b}Freq`, 'paramEqFreq', 20, 20000, 1, Math.round(40 * Math.pow(400, b / 7))));
+    specs.push(num(`b${b}Gain`, 'paramEqGain', -18, 18, 0.5, 0));
+    specs.push(num(`b${b}Q`, 'paramEqQ', 0.1, 16, 0.1, 1));
+  }
+  return specs;
+}
 
 const DEFS: EffectDef[] = [
   {
@@ -121,6 +134,14 @@ const DEFS: EffectDef[] = [
       num('mix', 'paramMix', 0, 1, 0.01, 0.35),
       bool('reverse', 'paramReverse', false),
     ],
+  },
+  {
+    id: 'fx.pgeq8',
+    labelKey: 'fxPgeq8',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      processParamEq(channels, sampleRate, eqBandsFromParams(params)),
+    specs: pgeq8Specs(),
   },
   {
     id: 'fx.pgeq',

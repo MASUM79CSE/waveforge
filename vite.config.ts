@@ -75,6 +75,9 @@ export default defineConfig({
         // E1 mastering kernels (effects v2)
         'src/fx/mastering.ts',
         'src/fx/compressor.ts',
+        // E2 parametric EQ (effects v2)
+        'src/fx/biquad.ts',
+        'src/fx/paramEq.ts',
         // M5 pure kernels
         'src/engine/lufs.ts',
         'src/engine/bpm.ts',

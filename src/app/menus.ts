@@ -49,6 +49,7 @@ export const menus: MenuDef[] = [
       'fx.compressor',
       'fx.limiter',
       '-',
+      'fx.pgeq8',
       'fx.pgeq',
       'fx.geq10',
       'fx.geq20',
