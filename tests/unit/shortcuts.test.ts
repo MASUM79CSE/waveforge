@@ -101,8 +101,8 @@ describe('M9d2 arrangement shortcuts (single-source)', () => {
 
   test('plain letters stay untouched except the arrangement keys', () => {
     expect(std('z')).toBeNull();
-    expect(std('a')).toBeNull();
     expect(std('x')).toBeNull();
+    expect(std('a')).toBe('automation.toggle'); // A4: A toggles envelope mode
   });
 });
 
