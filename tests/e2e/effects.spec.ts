@@ -113,3 +113,36 @@ test('effects: Studio Reverb grows the region by its wet tail (E4) and undoes', 
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
   await expect(page.getByText(/9\.27 s/)).toBeVisible({ timeout: 15_000 });
 });
+
+test('effects: De-esser applies via generic dialog and undoes (E6)', async ({ page }) => {
+  await loadSample(page);
+  await applyEffect(page, /^De-esser/);
+  await expect(page.locator('.toast-msg').last()).toContainText(/Applied: De-esser/i, {
+    timeout: 30_000,
+  });
+  await expect(page.getByText(/9\.27 s/)).toBeVisible(); // length preserving
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+  await page.keyboard.press('Control+y');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Redid/i, { timeout: 8000 });
+});
+
+test('effects: Noise Reduction learns a print from the selection, applies, undoes', async ({
+  page,
+}) => {
+  await loadSample(page);
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^Noise Reduction/ }).click();
+  const panel = page.getByRole('dialog');
+  await expect(panel).toBeVisible();
+  await expect(panel.getByText(/no print learned/i)).toBeVisible();
+  await panel.getByRole('button', { name: /learn print from selection/i }).click();
+  await expect(panel.getByText(/print learned/i)).toBeVisible({ timeout: 15_000 });
+  await panel.getByRole('button', { name: 'Apply' }).click();
+  await expect(page.locator('.toast-msg').last()).toContainText(/Applied: Noise Reduction/i, {
+    timeout: 30_000,
+  });
+  await expect(page.getByText(/9\.27 s/)).toBeVisible(); // length preserving
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
+});

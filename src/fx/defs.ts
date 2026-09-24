@@ -14,6 +14,8 @@ import {
 } from './modulation';
 import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq } from './paramEq';
 import { reverb2Process } from './reverb2';
+import { nrProcess } from './nrPrint';
+import { deesserProcess } from './deesser';
 import { registerEffect } from './registry';
 import { compressKernel } from './compressor';
 import { noiseGate } from './gate';
@@ -317,6 +319,36 @@ const DEFS: EffectDef[] = [
       num('ratio', 'paramRatio', 1, 6, 0.1, 2.5),
       num('attackMs', 'paramAttack', 0, 50, 1, 5),
       num('releaseMs', 'paramRelease', 10, 1000, 10, 100),
+    ],
+  },
+  {
+    id: 'fx.deesser',
+    labelKey: 'fxDeesser',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      deesserProcess(channels, sampleRate, {
+        crossoverHz: Number(params.crossoverHz),
+        thresholdDb: Number(params.thresholdDb),
+        ratio: Number(params.ratio),
+      }),
+    specs: [
+      num('crossoverHz', 'paramCrossover', 3000, 9000, 100, 5500),
+      num('thresholdDb', 'paramThreshold', -60, 0, 1, -30),
+      num('ratio', 'paramRatio', 1, 12, 0.5, 4),
+    ],
+  },
+  {
+    id: 'fx.nrPrint',
+    labelKey: 'fxNrPrint',
+    kind: 'kernel',
+    process: (channels, _sampleRate, params, ctx) =>
+      nrProcess(channels, {
+        alpha: Number(params.alpha),
+        floor: Number(params.floor),
+      }, ctx),
+    specs: [
+      num('alpha', 'paramAlpha', 1, 4, 0.1, 2),
+      num('floor', 'paramFloor', 0.01, 0.2, 0.01, 0.05),
     ],
   },
   {

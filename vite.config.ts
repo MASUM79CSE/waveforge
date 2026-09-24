@@ -85,6 +85,9 @@ export default defineConfig({
         'src/fx/reverbIr.ts',
         'src/fx/convolver.ts',
         'src/fx/reverb2.ts',
+        // E6 spectral repair (effects v2)
+        'src/fx/nrPrint.ts',
+        'src/fx/deesser.ts',
         // M5 pure kernels
         'src/engine/lufs.ts',
         'src/engine/bpm.ts',

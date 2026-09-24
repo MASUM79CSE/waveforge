@@ -9,6 +9,7 @@ import { GainDialog, NormalizeDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
 import { Pgeq8Dialog } from './Pgeq8Dialog';
 import { Reverb2Dialog } from './Reverb2Dialog';
+import { NrPrintDialog } from './NrPrintDialog';
 import {
   draftSaveOpen,
   effectDialogId,
@@ -46,6 +47,8 @@ export function App() {
         <Pgeq8Dialog />
       ) : effectDialogId.value === 'fx.reverb2' ? (
         <Reverb2Dialog />
+      ) : effectDialogId.value === 'fx.nrPrint' ? (
+        <NrPrintDialog />
       ) : (
         <EffectDialog />
       )}

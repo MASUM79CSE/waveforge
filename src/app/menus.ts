@@ -66,6 +66,8 @@ export const menus: MenuDef[] = [
       'fx.distortion',
       '-',
       'fx.gate',
+      'fx.deesser',
+      'fx.nrPrint',
       'fx.rate',
       '-',
       'fx.gain',

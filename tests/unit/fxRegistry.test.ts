@@ -22,6 +22,8 @@ const EXPECTED_ORDER = [
   'fx.geq10',
   'fx.geq20',
   'fx.gate',
+  'fx.deesser',
+  'fx.nrPrint',
   'fx.rate',
 ];
 
@@ -86,6 +88,8 @@ describe('fx definitions hygiene', () => {
       'fx.geq10': 'graph',
       'fx.geq20': 'graph',
       'fx.gate': 'kernel',
+      'fx.deesser': 'kernel',
+      'fx.nrPrint': 'kernel',
       'fx.rate': 'kernel',
     });
     for (const def of defs) {
