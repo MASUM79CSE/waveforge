@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 test('doctor: Help → Diagnostics runs capability self-tests and reports', async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') consoleErrors.push(m.text());
+  });
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await page.goto('/');
   // dismiss welcome
   await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
@@ -24,4 +29,6 @@ test('doctor: Help → Diagnostics runs capability self-tests and reports', asyn
   const logRow = rows.filter({ hasText: /Local error log/i });
   await expect(logRow).toContainText('0 entries');
   await expect(logRow.getByRole('button', { name: /export json/i })).toBeDisabled();
+  // §2.3 acceptance: zero console errors across the full shell session
+  expect(consoleErrors).toEqual([]);
 });
