@@ -52,7 +52,7 @@ test('analysis: MP3 export embeds song info as ID3', async ({ page }) => {
   await page.getByRole('button', { name: 'File' }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const panel = page.getByRole('dialog');
-  await panel.locator('#export-format').selectOption('mp3');
+  await panel.getByTestId('export-format-mp3').click();
 
   await panel.getByRole('button', { name: /song info/i }).click();
   const meta = page.getByRole('dialog', { name: /song info/i });

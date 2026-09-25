@@ -45,7 +45,7 @@ test('flow #4: export MP3 produces frame-synced MPEG audio', async ({ page }) =>
   await page.getByRole('button', { name: 'File' }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const panel = page.getByRole('dialog');
-  await panel.locator('#export-format').selectOption('mp3');
+  await panel.getByTestId('export-format-mp3').click();
   await panel.locator('#export-quality').selectOption('192');
 
   const downloadPromise = page.waitForEvent('download');
@@ -66,7 +66,7 @@ test('flow #4: export FLAC runs the vendored wasm encoder (fLaC magic)', async (
   await page.getByRole('button', { name: 'File' }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const panel = page.getByRole('dialog');
-  await panel.locator('#export-format').selectOption('flac');
+  await panel.getByTestId('export-format-flac').click();
   await panel.locator('#export-quality').selectOption('5');
 
   const downloadPromise = page.waitForEvent('download');

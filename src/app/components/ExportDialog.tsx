@@ -18,10 +18,8 @@ import {
 } from '../state';
 import { t } from '../../i18n';
 import { Modal } from './Modal';
+import { EXPORT_FORMATS, formatInfo, qualityHint } from '../../io/exportFormats';
 import type { ExportFormat } from '../../io/exportName';
-
-const MP3_RATES = ['128', '192', '256', '320'];
-const FLAC_LEVELS = ['0', '3', '5', '8'];
 
 function formatBytes(bytes: number): string {
   if (bytes <= 0) return '—';
@@ -35,7 +33,7 @@ export function ExportDialog() {
   // initial state is computed at mount — App mounts this dialog fresh for
   // every open (see <ExportDialog/> below), so no reset effect is needed
   const [format, setFormat] = useState<ExportFormat>('wav');
-  const [quality, setQuality] = useState('pcm16');
+  const [quality, setQuality] = useState(formatInfo('wav').defaultQuality);
   const [useSelection, setUseSelection] = useState(false);
   const [filename, setFilename] = useState(defaultExportName());
 
@@ -44,65 +42,55 @@ export function ExportDialog() {
   const hasSelection = selection.value !== null;
   const setFormatAndQuality = (next: ExportFormat): void => {
     setFormat(next);
-    setQuality(next === 'mp3' ? '192' : next === 'flac' ? '5' : 'pcm16');
+    setQuality(formatInfo(next).defaultQuality);
   };
-  const estimate = currentEstimate(format, useSelection && hasSelection ? quality : quality);
+  const info = formatInfo(format);
+  const estimate = currentEstimate(format, quality);
 
   return (
     <Modal title={t().exportTitle} onClose={closeExportDialog}>
       <div class="fx-dialog">
-        <div class="fx-row">
-          <label class="fx-label" for="export-format">
-            {t().exportFormat}
-          </label>
-          <select
-            id="export-format"
-            class="fx-num export-select"
-            value={format}
-            onChange={(e) => setFormatAndQuality((e.target as HTMLSelectElement).value as ExportFormat)}
-          >
-            <option value="wav">{t().exportFormatWav}</option>
-            <option value="mp3">{t().exportFormatMp3}</option>
-            <option value="flac">{t().exportFormatFlac}</option>
-          </select>
+        <div class="export-cards" role="radiogroup" aria-label={t().exportFormat}>
+          {EXPORT_FORMATS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              role="radio"
+              aria-checked={format === f.id}
+              class={`export-card ${format === f.id ? 'selected' : ''}`}
+              data-testid={`export-format-${f.id}`}
+              onClick={() => setFormatAndQuality(f.id)}
+            >
+              <span class="export-card-head">
+                <span class="export-card-name">{f.name}</span>
+                <span class={`export-card-badge ${f.badge === 'Lossless' ? 'ok' : 'warn'}`}>
+                  {f.badge}
+                </span>
+              </span>
+              <span class="export-card-blurb">{f.blurb}</span>
+            </button>
+          ))}
         </div>
 
-        {format === 'wav' && (
-          <div class="fx-row">
-            <label class="fx-label" for="export-quality">
-              {t().exportWavBits}
-            </label>
-            <select
-              id="export-quality"
-              class="fx-num export-select"
-              value={quality}
-              onChange={(e) => setQuality((e.target as HTMLSelectElement).value)}
-            >
-              <option value="pcm16">16-bit PCM</option>
-              <option value="pcm24">24-bit PCM</option>
-              <option value="float32">32-bit float</option>
-            </select>
-          </div>
-        )}
-        {format === 'mp3' && (
-          <div class="fx-row">
-            <label class="fx-label" for="export-quality">
-              {t().exportMp3Bitrate}
-            </label>
-            <select
-              id="export-quality"
-              class="fx-num export-select"
-              value={quality}
-              onChange={(e) => setQuality((e.target as HTMLSelectElement).value)}
-            >
-              {MP3_RATES.map((rate) => (
-                <option key={rate} value={rate}>
-                  {rate} kbps
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div class="fx-row">
+          <label class="fx-label" for="export-quality">
+            {info.id === 'wav' ? t().exportWavBits : info.id === 'mp3' ? t().exportMp3Bitrate : t().exportFlacLevel}
+          </label>
+          <select
+            id="export-quality"
+            class="fx-num export-select"
+            value={quality}
+            onChange={(e) => setQuality((e.target as HTMLSelectElement).value)}
+          >
+            {info.qualities.map((q) => (
+              <option key={q.id} value={q.id}>
+                {q.label}
+              </option>
+            ))}
+          </select>
+          <span class="export-hint">{qualityHint(format, quality)}</span>
+        </div>
+
         {format === 'mp3' && (
           <div class="fx-row">
             <span class="fx-label" />
@@ -113,25 +101,6 @@ export function ExportDialog() {
             >
               {t().metadataSongInfo}
             </button>
-          </div>
-        )}
-        {format === 'flac' && (
-          <div class="fx-row">
-            <label class="fx-label" for="export-quality">
-              {t().exportFlacLevel}
-            </label>
-            <select
-              id="export-quality"
-              class="fx-num export-select"
-              value={quality}
-              onChange={(e) => setQuality((e.target as HTMLSelectElement).value)}
-            >
-              {FLAC_LEVELS.map((level) => (
-                <option key={level} value={level}>
-                  {level}
-                </option>
-              ))}
-            </select>
           </div>
         )}
 
@@ -169,8 +138,9 @@ export function ExportDialog() {
 
         <div class="export-meta">
           <span>
-            {t().exportEstimate}: {formatBytes(estimate)}
+            {t().exportEstimate}: <strong>{formatBytes(estimate)}</strong>
           </span>
+          {doc && <span>{t().exportSampleRate}: {doc.sampleRate} Hz</span>}
           {exportProgress.value !== null && (
             <span>{Math.round(exportProgress.value * 100)}%</span>
           )}

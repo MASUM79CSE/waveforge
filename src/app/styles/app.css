@@ -1183,7 +1183,79 @@
   color: var(--danger);
 }
 
-/* Export dialog (M4) */
+/* Export dialog (M4) + professional format chooser */
+.export-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.export-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  text-align: left;
+  background: var(--bg-2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  transition:
+    border-color var(--tr),
+    box-shadow var(--tr),
+    background var(--tr);
+}
+.export-card:hover {
+  border-color: var(--bd-h);
+}
+.export-card.selected {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 1px var(--ac), 0 0 10px var(--ac-glow);
+}
+.export-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.export-card-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--fg-0);
+}
+.export-card-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.export-card-badge.ok {
+  color: var(--ac);
+  background: var(--ac-soft);
+}
+.export-card-badge.warn {
+  color: #e5c515;
+  background: rgba(229, 197, 21, 0.12);
+}
+.export-card-blurb {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--fg-1);
+}
+.export-hint {
+  grid-column: 2 / span 2;
+  font-size: 11px;
+  color: var(--fg-1);
+  align-self: center;
+}
+@media (max-width: 640px) {
+  .export-cards {
+    grid-template-columns: 1fr;
+  }
+  .export-hint {
+    grid-column: auto;
+  }
+}
 .export-select {
   width: 190px;
   text-align: left;

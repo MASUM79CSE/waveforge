@@ -199,6 +199,7 @@ export const en = {
   exportScopeSelection: 'Selection only',
   exportFilename: 'File name',
   exportEstimate: 'Estimated size',
+  exportSampleRate: 'Sample rate',
   exportButton: 'Export',
   exportCancel: 'Cancel export',
   exportDone: 'Exported',

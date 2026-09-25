@@ -1125,3 +1125,20 @@ server): **desktop 100/100/100/100**, **mobile perf 98** (FCP 1.72 s,
 TBT 75 ms, CLS 0) — up from 97 pre-redesign; the zone markup added no
 measurable weight. UI-quality gates complete: 716/716 unit, 56/56 e2e,
 axe zero violations, lint 0, tsc clean, build OK, LH ≥95/95/100/100.
+
+## 2026-09-25 (feature) — professional export format chooser SHIPPED
+
+New `src/io/exportFormats.ts`: code-level catalog (single source) — three
+format cards (WAV/MP3/FLAC) with Lossless/Lossy badges + use-case lines,
+labeled quality presets with per-preset hints (16/24/32f = CD/master/
+DAW-native; 128–320 = voice→transparent; FLAC 0–8 = fastest→smallest)
+and professional defaults (24-bit master, 320 kbps, level 5). Export
+dialog rebuilt: accessible radiogroup cards (role=radio, keyboard +
+AT), quality select driven by the catalog with live hint, estimate
+bolded + sample-rate row; card CSS (grid, badges, selected glow,
+single-column <640px). Encoder service unchanged (workers/cancel/
+progress/FSA/ID3 all intact). Unit g1–g3 (catalog invariants); e2e #57
+(cards, defaults, hints, estimate reacts 320>128, labeled FLAC levels);
+legacy #26/#48 specs migrated off the removed #export-format dropdown.
+Gates: **719/719 unit (86 files), 57/57 e2e, lint 0, tsc clean,
+build OK.**
