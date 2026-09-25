@@ -15,7 +15,7 @@ and export audio **entirely in the browser**. No uploads, no accounts, no tracki
 - **Selection:** drag region, select-all, zero-cross snap, seamless loop
 - **Edits:** cut/copy/paste/trim/silence/delete/flip/mute/gain/normalize/reverse/invert/remove-silence
 - **Effects:** gain, fades, PG-EQ, G-EQ 10/20, compressor, limiter, delay, distortion, reverb,
-  speed (experimental pitch-preserving), playback rate, audio repair — A/B preview + automation
+  speed (pitch-preserving stretch — promoted Z1), playback rate, audio repair — A/B preview + automation
 - **Analysis:** spectrum/frequency analysers, LUFS, BPM + beat markers + snap
 - **Metadata:** ID3v2 on MP3 export
 - **Export:** WAV 16/24/32f (+dither), MP3 (bitrate), FLAC (level); mono/stereo; selection-only

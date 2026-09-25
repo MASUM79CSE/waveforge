@@ -487,7 +487,9 @@ pending — record with the E2 phase.
       MenuBar: click after a hover-switch keeps the freshly-opened menu
       open (native-menu behaviour; the click no longer instantly closes
       it). Registry 21 effects; e2e suite 18 → 19 (hidden until enabled,
-      then View → Stretch / Pitch → ×1.25 → 11.5 s → Ctrl+Z).
+      then View → Stretch / Pitch → ×1.25 → 11.5 s → Ctrl+Z). **PROMOTED
+      Z1 (2026-09-25):** first-class Effects item, experimental gate
+      machinery removed (e2e now asserts direct menu apply).
 
 ## M7 — Hardening & release ✅
 
@@ -915,3 +917,19 @@ Gap analysis executed end-to-end (`docs/gap-analysis.md`):
   restored).
 Gates at close: **692/692 unit (82 files), 47/47 e2e + 87/89 cross-browser,
 lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (Z-series) — stretch promoted + platform posture SHIPPED
+
+- [x] **Z1** Stretch/Pitch promotion: WSOLA `fx.stretch` is a first-class
+      Effects-menu item; the `experimentalFx` gate machinery (signal,
+      persistence, `view.experimental` command + View-menu entry, i18n
+      key, MenuBar filter) removed wholesale. Rationale: E5 is the most
+      heavily anchored kernel in the registry (bit-exact ×1, exact-length
+      laws, pitch ±0.5 %, click grid ±2 ms, stereo bit-identity, bounded
+      NaN runs, 60 s stereo profile ≈ 1.1–1.2 s) with months of e2e
+      mileage. e2e rewritten to the promoted flow.
+- [x] **Z2** platform posture written down (gap A2): README "Platforms" —
+      desktop-first by decision; pointer events + `touch-action: none`
+      give functional basic touch; phone-optimized layout out of scope
+      (AudioMass-aligned). PRD + ADR 005 status lines updated.
+- [x] **Z3** gates: full suite + lint + tsc + build green at close.

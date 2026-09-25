@@ -24,7 +24,7 @@ full analysis suite.
   limiter, PG-EQ, graphic EQ 10/20, delay, reverb ×2, chorus, flanger,
   phaser, tremolo, vibrato, distortion, gate, de-esser, noise reduction
   (adaptive Wiener + spectral print), **AI Voice Clarity (RNNoise)**,
-  time-stretch / pitch-shift (WSOLA, experimental)
+  time-stretch / pitch-shift (WSOLA)
 - **FX Rack**: serial chains with reorder / bypass, built-in recipes
   (Voice rescue, Podcast polish, Master glue, Warm air), user presets,
   chain JSON import/export
@@ -62,6 +62,16 @@ real service worker for the offline flow.
 | WebKit 26.6 | 43/45 | same mic limit + Playwright-WebKit `reload()` internal error in the offline spec (known harness quirk; verify offline on real Safari after deploy) |
 
 Cross-browser check: `npx playwright test --config=playwright.other.config.ts`.
+
+## Platforms
+
+**Desktop-first by decision.** The editor targets desktop pointer + keyboard
+interaction (canvas selection/drag drawing, shortcuts, multi-panel layout);
+tablets with a pointer work, and canvases use pointer events with
+`touch-action: none` so basic touch drawing/dragging functions — but a
+phone-optimized layout is out of scope by design (matches AudioMass's own
+desktop-first posture; phone DAW workloads are dominated by native apps).
+Browser support matrix below.
 
 ## Deploy (Vercel)
 

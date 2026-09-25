@@ -48,6 +48,9 @@ an automation envelope editor.
    - Noise reduction ships as the noise gate (v1 delta per §11); RNNoise
      stays parked. Speed (pitch-preserving stretch) stays parked behind the
      experimental flag; `rate` is varispeed (pitch shifts, per parity list).
+     **Status 2026-09-25:** both deltas resolved — RNNoise shipped as E7b
+     `fx.rnvoice`; stretch promoted out of the experimental flag (Z1 —
+     first-class Effects item; anchors: pitch ±0.5 %, click grid ±2 ms).
    - Graphic EQ 20-band = 20 log-spaced bands 31.25 Hz–16 kHz (AudioMass's
      exact band layout is undocumented; ISO-derived spacing chosen).
 
