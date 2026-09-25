@@ -4,6 +4,14 @@
 `engine/lufs.ts` (BS.1770-4 K-weighting), `fx/mastering.truePeakDb`,
 `fx/fft.ts` (radix-2), the analysis worker protocol, AnalysisPanel.
 
+> **STATUS: SHIPPED (2026-09-25).** Kernel+UI `48bd6c2`. Gates at ship:
+> 700/700 unit (83 files — 8 new analytic anchors), 48/48 e2e (48th spec:
+> generated clipped wav → full report → verdicts → jump-to-offender),
+> lint 0, tsc clean, build OK. Ship notes: LRA is the documented
+> momentary-block approximation; CLIP_EPS 1e−4 (≈0 dBFS) after the e2e
+> caught short-run resample smearing — long flat runs are the robust
+> fixture pattern.
+
 ## P1 — report kernel (pure, this phase)
 
 `src/engine/analysisReport.ts` — UI-free, worker-runnable, deterministic:

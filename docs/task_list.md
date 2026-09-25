@@ -933,3 +933,30 @@ lint 0, tsc clean, build OK.**
       give functional basic touch; phone-optimized layout out of scope
       (AudioMass-aligned). PRD + ADR 005 status lines updated.
 - [x] **Z3** gates: full suite + lint + tsc + build green at close.
+
+## 2026-09-25 (P-series) — professional analysis report SHIPPED
+
+User ask: professional Analyze features from marketplace analysis
+(`docs/analyze-analysis.md`: 2026 loudness targets — Spotify/YouTube/
+Amazon/Tidal −14, Apple −16, Deezer −15, EBU −23, Netflix −27/−2 dBTP;
+RX/Auphonic-style one-scan audits with jump-to-offender).
+
+- [x] **P1** `src/engine/analysisReport.ts` — one pure scan: LUFS
+      integrated/momentary/ST + **LRA** (EBU percentiles, momentary-block
+      approximation documented) + **PLR**; stereo correlation (gated
+      50 ms blocks) + mid/side %; integrity (clipped samples/runs + first
+      run, DC per channel, sample peak); 10-octave FFT balance; noise
+      floor/SNR/silence. `STREAM_TARGETS` + `verdicts()` (gain-to-target,
+      TP-safe flag). 8 analytic anchors (EBU parity with the lufs.test
+      anchor, LRA segments, correlation ±1/≈0, exact clip/DC, band
+      concentration, mono/44.1k/determinism).
+- [x] **P2** worker protocol + `runFullReport` (busy 'report') +
+      **jump-to-offender** (`selectFirstClippedRun`) + AnalysisPanel
+      report block (metrics row, verdict chips with ✓/✗ TP flags, balance
+      bars, select button) + Analyze → Full report command.
+- [x] **P3** 48th e2e: generated clipped wav → full report → LUFS format +
+      verdict chips + runs detected + select-first-run → toast, console-
+      clean. Caught en route: short clip runs smear under decode/resample —
+      fixture uses long flat runs; CLIP_EPS 1e−4.
+
+Gates: **700/700 unit (83 files), 48/48 e2e, lint 0, tsc clean, build OK.**
