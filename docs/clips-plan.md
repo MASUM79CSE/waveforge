@@ -77,7 +77,8 @@
       law, tail retention, GEQ20 band layout, rate = varispeed)
 - [ ] **Automation envelope editor → scheduled with M5** (needs the canvas
       timeline infra landing with the analysers; deviation logged in ADR 005)
-- [ ] RNNoise denoise + pitch-preserving stretch remain parked (§11 v1 deltas)
+- [x] RNNoise denoise SHIPPED as E7b `fx.rnvoice` (task_list E-series) —
+      un-parks this half; pitch-preserving stretch remains parked (§11 v1 deltas)
 
 ### Defects fixed (post-M3, user-reported)
 

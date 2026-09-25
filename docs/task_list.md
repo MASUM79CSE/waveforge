@@ -781,3 +781,13 @@ mix-only static kernel, lazily wasm-loaded dialog with readiness gating,
 (main-thread deviation documented). E7b note in §11 v1 deltas un-parked
 (stretch still parked). Full gates at ship: **666/666 unit (77 files),
 39/39 e2e, lint 0, tsc clean, build OK**.
+
+## 2026-09-25 (verification) — post-E7b Lighthouse re-run
+
+Three runs of the shipped E7b build: **96 / 99 / (A7 baseline 98)** perf,
+a11y/bp/seo 100/100/100 in all — gate ≥95/95/100/100 MET. The perf spread
+is pure TBT throttling variance (150→190→50 ms on the SAME build); FCP
+1.6 s, LCP 1.9 s, SI 1.6 s, CLS 0 identical everywhere — the main path is
+untouched by E7b (vendor js + wasm are lazy chunks loaded only on dialog
+open; `rnnoise-*.wasm` 125 713 B ships as its own asset). Artifact
+`docs/perf/lighthouse-e7b.json`.
