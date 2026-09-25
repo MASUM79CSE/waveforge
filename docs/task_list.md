@@ -1086,3 +1086,18 @@ sel-clear/strip-lab now --fg-1 (AA). e2e #55: zones labeled + ordered,
 RECORD right-anchored, clock visible, per-size (1920→375) reachability +
 no-clip at 1920 + record controls visible everywhere. Gates: **716/716
 unit, 56/56 e2e (axe zero violations), lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (redesign r2) — Position-first order + separated Stop/Pause
+
+User-directed layout: (1) TIME DISPLAY leads the bar, (2) TRANSPORT =
+seek-start / play / loop / record / seek-end, (3) STOP + PAUSE in their
+own separated zone. New actions: `transport.pause()` (project + doc
+routed) and dedicated seek-start/seek-end buttons — seek/nudge now route
+PROJECT playback too (pre-existing gap: keyboard End/Home only worked in
+doc mode). Pause disables while stopped, enables during playback; play
+button never double-fires during playback (pause owns that state).
+testids: transport-play/transport-pause/transport-stop/transport-seek-
+start/transport-seek-end. e2e #55 updated: zone ORDER asserted
+(Position < Transport < Stop/Pause < Edit tools), pause state machine
+exercised live. Gates: **716/716 unit, 56/56 e2e, lint 0, tsc clean,
+build OK.**

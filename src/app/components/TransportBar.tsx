@@ -58,21 +58,37 @@ export function TransportBar() {
 
   return (
     <div class="transport">
+      <Zone label="Position">
+        <div class="transport-time" title="Cursor / duration">
+          <span class="time-cursor">{fmtClock(cursorPos.value)}</span>
+          <span class="time-sep">/</span>
+          <span class="time-total">{doc ? fmtClock(doc.duration) : '0:00.000'}</span>
+        </div>
+      </Zone>
+
       <Zone label="Transport">
         <div class="transport-group">
-          <button class="tbtn" title="Seek Start (Home)" onClick={() => transport.seekStart()} disabled={!doc}>
+          <button
+            class="tbtn"
+            title="Seek to Start (Home)"
+            aria-label="Seek to Start (Home)"
+            data-testid="transport-seek-start"
+            onClick={() => transport.seekStart()}
+            disabled={!doc}
+          >
             <Svg d="M6 5v14M20 5l-11 7 11 7z" />
           </button>
           <button
             class={`tbtn tbtn-play ${playing.value ? 'active' : ''}`}
-            title={playing.value ? `${t().pause} (Space)` : `${t().play} (Space)`}
-            onClick={() => transport.togglePlay()}
+            title={`${t().play} (Space)`}
+            aria-label={`${t().play} (Space)`}
+            data-testid="transport-play"
+            onClick={() => {
+              if (!playing.value) transport.togglePlay();
+            }}
             disabled={!doc}
           >
-            {playing.value ? <Svg d="M7 5h4v14H7zM13 5h4v14h-4z" /> : <Svg d="M7 4l14 8-14 8z" />}
-          </button>
-          <button class="tbtn" title={t().stop} onClick={() => transport.stop()} disabled={!doc}>
-            <Svg d="M6 6h12v12H6z" />
+            <Svg d="M7 4l14 8-14 8z" />
           </button>
           <button
             class={`tbtn ${looping.value ? 'active' : ''}`}
@@ -82,14 +98,55 @@ export function TransportBar() {
           >
             <Svg d="M17 2l4 4-4 4V7H7a3 3 0 0 0-3 3H2a5 5 0 0 1 5-5h10V2zM7 22l-4-4 4-4v3h10a3 3 0 0 0 3-3h2a5 5 0 0 1-5 5H7v3z" />
           </button>
+          <button
+            class={`tbtn rec-btn ${recording.value ? 'recording' : ''} ${armed.value && !recording.value ? 'armed' : ''}`}
+            title={
+              recording.value
+                ? t().recordStop
+                : armed.value
+                  ? t().recArmed
+                  : t().recordStart
+            }
+            data-testid="record-toggle"
+            onClick={() => void toggleRecord()}
+          >
+            <Svg d="M12 7a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0v-3a5 5 0 0 1 5-5zM8 21h8" />
+          </button>
+          <button
+            class="tbtn"
+            title="Seek to End (End)"
+            aria-label="Seek to End (End)"
+            data-testid="transport-seek-end"
+            onClick={() => transport.seekEnd()}
+            disabled={!doc}
+          >
+            <Svg d="M18 5v14M4 5l11 7-11 7z" />
+          </button>
         </div>
       </Zone>
 
-      <Zone label="Position">
-        <div class="transport-time" title="Cursor / duration">
-          <span class="time-cursor">{fmtClock(cursorPos.value)}</span>
-          <span class="time-sep">/</span>
-          <span class="time-total">{doc ? fmtClock(doc.duration) : '0:00.000'}</span>
+      <Zone label="Stop / Pause">
+        <div class="transport-group">
+          <button
+            class="tbtn"
+            title={`${t().pause} (Space)`}
+            aria-label={`${t().pause} (Space)`}
+            data-testid="transport-pause"
+            onClick={() => transport.pause()}
+            disabled={!doc || !playing.value}
+          >
+            <Svg d="M7 5h4v14H7zM13 5h4v14h-4z" />
+          </button>
+          <button
+            class="tbtn"
+            title={t().stop}
+            aria-label={t().stop}
+            data-testid="transport-stop"
+            onClick={() => transport.stop()}
+            disabled={!doc}
+          >
+            <Svg d="M6 6h12v12H6z" />
+          </button>
         </div>
       </Zone>
 
@@ -106,20 +163,6 @@ export function TransportBar() {
       <div class="transport-spacer" />
 
       <Zone label="Record">
-        <button
-          class={`tbtn rec-btn ${recording.value ? 'recording' : ''} ${armed.value && !recording.value ? 'armed' : ''}`}
-          title={
-            recording.value
-              ? t().recordStop
-              : armed.value
-                ? t().recArmed
-                : t().recordStart
-          }
-          data-testid="record-toggle"
-          onClick={() => void toggleRecord()}
-        >
-          <Svg d="M12 7a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0v-3a5 5 0 0 1 5-5zM8 21h8" />
-        </button>
         <button
           class={`tbtn ${recStudio.value.monitoring ? 'active' : ''}`}
           title={t().monitorTitle}
@@ -207,7 +250,6 @@ export function TransportBar() {
     </div>
   );
 }
-
 
 
 /** One AudioMass-style channel strip: M mute, volume, pan (D8). */

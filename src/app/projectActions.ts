@@ -687,7 +687,7 @@ export function projectTogglePlay(): void {
   rafId = requestAnimationFrame(rafTick);
 }
 
-function projectPause(): void {
+export function projectPause(): void {
   if (!playback) return;
   const pos = playback.position();
   playback.stop();

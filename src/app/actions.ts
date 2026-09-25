@@ -10,7 +10,7 @@ import { decodeBlob } from '../io/decode';
 import { parseId3 } from '../io/id3';
 import { t, tError } from '../i18n';
 import { installDoc, engine, renderer, getDoc } from './runtime';
-import { applyProjectLoopIfPlaying, projectStop, projectTogglePlay } from './projectActions';
+import { applyProjectLoopIfPlaying, projectPause, projectSeek, projectStop, projectTogglePlay } from './projectActions';
 import { stopPreview } from './preview';
 import * as S from './state';
 
@@ -331,6 +331,13 @@ export const transport = {
     }
     engine.stop();
   },
+  pause(): void {
+    if (S.projectOpen.value) {
+      projectPause();
+      return;
+    }
+    engine.pause();
+  },
   toggleLoop(): void {
     const next = !S.looping.value;
     S.looping.value = next;
@@ -344,15 +351,37 @@ export const transport = {
     toastInfo(next ? t().loopOn : t().loopOff);
   },
   seekStart(): void {
+    if (S.projectOpen.value) {
+      projectSeek(0);
+      return;
+    }
     engine.seek(0);
   },
   seekEnd(): void {
-    engine.seek(getDoc()?.duration ?? 0);
+    const duration = S.projectOpen.value
+      ? projectDurationLite()
+      : (getDoc()?.duration ?? 0);
+    if (S.projectOpen.value) {
+      projectSeek(duration);
+      return;
+    }
+    engine.seek(duration);
   },
   nudge(seconds: number): void {
+    if (S.projectOpen.value) {
+      const from = S.cursorPos.value;
+      const duration = projectDurationLite();
+      projectSeek(Math.max(0, Math.min(duration, from + seconds)));
+      return;
+    }
     engine.seek(clampSeek(engine.cursor + seconds, getDoc()?.duration ?? 0));
   },
 };
+
+/** Project duration for transport seeks (0 when no project is open). */
+function projectDurationLite(): number {
+  return S.docInfo.value?.duration ?? 0;
+}
 
 // ---- view ----
 

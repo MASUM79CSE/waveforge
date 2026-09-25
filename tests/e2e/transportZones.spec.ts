@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * e2e #55 — transport redesign (zone layout): the single crowded row is
- * reorganized into labeled zone panels — TRANSPORT / POSITION / EDIT /
- * SELECTION / GRID left, RECORD / MASTER right-aligned. Controls keep
- * their commands; captions show on wide screens; nothing clips; the bar
- * never introduces page-level horizontal scrolling.
+ * e2e #55 — transport redesign (zone layout): TIME DISPLAY first, then
+ * TRANSPORT (seek-left, play, seek-right, loop, record), with STOP/PAUSE
+ * in their own separated cluster; EDIT/SELECTION/GRID follow; RECORD
+ * (monitor/punch/meter) + MASTER right-anchored. Captions show on wide
+ * screens; nothing clips; record controls reachable everywhere.
  */
 
 const SIZES: Array<[number, number]> = [
@@ -17,9 +17,9 @@ const SIZES: Array<[number, number]> = [
   [375, 700],
 ];
 
-const ZONES = ['Transport', 'Position', 'Edit tools', 'Selection', 'Beat grid', 'Record', 'Master'];
+const ZONES = ['Position', 'Transport', 'Stop / Pause', 'Edit tools', 'Selection', 'Beat grid', 'Record', 'Master'];
 
-test('transport bar is organized into labeled zones', async ({ page }) => {
+test('position first, transport next, stop/pause separated', async ({ page }) => {
   await page.goto('/');
   const welcome = page.getByRole('dialog', { name: /welcome/i });
   await welcome.getByRole('button', { name: /load sample/i }).click();
@@ -31,19 +31,46 @@ test('transport bar is organized into labeled zones', async ({ page }) => {
     await expect(page.locator(`.tz[data-zone-label="${zone}"]`)).toHaveAttribute('aria-label', zone);
   }
 
-  // captions render on desktop
-  await expect(page.locator('.tz-cap').first()).toBeVisible();
+  // ORDER: the time display leads, transport follows, stop/pause separate
+  const x = async (zone: string): Promise<number> =>
+    (await page.locator(`.tz[data-zone-label="${zone}"]`).boundingBox())!.x;
+  expect(await x('Position')).toBeLessThan(await x('Transport'));
+  expect(await x('Transport')).toBeLessThan(await x('Stop / Pause'));
+  expect(await x('Stop / Pause')).toBeLessThan(await x('Edit tools'));
 
-  // the RECORD zone is right-anchored: its left edge sits past 60% of the bar
+  // the clock lives in the FIRST zone
+  const clockX = (await page.locator('.time-cursor').boundingBox())!.x;
+  expect(clockX).toBeLessThan(await x('Transport'));
+
+  // transport cluster: seek-left, play, seek-right (NEW), loop, record
+  const transport = page.locator('.tz[data-zone-label="Transport"]');
+  await expect(transport.getByTestId('transport-seek-start')).toBeVisible();
+  await expect(transport.getByTestId('transport-play')).toBeVisible();
+  await expect(transport.getByTestId('transport-seek-end')).toBeVisible();
+  await expect(transport.getByRole('button', { name: /loop/i })).toBeVisible();
+  await expect(transport.getByTestId('record-toggle')).toBeVisible();
+
+  // stop/pause live OUTSIDE the transport cluster (separated), pause is
+  // disabled while stopped and enables during playback
+  const sp = page.locator('.tz[data-zone-label="Stop / Pause"]');
+  await expect(sp.getByTestId('transport-pause')).toBeVisible();
+  await expect(sp.getByTestId('transport-stop')).toBeVisible();
+  await expect(sp.getByTestId('transport-pause')).toBeDisabled();
+  await page.keyboard.press('Space');
+  await expect(sp.getByTestId('transport-pause')).toBeEnabled();
+  await page.getByTestId('transport-pause').click();
+  await expect(sp.getByTestId('transport-pause')).toBeDisabled();
+
+  // RECORD zone is right-anchored: past 55% of the bar
   const barBox = (await page.locator('.transport').boundingBox())!;
   const recBox = (await page.locator('.tz[data-zone-label="Record"]').boundingBox())!;
   expect(recBox.x - barBox.x).toBeGreaterThan(barBox.width * 0.55);
 
-  // POSITION shows the one-line clock
-  await expect(page.locator('.tz[data-zone-label="Position"] .time-cursor')).toBeVisible();
+  // captions render on desktop
+  await expect(page.locator('.tz-cap').first()).toBeVisible();
 });
 
-test('transport zones hold at every size — nothing clips, no page h-scroll added', async ({ page }) => {
+test('transport zones hold at every size — nothing clips, record reachable', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /skip|close|✕/i }).first().click().catch(() => {});
 
