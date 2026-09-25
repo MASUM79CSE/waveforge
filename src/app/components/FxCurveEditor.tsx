@@ -12,9 +12,13 @@ import {
   beginEnvelopeGesture,
   dragEnvelopeTo,
   curveYIn,
+  envelopeNeighborAt,
   fxEnvelopeParam,
   fxRegionLen,
   fxCurvesDraft,
+  insertEnvelopeInitial,
+  insertEnvelopeNeighbor,
+  nudgeEnvelopePoint,
   removeEnvelopePointAt,
   setFxCurvePoints,
   removeFxCurve,
@@ -22,6 +26,7 @@ import {
   type OverlayGeom,
   type ValueDomain,
 } from '../fxEnvelope';
+import { removePoint } from '../../engine/automation';
 import { t } from '../../i18n';
 
 const POINT = 5;
@@ -41,6 +46,14 @@ export function FxCurveEditor({
   const gesture = useRef<EnvelopeGesture | null>(null);
   const domain: ValueDomain = { min: spec.min, max: spec.max };
   const key = curveKey ?? spec.key;
+  // X3: keyboard selection (ref: the draw closure reads it without
+  // re-subscribing; drawRef triggers the redraw on selection changes)
+  const selectedRef = useRef<number | null>(null);
+  const drawRef = useRef<(() => void) | null>(null);
+  const setSelection = (index: number | null): void => {
+    selectedRef.current = index;
+    drawRef.current?.();
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -100,6 +113,18 @@ export function FxCurveEditor({
       for (const p of points) {
         ctx2d.fillRect(Math.round(xOf(p.at)) - POINT / 2, Math.round(yOf(p.value)) - POINT / 2, POINT, POINT);
       }
+      const sel = selectedRef.current;
+      if (sel !== null && sel < points.length) {
+        const p = points[sel]!;
+        ctx2d.strokeStyle = theme.automationPoint;
+        ctx2d.lineWidth = 1.5;
+        ctx2d.strokeRect(
+          Math.round(xOf(p.at)) - POINT / 2 - 3,
+          Math.round(yOf(p.value)) - POINT / 2 - 3,
+          POINT + 6,
+          POINT + 6,
+        );
+      }
       ctx2d.restore();
     };
 
@@ -113,6 +138,7 @@ export function FxCurveEditor({
       const g = beginEnvelopeGesture(fxCurvesDraft.value[key] ?? [], pointer(e), domain, geomNow());
       gesture.current = g;
       setFxCurvePoints(key, g.points);
+      selectedRef.current = g.index;
       canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
@@ -136,6 +162,80 @@ export function FxCurveEditor({
       e.preventDefault();
       const after = removeEnvelopePointAt(fxCurvesDraft.value[key] ?? [], pointer(e), domain, geomNow());
       setFxCurvePoints(key, after);
+      setSelection(null);
+    };
+    const onKeyDown = (e: KeyboardEvent): void => {
+      const pts = fxCurvesDraft.value[key] ?? [];
+      const region = fxRegionLen.value;
+      const consume = (): void => {
+        e.preventDefault();
+        e.stopPropagation(); // the global manager must not see these
+      };
+      if (pts.length === 0) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          setFxCurvePoints(key, insertEnvelopeInitial(region, staticValue));
+          setSelection(0);
+          consume();
+        }
+        return;
+      }
+      const stepAt = e.shiftKey ? 1 : Math.max(1, Math.round(region * 0.01));
+      const stepVal = (domain.max - domain.min) * (e.shiftKey ? 0.004 : 0.02);
+      const sel = selectedRef.current;
+      if (e.key.startsWith('Arrow')) {
+        consume();
+        if (sel === null) {
+          setSelection(e.key === 'ArrowLeft' ? pts.length - 1 : 0);
+          return;
+        }
+        const idx = Math.min(sel, pts.length - 1);
+        const dAt = e.key === 'ArrowRight' ? stepAt : e.key === 'ArrowLeft' ? -stepAt : 0;
+        const dVal = e.key === 'ArrowUp' ? stepVal : e.key === 'ArrowDown' ? -stepVal : 0;
+        setFxCurvePoints(key, nudgeEnvelopePoint(pts, idx, domain, region, dAt, dVal));
+        selectedRef.current = idx;
+        drawRef.current?.();
+        return;
+      }
+      if (e.key === 'Enter' || e.key === ' ') {
+        consume();
+        if (sel === null) {
+          setFxCurvePoints(key, insertEnvelopeInitial(region, staticValue));
+          setSelection(0);
+        } else {
+          const idx = Math.min(sel, pts.length - 1);
+          const at = envelopeNeighborAt(pts, idx, region);
+          const next = insertEnvelopeNeighbor(pts, idx, domain, region);
+          setFxCurvePoints(key, next);
+          selectedRef.current = Math.max(0, next.findIndex((p) => p.at === at));
+          drawRef.current?.();
+        }
+        return;
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && sel !== null) {
+        consume();
+        const idx = Math.min(sel, pts.length - 1);
+        const next = removePoint([...pts], idx);
+        setFxCurvePoints(key, next);
+        setSelection(next.length === 0 ? null : Math.min(idx, next.length - 1));
+        return;
+      }
+      // Escape deselects FIRST (with a selection); with none it bubbles so
+      // the global Escape chain still closes the dialog
+      if (e.key === 'Escape' && sel !== null) {
+        consume();
+        setSelection(null);
+      }
+    };
+    const onFocus = (): void => {
+      const pts = fxCurvesDraft.value[key] ?? [];
+      if (pts.length === 0 || selectedRef.current !== null) return;
+      // select the point nearest the region midpoint
+      const mid = fxRegionLen.value / 2;
+      let best = 0;
+      for (let i = 1; i < pts.length; ++i) {
+        if (Math.abs(pts[i]!.at - mid) < Math.abs(pts[best]!.at - mid)) best = i;
+      }
+      setSelection(best);
     };
 
     draw();
@@ -146,6 +246,8 @@ export function FxCurveEditor({
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('contextmenu', onContextMenu);
+    canvas.addEventListener('keydown', onKeyDown);
+    canvas.addEventListener('focus', onFocus);
     return () => {
       unsub();
       window.removeEventListener('resize', onResize);
@@ -153,6 +255,8 @@ export function FxCurveEditor({
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('contextmenu', onContextMenu);
+      canvas.removeEventListener('keydown', onKeyDown);
+      canvas.removeEventListener('focus', onFocus);
     };
   }, [key, spec.min, spec.max, staticValue]);
 
@@ -169,7 +273,17 @@ export function FxCurveEditor({
           ×
         </button>
       </div>
-      <canvas ref={canvasRef} class="fx-envelope-canvas" aria-label={`${t().fxEnvelope} ${spec.key}`} />
+      <canvas
+        ref={canvasRef}
+        class="fx-envelope-canvas"
+        tabIndex={0}
+        role="application"
+        aria-label={`${t().fxEnvelope} ${spec.key}`}
+        aria-describedby={`fx-env-keys-${key}`}
+      />
+      <span class="visually-hidden" id={`fx-env-keys-${key}`}>
+        {t().fxEnvelopeKeys}
+      </span>
       <span class="visually-hidden" data-testid={`fx-env-count-${key}`}>
         {armed ? count : 0}
       </span>

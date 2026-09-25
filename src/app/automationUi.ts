@@ -287,3 +287,66 @@ export function drawAutomationOverlay(
   }
   g.restore();
 }
+
+// --- X3: keyboard operability (docs/quality-plan.md) -----------------------
+
+/**
+ * X3: arrow-key nudge of one point — the movePoint kernel provides all the
+ * hard laws (at rounds to whole samples, x clamps to the free slot between
+ * the neighbours, y clamps to the domain). Step sizes are decided by the
+ * caller (base vs Shift-fine).
+ */
+export function nudgeEnvelopePoint(
+  points: readonly AutomationPoint[],
+  index: number,
+  domain: ValueDomain,
+  _regionLen: number,
+  dAt: number,
+  dValue: number,
+): AutomationPoint[] {
+  const p = points[index];
+  if (!p) return [...points];
+  return movePoint([...points], index, p.at + dAt, p.value + dValue, domain);
+}
+
+/**
+ * X3: Enter on a selection — insert a point between it and its next
+ * neighbour (or the region edge for the last point; a single point grows
+ * halfway to the edge). Value = segment average clamped to the domain.
+ * Returns the curve; the caller locates the insertion via
+ * `envelopeNeighborAt` (the `at` this function will use).
+ */
+export function envelopeNeighborAt(
+  points: readonly AutomationPoint[],
+  index: number,
+  regionLen: number,
+): number {
+  const p = points[index];
+  if (!p) return Math.max(1, Math.round(regionLen / 2));
+  const next = points[index + 1];
+  const endAt = next ? next.at : regionLen;
+  return Math.max(p.at + 1, Math.round((p.at + endAt) / 2));
+}
+
+export function insertEnvelopeNeighbor(
+  points: readonly AutomationPoint[],
+  index: number,
+  domain: ValueDomain,
+  regionLen: number,
+): AutomationPoint[] {
+  const p = points[index];
+  if (!p) return [...points];
+  const next = points[index + 1];
+  const endValue = next ? next.value : p.value;
+  const midAt = envelopeNeighborAt(points, index, regionLen);
+  const value = Math.min(domain.max, Math.max(domain.min, (p.value + endValue) / 2));
+  return insertPoint([...points], midAt, value);
+}
+
+/** X3: Enter on an empty editor — one point at the region midpoint. */
+export function insertEnvelopeInitial(
+  regionLen: number,
+  staticValue: number,
+): AutomationPoint[] {
+  return [{ at: Math.max(1, Math.round(regionLen / 2)), value: staticValue }];
+}

@@ -872,3 +872,16 @@ promoted the audit to the **43rd e2e (4 scenarios: main page, welcome,
 compressor dialog, populated rack + envelope editor — zero violations of
 any impact, suite-failing)**. Gates: **685/685 unit (80 files), 46/46 e2e,
 lint 0, tsc clean, LH 98/100/100/100** (`docs/perf/lighthouse-x.json`).
+
+## 2026-09-25 (X3) — envelope keyboard operability + Tab defect SHIPPED
+
+X-series follow-through (`docs/quality-plan.md` X3): envelope canvases are
+keyboard-operable — Tab + focus ring, arrow nudge (Shift = fine), Enter/
+Space insert (neighbour / initial midpoint), Delete remove, Escape
+deselect; selection ring on canvas, shared with pointer gestures; pure
+helpers over the A4 kernels (5 unit gates RED→green) + **44th e2e**
+(keyboard-only authoring flow). **Defect fixed en route:** the global
+keyboard glue swallowed bare `Tab` (legacy "center view") — the whole app
+was un-tabbable, dialogs included; binding removed (catalog unchanged —
+it was never in the shortcuts table). Gates: **690/690 unit (81 files),
+47/47 e2e, lint 0, tsc clean**.

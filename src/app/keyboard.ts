@@ -90,10 +90,6 @@ export function bindKeyboard(): void {
       case '0':
         view.zoomReset();
         break;
-      case 'Tab':
-        event.preventDefault();
-        view.center();
-        break;
       case 'q':
       case 'Q':
       case '~':

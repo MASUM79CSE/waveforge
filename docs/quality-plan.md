@@ -32,8 +32,25 @@ only, not shipped; THIRD_PARTY_NOTICES unaffected).
 Full suite + lint + tsc + build; Lighthouse re-run (a11y must hold 100);
 doc stamps (task_list dated X-series entry).
 
+## X3 — keyboard operability (SHIPPED, 2026-09-25)
+
+Envelope canvases are keyboard-operable (WCAG 2.1.1): Tab reaches the
+canvas (focus ring, selection auto-picks the point nearest the region
+midpoint), arrows nudge at 1 % region / 2 % domain steps (Shift = fine),
+Enter/Space inserts a neighbour (or the initial midpoint point on an
+empty editor), Delete/Backspace removes, Escape deselects. Selection ring
+drawn on the canvas; pointer gestures adopt the same selection. Pure
+helpers in `automationUi` (`nudgeEnvelopePoint`, `envelopeNeighborAt`,
+`insertEnvelopeNeighbor`, `insertEnvelopeInitial`) over the A4 kernels;
+44th e2e drives the whole flow keyboard-only.
+
+**Defect fixed en route (app-wide):** the global keyboard manager swallows
+bare `Tab` (legacy AudioMass "center view") — the entire app was
+un-tabbable, dialogs included. The binding is removed; `view.center()`
+keeps its toolbar/zoom-bar paths. Found by the X3 keyboard test, invisible
+to axe.
+
 ## Non-goals
 
-Keyboard envelope-canvas editing (pointer + ARIA label today; arrow-key
-point editing is a future enhancement, noted in the plan seam); visual
-redesign; shortcuts changes (single source untouched this series).
+Visual redesign; shortcuts-table changes (single source untouched — the
+removed Tab swallow lived in the keyboard glue, was not in the catalog).

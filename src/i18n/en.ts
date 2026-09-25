@@ -253,6 +253,8 @@ export const en = {
   automationEdit: 'Edit automation',
   fxEnvelope: 'Envelope',
   fxEnvelopeHint: 'Click: add point · Drag: shape · Right-click: delete',
+  fxEnvelopeKeys:
+    'Arrow keys nudge the selected point — hold Shift for fine steps. Enter adds a point after it. Delete removes it. Escape deselects.',
   fxEnvelopeClear: 'Clear envelope',
   clipDuplicate: 'Duplicate clip',
   clipDelete: 'Delete clip',
