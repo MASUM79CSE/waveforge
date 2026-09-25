@@ -857,3 +857,18 @@ cause of a full-suite flake; 3 consecutive green suites after). One
 pre-existing flake observed once (`effects.spec` experimental-stretch
 flow) — passed every run since, watch-listed. Gates: **685/685 unit
 (80 files), 42/42 e2e, lint 0, tsc clean**. Commit `f455033`.
+
+## 2026-09-25 (X-series) — accessibility audit + permanent axe gate SHIPPED
+
+Post-C-series hardening (`docs/quality-analysis.md` + `docs/quality-plan.md`):
+axe-core 4.13.0 (MPL-2.0, dev-only) run in the real app over wcag2a+wcag2aa
+found 4 critical naming failures — ALL in the new dialog work (`.fx-num`
+co-inputs in the shared ParamRow; the quick-preset select; rack presets +
+add selects), plus meaningless arrow-glyph names on rack row buttons. Main
+page / welcome / Modal base: already clean (Modal had focus trap + restore
+from day one). **X1** fixed every finding at the component level (i18n keys
+rackMoveUp/rackMoveDown/rackRemove added; visible UI unchanged). **X2**
+promoted the audit to the **43rd e2e (4 scenarios: main page, welcome,
+compressor dialog, populated rack + envelope editor — zero violations of
+any impact, suite-failing)**. Gates: **685/685 unit (80 files), 46/46 e2e,
+lint 0, tsc clean, LH 98/100/100/100** (`docs/perf/lighthouse-x.json`).
