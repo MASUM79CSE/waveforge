@@ -74,7 +74,12 @@ toasts `aria-live`, zero TODO/FIXME in src, lint/tsc/e2e gates green.
   (which CORRECTED the economics — entries charge both edit sides).
 - **B5–B7, B8, C15 RESOLVED (Y1):** truth sweep + README + vercel rewrite/
   CSP-Report-Only.
-- **A2, A4:** open (touch posture note; stretch-flake root-cause below).
+- **A2, A4:** A4 MITIGATED (Y4): the experimental-stretch flake (1 in ~8
+  full-suite runs, 2026-09-25) did not reproduce in 10 standalone runs +
+  2 full-suite runs after re-baselining; the menu steps are hardened with
+  assert-then-click guards (the only plausible mechanism is the MenuBar
+  hover-switch window noted since E5). Watch-list stays. A2 (touch
+  posture doc) remains the one open item — a decision note, not code.
 
 ## Recommended order (if "continue")
 

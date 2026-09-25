@@ -888,3 +888,30 @@ keyboard glue swallowed bare `Tab` (legacy "center view") — the whole app
 was un-tabbable, dialogs included; binding removed (catalog unchanged —
 it was never in the shortcuts table). Gates: **690/690 unit (81 files),
 47/47 e2e, lint 0, tsc clean**.
+
+## 2026-09-25 (Y-series) — gap closure SHIPPED (Y1–Y4)
+
+Gap analysis executed end-to-end (`docs/gap-analysis.md`):
+- **Y1** truth sweep: M9 scheduling boxes resolved; ADR 005 automation
+  deviation resolved (A7); e2e flow #1 resolved; effects-v2 parked list
+  updated (RNNoise/multitrack/clips SHIPPED); the M8f quick-edit boundary
+  marked LANDED (`safeTrackEdit` routes lanes ≥ 2 — verified in code);
+  **README.md** (dev/test/deploy/rebrand + browser matrix); **vercel.json**
+  SPA rewrite + CSP Report-Only (enforcing flip needs a Vercel-preview
+  pass).
+- **Y2** `docs/acceptance-trace.md`: every PRD criterion → evidence.
+  New `acceptance.test.ts` with CORRECTED undo economics — entries charge
+  both edit sides (~2× region bytes), so ≥100 steps hold for average
+  stereo regions ≤ ~3.3 s; graceful `minKeep` degradation pinned.
+- **Y3** cross-browser: **Firefox 155: 44/45, WebKit 26.6: 43/45** — zero
+  app-level engine failures (mic specs = Playwright fake-media is
+  Chromium-only; WebKit offline `reload()` = known harness quirk; Firefox
+  passes the SW flow). `playwright.other.config.ts` + README matrix.
+  Remaining: one manual Safari check on the live deployment (user-side).
+- **Y4** flake: un-reproduced (10 standalone + 2 full-suite runs clean
+  after re-baselining); menu steps hardened assert-then-click; watch-list
+  stays. Also fixed en route: the acceptance test's private-field access
+  broke the build's tsc gate (caught by the webServer failing — gate order
+  restored).
+Gates at close: **692/692 unit (82 files), 47/47 e2e + 87/89 cross-browser,
+lint 0, tsc clean, build OK.**

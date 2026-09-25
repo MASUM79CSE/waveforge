@@ -176,12 +176,17 @@ test('effects: Stretch / Pitch stays hidden until experimental is enabled, then 
   await page.getByRole('button', { name: 'Effects', exact: true }).click();
   await expect(page.getByRole('menuitem', { name: /^Stretch \/ Pitch/ })).toHaveCount(0);
   await page.keyboard.press('Escape');
-  // enable via the View toggle
+  // enable via the View toggle (Y4 hardening: assert-then-click at each
+  // menu step — one historic flake landed in the menu hover-switch window)
   await page.getByRole('button', { name: 'View', exact: true }).click();
-  await page.getByRole('menuitem', { name: /Experimental effects/i }).click();
+  const experimental = page.getByRole('menuitem', { name: /Experimental effects/i });
+  await expect(experimental).toBeVisible();
+  await experimental.click();
   // now visible and applies ×1.25 → 9.27 s becomes ~11.59 s
   await page.getByRole('button', { name: 'Effects', exact: true }).click();
-  await page.getByRole('menuitem', { name: /^Stretch \/ Pitch/ }).click();
+  const stretch = page.getByRole('menuitem', { name: /^Stretch \/ Pitch/ });
+  await expect(stretch).toBeVisible();
+  await stretch.click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();
   // ×1.25 stretch (first param row's number input)
