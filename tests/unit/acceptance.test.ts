@@ -67,7 +67,7 @@ describe('Y2 — PRD acceptance: undo depth under byte budget', () => {
     }
     expect(undos).toBeGreaterThanOrEqual(100);
     // … the byte budget held (no eviction was even needed at these sizes) …
-    expect(history.totalBytes).toBeLessThanOrEqual(MAX_BYTES);
+    expect(history.retainedBytes()).toBeLessThanOrEqual(MAX_BYTES);
     // … and every step is re-doable (stack symmetry after full unwind)
     let redos = 0;
     while (history.canRedo()) {
@@ -82,7 +82,7 @@ describe('Y2 — PRD acceptance: undo depth under byte budget', () => {
     const channels = [
       Float32Array.from({ length: frames }, (_, i) => Math.sin(i * 0.001) * 0.5),
     ];
-    let current = channels;
+    let current: Float32Array[] = channels;
     const history = new History({ maxBytes: MAX_BYTES, minKeep: 10 });
     for (let step = 0; step < 40; ++step) {
       const insert = current.map((ch) => Float32Array.from(ch, (v) => v * 0.999));
