@@ -28,14 +28,23 @@ full analysis suite.
 - **FX Rack**: serial chains with reorder / bypass, built-in recipes
   (Voice rescue, Podcast polish, Master glue, Warm air), user presets,
   chain JSON import/export
-- **Record**: microphone via AudioWorklet with constraint toggles + meter
+- **Record (studio flow)**: arm → live peak-hold/clip meter → roll; count-in
+  with metronome click (BPM-aware or detected tempo), input monitoring
+  (feedback-safe default OFF), session takes list, punch in/out with
+  pre-roll (document or active-lane, one undoable edit), `R` / `M` / `P`
+  shortcuts
 - **Analyze**: live spectrum/frequency meters, LUFS, true peak, BPM +
   beat-grid snap
-- **Export**: WAV 16/24/32f (+dither), MP3 (bitrate), FLAC (level);
-  mono/stereo; selection-only; ID3v2 on MP3; per-lane stems; project
-  mixdown
+- **Export (professional chooser)**: format cards (WAV lossless / MP3
+  lossy / FLAC lossless) with labeled quality presets and per-preset
+  guidance, live size estimate; WAV 16/24/32f, MP3 128–320, FLAC 0–8;
+  selection-only; ID3v2 on MP3; per-lane stems; project mixdown; worker
+  encoding with progress + cancel; native save picker when available
 - **Persistence**: IndexedDB drafts + autosave ring (crash recovery),
   everything offline-capable (PWA)
+- **Interface**: grouped menus (Effects in 9 tool sections), zone-based
+  transport (position clock, standalone play/pause, ±5 s seeks), LUFS
+  mastering report with per-platform targets + CSV/text export
 
 ## Development
 

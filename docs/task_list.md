@@ -1183,3 +1183,13 @@ legal surfaces). e2e #58 rewritten as the corrected contract: welcome
 (line present, heavy card absent) + about (card complete, focused
 links, no attribution). Gates: **720/720 unit, 59/59 e2e, lint 0,
 tsc clean, build OK.**
+
+## 2026-09-25 (gates) — welcome/about redesign verified; README refreshed
+
+Standing LH gate after the welcome/about redesign: **desktop
+99/100/100/100, mobile perf 99** (≥95 ✓; the single perf point is the
+external avatar request at load). Welcome verified at 375 px: buttons
+centered, credit line fits, hero scales. README Features updated to
+describe the studio record flow, the professional export chooser, and
+the interface organization (grouped menus, zone transport). Gates:
+**720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
