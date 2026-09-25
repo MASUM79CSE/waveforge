@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * e2e #58 — welcome page redesign: hero logo is LARGE, the two action
- * buttons are centered, the AudioMass inspired-by credit is gone from the
- * dialog (it remains in About + LICENSE), and a professional developer
- * credit card is present (name, email, instagram, discord, avatar with
- * monogram fallback).
+ * e2e #58 — welcome + about developer credit (corrected split):
+ * WELCOME = large hero logo, centered actions, NO inspired-by, SIMPLE
+ * one-line developer credit (name only, mailto). ABOUT = NO inspired-by,
+ * FULL professional developer card (avatar with monogram fallback, name,
+ * role, email, Instagram, Discord).
  */
 
 async function openWelcome(page: import('@playwright/test').Page): Promise<void> {
@@ -13,42 +13,59 @@ async function openWelcome(page: import('@playwright/test').Page): Promise<void>
   await expect(page.getByRole('dialog', { name: /welcome/i })).toBeVisible();
 }
 
-test('welcome: large logo, centered actions, no inspired-by, developer card', async ({ page }) => {
+test('welcome: large logo, centered actions, simple dev credit, no inspired-by', async ({ page }) => {
   await openWelcome(page);
   const dialog = page.getByRole('dialog', { name: /welcome/i });
 
-  // 1) the logo renders LARGE (≥64px wide — was 18px)
-  const logo = dialog.locator('.welcome-logo svg');
-  const logoBox = (await logo.boundingBox())!;
+  // hero logo is LARGE (≥64px — was 18px)
+  const logoBox = (await dialog.locator('.welcome-logo svg').boundingBox())!;
   expect(logoBox.width, 'hero logo width').toBeGreaterThanOrEqual(64);
 
-  // 2) the two action buttons are centered within the dialog
+  // the two action buttons are centered within the dialog
   const dialogBox = (await dialog.boundingBox())!;
-  const openBtn = dialog.getByRole('button', { name: /open/i }).first();
-  const openBox = (await openBtn.boundingBox())!;
+  const openBox = (await dialog.getByRole('button', { name: /open/i }).first().boundingBox())!;
   const btnCenter = openBox.x + openBox.width / 2;
   const dialogCenter = dialogBox.x + dialogBox.width / 2;
   expect(Math.abs(btnCenter - dialogCenter), 'buttons centered').toBeLessThan(dialogBox.width * 0.18);
 
-  // 3) the inspired-by credit is removed from the dialog
+  // no inspired-by credit anywhere in the dialog
   await expect(dialog).not.toContainText(/inspired by audiomass/i);
 
-  // 4) developer credit card — professional placement at the bottom
+  // SIMPLE developer credit: one line, name → mailto — no heavy card
+  const line = dialog.locator('.welcome-dev-line');
+  await expect(line).toBeVisible();
+  await expect(line).toContainText(/developed by/i);
+  await expect(line.getByRole('link', { name: 'Mir Md. Masum' })).toHaveAttribute(
+    'href',
+    'mailto:mirmasum@mail.com',
+  );
+  await expect(dialog.locator('.welcome-dev')).toHaveCount(0);
+  await expect(dialog.locator('.dev-avatar')).toHaveCount(0);
+});
+
+test('about: no inspired-by, full professional developer card', async ({ page }) => {
+  await openWelcome(page);
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  await page.getByRole('menuitem', { name: /about/i }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+
+  // attribution removed from the About dialog too
+  await expect(dialog).not.toContainText(/inspired by audiomass/i);
+
+  // full developer card: avatar + name + role + all three contacts
   const card = dialog.locator('.welcome-dev');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Mir Md. Masum');
   await expect(card).toContainText(/developer/i);
-  const mail = card.locator('a[href^="mailto:mirmasum@mail.com"]');
-  await expect(mail).toBeVisible();
-  const insta = card.locator('a[href*="instagram.com/mirmd_masum"]');
-  await expect(insta).toBeVisible();
+  await expect(card.locator('a[href^="mailto:mirmasum@mail.com"]')).toBeVisible();
+  await expect(card.locator('a[href*="instagram.com/mirmd_masum"]')).toBeVisible();
   await expect(card).toContainText(/discord\s*·\s*mir_masum/i);
+  await expect(dialog.locator('.dev-avatar').first()).toBeVisible();
 
-  // avatar: either the profile image or the monogram fallback renders
-  const avatar = dialog.locator('.dev-avatar');
-  await expect(avatar.first()).toBeVisible();
-
-  // 5) keyboard: the email link is focusable (tab order reaches the card)
+  // keyboard reachability: email link focuses
+  const mail = card.locator('a[href^="mailto:mirmasum@mail.com"]');
   await mail.focus();
   await expect(mail).toBeFocused();
 });

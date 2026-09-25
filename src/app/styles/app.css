@@ -688,6 +688,22 @@
   justify-content: center;
   width: 100%;
 }
+.welcome-dev-line {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--fg-1);
+}
+.welcome-dev-line a {
+  color: var(--ac);
+  font-weight: 600;
+  text-decoration: none;
+}
+.welcome-dev-line a:hover {
+  text-decoration: underline;
+}
+.about .welcome-dev {
+  margin-top: 6px;
+}
 .welcome-dev {
   display: flex;
   align-items: center;

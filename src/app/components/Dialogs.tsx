@@ -59,21 +59,10 @@ export function WelcomeDialog() {
         </div>
         <p class="welcome-privacy">{t().welcomePrivacy}</p>
         <p class="welcome-tips">{t().welcomeTips}</p>
-
-        <div class="welcome-dev" role="contentinfo" aria-label={t().welcomeDevBy}>
-          <DevAvatar />
-          <div class="dev-info">
-            <span class="dev-name">Mir Md. Masum</span>
-            <span class="dev-role">{t().welcomeDevRole}</span>
-            <div class="dev-links">
-              <a href="mailto:mirmasum@mail.com">{t().devEmail}: mirmasum@mail.com</a>
-              <a href="https://instagram.com/mirmd_masum" target="_blank" rel="noreferrer">
-                Instagram · mirmd_masum
-              </a>
-              <span class="dev-chip">Discord · mir_masum</span>
-            </div>
-          </div>
-        </div>
+        <p class="welcome-dev-line">
+          {t().welcomeDevBy}{' '}
+          <a href="mailto:mirmasum@mail.com">Mir Md. Masum</a>
+        </p>
       </div>
     </Modal>
   );
@@ -93,7 +82,22 @@ export function AboutDialog() {
         <p>{Brand.tagline}</p>
         <p>{t().aboutBuilt}</p>
         <p>{t().aboutGovernance}</p>
-        <p class="welcome-attribution">{Brand.attribution}</p>
+
+        <div class="welcome-dev" role="contentinfo" aria-label={t().welcomeDevBy}>
+          <DevAvatar />
+          <div class="dev-info">
+            <span class="dev-name">Mir Md. Masum</span>
+            <span class="dev-role">{t().welcomeDevRole}</span>
+            <div class="dev-links">
+              <a href="mailto:mirmasum@mail.com">{t().devEmail}: mirmasum@mail.com</a>
+              <a href="https://instagram.com/mirmd_masum" target="_blank" rel="noreferrer">
+                Instagram · mirmd_masum
+              </a>
+              <span class="dev-chip">Discord · mir_masum</span>
+            </div>
+          </div>
+        </div>
+
         <button class="btn-primary" onClick={closeAbout}>
           {t().ok}
         </button>

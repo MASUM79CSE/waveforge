@@ -1170,3 +1170,16 @@ Note: the avatar 404 in sandboxed CI is expected (CDN blocked here);
 11 console-error collectors carry a documented pbs.twimg.com location
 exception — real deployments load the photo. Gates: **720/720 unit,
 58/58 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (correction) — developer credit split: simple welcome / full About
+
+User-corrected split: WELCOME keeps its hero redesign (large glowing
+logo, centered actions, no inspired-by) but the credit is now a SIMPLE
+one-liner — "Developed by Mir Md. Masum" (name → mailto). ABOUT carries
+the FULL professional card (avatar + monogram fallback, name, DEVELOPER
+role, Email/Instagram/Discord) and also drops the inspired-by text.
+MIT obligation preserved in LICENSE (+ brand.ts string retained for
+legal surfaces). e2e #58 rewritten as the corrected contract: welcome
+(line present, heavy card absent) + about (card complete, focused
+links, no attribution). Gates: **720/720 unit, 59/59 e2e, lint 0,
+tsc clean, build OK.**
