@@ -1000,3 +1000,15 @@ workflows) → `docs/recording-plan.md` → executed:
       count-in. Legacy one-click record tests migrated to arm→roll.
 
 Gates: **714/714 unit (85 files), 51/51 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (R-follow-up) — Effects menu organized SHIPPED
+
+The 30-item Effects wall is now 9 labelled sections (professional DAW
+convention): Dynamics / Noise reduction / EQ / Reverb & delay / Modulation
+/ Distortion / Time-pitch / Amplitude / Special, with FX Rack pinned at
+the top. Machinery: `MenuItemDef` gains `{header, items}` groups + pure
+`foldMenuItems`; MenuBar renders `role=group` sections (axe-clean, AT-
+labelled headers) with grouped item indent. Unit: menu consistency +2
+(g11 no-duplicate/complete grouping, g12 fold shape). E2e #52: headers
+visible, Dynamics group labelled, deep scrollable item fires. Gates:
+**716/716 unit (85 files), 52/52 e2e, lint 0, tsc clean, build OK.**

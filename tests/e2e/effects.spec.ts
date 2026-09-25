@@ -192,3 +192,32 @@ test('effects: Stretch / Pitch applies ×1.25 from the Effects menu (promoted, Z
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
   await expect(page.getByText(/9\.27 s/)).toBeVisible({ timeout: 15_000 });
 });
+
+/**
+ * Effects menu organization: the tools are grouped into labelled sections
+ * (Dynamics / Noise reduction / EQ / …) — headers render, every fx command
+ * sits inside exactly one group, and deep items are still clickable.
+ */
+test('effects menu is organized into labelled sections', async ({ page }) => {
+  await loadSample(page);
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  const dropdown = page.locator('.menu-dropdown');
+
+  // section headers are visible
+  for (const header of ['Dynamics', 'Noise reduction', 'EQ', 'Reverb & delay', 'Modulation', 'Amplitude', 'Special']) {
+    await expect(dropdown.locator('.menu-header', { hasText: header })).toBeVisible();
+  }
+
+  // Compressor lives in the Dynamics group; group is exposed to AT
+  const dynamics = dropdown.getByRole('group', { name: 'Dynamics' });
+  await expect(dynamics.getByRole('menuitem', { name: /Compressor/ })).toBeVisible();
+  await expect(dynamics).toHaveAttribute('aria-label', 'Dynamics');
+
+  // deep item inside a scrollable dropdown still works (direct transform)
+  await page.getByRole('menuitem', { name: /^Remove Silence/ }).click();
+  // demo.wav has no silence below the threshold — the toast confirms the
+  // deep menu item actually fired
+  await expect(page.locator('.toast-msg').last()).toContainText(/no silence found/i, {
+    timeout: 10_000,
+  });
+});

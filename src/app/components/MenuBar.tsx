@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { menus } from '../menus';
+import { foldMenuItems, menus } from '../menus';
 import { commands, type Command } from '../commands';
 import { Brand } from '../../brand';
 
@@ -51,16 +51,7 @@ export function MenuBar() {
           >
             {menu.title()}
           </button>
-          {openId === menu.id && (
-            <div class="menu-dropdown" role="menu">
-              {menu.items.map((item, i) => {
-                if (item === '-') return <div class="menu-sep" key={`sep-${i}`} />;
-                const cmd = commands.find((c) => c.id === item);
-                if (!cmd) return null;
-                return <MenuItem key={item} cmd={cmd} onRun={() => setOpenId(null)} />;
-              })}
-            </div>
-          )}
+          {openId === menu.id && <MenuDropdown menuId={menu.id} items={menu.items} onRun={() => setOpenId(null)} />}
         </div>
       ))}
     </div>
@@ -80,6 +71,53 @@ export function BrandMark() {
         stroke-linejoin="round"
       />
     </svg>
+  );
+}
+
+/**
+ * Dropdown body: mixed rows folded into labelled sections (role=group is
+ * an allowed child of menu and keeps the headers meaningful to AT).
+ */
+export function MenuDropdown({
+  menuId,
+  items,
+  onRun,
+}: {
+  menuId: string;
+  items: import('../menus').MenuItemDef[];
+  onRun: () => void;
+}) {
+  const rows = foldMenuItems(items, (id) => commands.find((c) => c.id === id)?.label() ?? id);
+  const groups = new Map<number, typeof rows>();
+  for (const row of rows) {
+    if (row.group !== undefined) {
+      const list = groups.get(row.group) ?? [];
+      list.push(row);
+      groups.set(row.group, list);
+    }
+  }
+  return (
+    <div class="menu-dropdown" role="menu" data-menu={menuId}>
+      {rows.map((row, i) => {
+        if (row.kind === 'header') {
+          return (
+            <div class="menu-group" role="group" aria-label={row.label} key={`grp-${i}`}>
+              <div class="menu-header" aria-hidden="true">
+                {row.label}
+              </div>
+              {(groups.get(row.group ?? -1) ?? []).map((m) => {
+                const cmd = commands.find((c) => c.id === m.id);
+                return cmd ? <MenuItem key={m.id} cmd={cmd} onRun={onRun} /> : null;
+              })}
+            </div>
+          );
+        }
+        if (row.group !== undefined) return null; // rendered inside its group
+        if (row.kind === 'separator') return <div class="menu-sep" key={`sep-${i}`} />;
+        const cmd = commands.find((c) => c.id === row.id);
+        return cmd ? <MenuItem key={row.id} cmd={cmd} onRun={onRun} /> : null;
+      })}
+    </div>
   );
 }
 

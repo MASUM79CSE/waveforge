@@ -146,6 +146,28 @@
   background: var(--line);
 }
 
+/* Labelled sections (Effects menu organization) */
+.menu-group {
+  padding: 2px 0;
+}
+.menu-group + .menu-group {
+  border-top: 1px solid var(--line);
+}
+.menu-header {
+  padding: 5px 14px 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  user-select: none;
+  pointer-events: none;
+}
+.menu-group .menu-item {
+  padding-left: 20px;
+}
+
+
 /* Transport */
 .transport {
   display: flex;
