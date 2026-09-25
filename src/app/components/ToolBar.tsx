@@ -1,5 +1,5 @@
 /**
- * Icon toolbar (D2) — AudioMass-style quick actions bound to the command
+ * Icon toolbar (D2) — reference-style quick actions bound to the command
  * registry. Labels + shortcut hints resolve from `commands` (single source
  * of truth); buttons disable without a document, exactly like the menus.
  */

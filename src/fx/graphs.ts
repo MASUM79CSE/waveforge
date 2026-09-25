@@ -4,7 +4,7 @@
  * OfflineAudioContext for apply), so builders are construction-testable in
  * node with a recording fake.
  *
- * Deltas from AudioMass (ADR 005 §5): equal-power dry/wet mix; distortion
+ * Deltas from the reference design (ADR 005 §5): equal-power dry/wet mix; distortion
  * curve unity at 0 drive.
  */
 import {

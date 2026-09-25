@@ -4,7 +4,7 @@
 
 ## Context
 
-AudioMass snapshots whole `AudioBuffer`s per undo step with a 1.5 GB byte budget.
+the reference editor snapshots whole `AudioBuffer`s per undo step with a 1.5 GB byte budget.
 Memory scales O(history × file size) and forces a low cap on long files.
 
 ## Decision

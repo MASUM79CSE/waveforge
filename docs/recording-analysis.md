@@ -33,7 +33,7 @@ stacks a lane), no pause, no clip indicator.
   (audiobooks) = pre-roll plays the last phrase, then record replaces the
   mistake, seamless. Studio checklists insist on a **level/noise check
   BEFORE the take** — i.e. arming with a live meter is not a luxury.
-- **AudioMass** (the parity reference): records a plain take into a fresh
+- **the reference editor** (the parity reference): records a plain take into a fresh
   document. Nothing more. This is the area where WaveForge can leave it
   furthest behind.
 

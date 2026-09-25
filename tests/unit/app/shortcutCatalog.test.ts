@@ -13,7 +13,7 @@ describe('M-D6: keyboard shortcut catalog (help overlay data)', () => {
     }
   });
 
-  test('covers the AudioMass legacy layer + professional combos', () => {
+  test('covers the legacy shift-letter layer + professional combos', () => {
     const all = shortcutCatalog.flatMap((g) => g.rows);
     const has = (key: string, label: RegExp): boolean =>
       all.some((r) => r.key === key && label.test(r.label));

@@ -1,6 +1,6 @@
 /**
  * FLAC export worker (M4) — classic worker on purpose: it drives the
- * vendored emscripten libflac build via importScripts (AudioMass-proven
+ * vendored emscripten libflac build via importScripts (reference-proven
  * wiring, bundler-free wasm loading; see ADR 006 §2). Hand-validated
  * messages instead of zod (this file is a boundary shim, plain JS).
  *

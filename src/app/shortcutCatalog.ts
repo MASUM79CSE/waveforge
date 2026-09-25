@@ -1,6 +1,6 @@
 /**
  * Keyboard shortcut catalog (D6) — single aggregated view of every binding:
- * professional modifier combos, the AudioMass legacy shift-letter layer,
+ * professional modifier combos, the legacy shift-letter layer,
  * transport and view keys. Pure data; rendered by ShortcutsOverlay.tsx and
  * unit-tested so the overlay can never list a binding that does not exist.
  *
@@ -44,7 +44,7 @@ export const shortcutCatalog: ShortcutGroup[] = [
     ],
   },
   {
-    title: 'AudioMass legacy (Shift + key)',
+    title: 'Legacy (Shift + key)',
     rows: [
       { key: 'Shift+Z', label: 'Undo' },
       { key: 'Shift+Y', label: 'Redo' },

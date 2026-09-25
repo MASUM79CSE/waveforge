@@ -24,7 +24,7 @@ test('toolbar: icons disabled until a document loads, then cut via icon + Shift+
   // 30% of 9.272 s removed -> the big clock shows ~0:06.4
   await expect(page.locator('.time-total')).toHaveText(/0:06\./, { timeout: 10_000 });
 
-  // undo the AudioMass way (Shift+Z — the toolbar mirrors AM: no undo icon)
+  // undo the legacy way (Shift+Z — the toolbar has no undo icon)
   await page.keyboard.press('Shift+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/undid/i);
   await expect(page.locator('.time-total')).toHaveText(/0:09\.272/, { timeout: 10_000 });

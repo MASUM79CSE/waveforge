@@ -254,7 +254,7 @@ export function TransportBar() {
 }
 
 
-/** One AudioMass-style channel strip: M mute, volume, pan (D8). */
+/** One reference-style channel strip: M mute, volume, pan (D8). */
 function ChannelStrip({ ch, label, mute }: { ch: number; label: string; mute: boolean }) {
   const tag = ch === 0 ? 'L' : 'R';
   return (

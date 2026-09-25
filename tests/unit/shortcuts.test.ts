@@ -1,6 +1,6 @@
 /**
  * Global shortcut map (RED first) — professional standard combos with the
- * AudioMass legacy shift-letter set preserved for muscle memory.
+ * Legacy shift-letter set preserved for muscle memory.
  *
  * Standard: Ctrl/Cmd+Z undo · Ctrl+Shift+Z and Ctrl+Y redo ·
  * Ctrl+X/C/V cut/copy/paste · Ctrl+A select all · Ctrl+O open.
@@ -63,7 +63,7 @@ describe('standard clipboard + selection shortcuts', () => {
   });
 });
 
-describe('AudioMass legacy shift-letter combos still work', () => {
+describe('legacy shift-letter combos still work', () => {
   test('Shift+Z/Y undo/redo, Shift+X/C/V clipboard, Shift+A select, Shift+N silence', () => {
     expect(std('z', { shift: true })).toBe('edit.undo');
     expect(std('Z', { shift: true })).toBe('edit.undo');

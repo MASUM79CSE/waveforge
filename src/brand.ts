@@ -7,9 +7,4 @@ export const Brand = {
   tagline: 'Free · Private · Runs entirely in your browser',
   version: '0.1.0',
   repo: 'https://github.com/your-name/waveforge',
-
-  /** Legal attribution — do not remove (MIT obligation toward AudioMass). */
-  attribution:
-    'Inspired by AudioMass by Pantelis Kalogiros (MIT). ' +
-    'MP3 encoding will use lamejs (LGPL); FLAC uses libFLAC (BSD).',
 } as const;

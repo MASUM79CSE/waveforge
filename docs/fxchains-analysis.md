@@ -18,7 +18,7 @@ market first, then theory/product, then a gated build.
 - **Adobe Audition — Favorites**: one-click recorded operation stacks for
   voice workflows (podcast clean-up).
 - **Web DAWs (BandLab, Soundtrap, Soundation)**: per-effect presets at best
-  (patch saves); no cross-effect chains. **AudioMass: neither** — a plain
+  (patch saves); no cross-effect chains. **the reference editor: neither** — a plain
   per-effect dialog is the ceiling.
 - WaveForge today: 23-registry deep (kernels + graphs), A6/A7 per-param
   automation envelopes, three NR engines incl. E7b `fx.rnvoice` — but every
@@ -27,7 +27,7 @@ market first, then theory/product, then a gated build.
 ## 2. Product take
 
 The gap and the opportunity agree: **serial chains + recipe presets** are the
-natural "beyond AudioMass" layer, and our registry makes them cheap:
+natural "beyond the reference editor" layer, and our registry makes them cheap:
 
 - Voice rescue (the flagship): `fx.rnvoice → fx.deesser → fx.compressor` —
   the E7b engine becomes the head of a one-click workflow, which is how the

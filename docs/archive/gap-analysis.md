@@ -79,7 +79,7 @@ toasts `aria-live`, zero TODO/FIXME in src, lint/tsc/e2e gates green.
   entry, i18n key) removed; e2e rewritten to the promoted flow.
 - **A2 RESOLVED (Z2):** desktop-first posture WRITTEN DOWN (README
   Platforms; pointer-events + touch-action make basic touch work; phone
-  layout out of scope by design, AudioMass-aligned).
+  layout out of scope by design, the reference editor-aligned).
 - **A2, A4:** A4 MITIGATED (Y4): the experimental-stretch flake (1 in ~8
   full-suite runs, 2026-09-25) did not reproduce in 10 standalone runs +
   2 full-suite runs after re-baselining; the menu steps are hardened with

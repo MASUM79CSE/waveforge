@@ -75,7 +75,7 @@ test('effects: true-peak Limiter applies and undoes cleanly', async ({ page }) =
     timeout: 15_000,
   });
   await expect(page.getByText(/9\.27 s/)).toBeVisible();
-  // legacy AudioMass combo still works (Shift+Z)
+  // legacy shift-letter combo still works (Shift+Z)
   await page.keyboard.press('Shift+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
 });

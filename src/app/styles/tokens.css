@@ -1,6 +1,6 @@
 /* Design tokens — the rebrand skin. Change these + brand.ts to rebrand.
  *
- * D1 (design-parity-plan.md): converged on the AudioMass design system —
+ * D1 (design-parity-plan.md): converged on the reference editor design system —
  * 5-step surface ladder, 4-step text ladder, cyan accent with glow/ink
  * roles, 2/4/8 px radii, 4/8/12/16 px spacing, 160 ms eased motion,
  * glow + inset elevation. Legacy WaveForge token names are kept as
@@ -9,14 +9,14 @@
  * fg-2/fg-3 are decoration/disabled-only (WCAG-exempt).
  */
 :root {
-  /* surfaces — AudioMass bg ladder */
+  /* surfaces — the reference editor bg ladder */
   --bg-0: #07080a;
   --bg-1: #0e1013;
   --bg-2: #14171c;
   --bg-3: #1c2026;
   --bg-4: #262b32;
 
-  /* text — AudioMass fg ladder */
+  /* text — the reference editor fg ladder */
   --fg-0: #e8edf0;
   --fg-1: #9aa3ad;
   --fg-2: #6a7380; /* decoration/disabled only (3.9:1) */
@@ -144,7 +144,7 @@
   --accent-line: rgba(245, 87, 210, 0.55);
 }
 
-/* ---- light theme (D9) — the WaveForge advance beyond AudioMass ---- */
+/* ---- light theme (D9) — the WaveForge light theme ---- */
 :root[data-theme='light'] {
   --bg-0: #e7ebf0;
   --bg-1: #eef1f5;

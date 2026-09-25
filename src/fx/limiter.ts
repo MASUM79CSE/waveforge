@@ -3,7 +3,7 @@
  * limiter. Per-sample target gain = min(1, ceiling/|x|), lowered ahead of
  * peaks with a sliding-min over the lookahead window, then released back
  * toward unity with a one-pole. Stereo gain is linked (image preserved).
- * Replaces AudioMass's block-normalize limiter, which produced
+ * Replaces the reference editor's block-normalize limiter, which produced
  * block-boundary artifacts.
  */
 

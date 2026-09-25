@@ -27,7 +27,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
 }
 
-/** Global keyboard map — AudioMass-style combos preserved for muscle memory. */
+/** Global keyboard map — reference-style combos preserved for muscle memory. */
 export function bindKeyboard(): void {
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (isTypingTarget(event.target)) return;

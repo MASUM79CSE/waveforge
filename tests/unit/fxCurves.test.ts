@@ -21,7 +21,7 @@ describe('distortionCurve', () => {
     }
   });
 
-  test('follows the AudioMass waveshaper formula (scaled x3 for unity at 0)', () => {
+  test('follows the reference waveshaper formula (scaled x3 for unity at 0)', () => {
     // spec: f(x) = (3+g) * x * (PI/3) / (PI + g*|x|), g = round(amount)
     const n = 128;
     const curve = distortionCurve(60, n);

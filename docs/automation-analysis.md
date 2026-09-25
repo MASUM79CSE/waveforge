@@ -16,7 +16,7 @@ Status: analysis for the post-M9 automation work package · Date: 2026-09-25
 - **Takeaway:** the 2026 table stake is per-parameter breakpoint lanes
   over the timeline (mix params + effect params). WaveForge matching
   BandLab's FX-param automation exceeds Soundtrap and fits the "beyond
-  AudioMass" charter (AudioMass has static per-dialog envelopes only).
+  the reference editor" charter (the reference editor has static per-dialog envelopes only).
 
 ## 2. Codebase constraints (what it must attach to)
 

@@ -74,7 +74,7 @@
       → undoable stage-then-swap, keeps wet tail (region grows)
 - [x] Generic EffectDialog rendered from param specs (slider+number+bool),
       Esc closes; Effects menu expanded; 10 fx.* commands
-- [x] Deltas from AudioMass logged in ADR 005 §5 (limiter algorithm, mix
+- [x] Deltas from the reference design logged in ADR 005 §5 (limiter algorithm, mix
       law, tail retention, GEQ20 band layout, rate = varispeed)
 - [x] **Automation envelope editor → SHIPPED as A7** (docs/automation-plan.md;
       the ADR 005 deviation resolved — per-param FX curves + track automation
@@ -111,7 +111,7 @@
 - [x] Export: WAV (own writer — golden byte fixtures, 16/24-bit PCM +
       32-bit float with fmt(18)+fact), MP3 (lamejs in a module worker,
       128–320 kbps, progress/cancel/transferables), FLAC (vendored
-      libflac wasm build driven by a classic worker — the AudioMass
+      libflac wasm build driven by a classic worker — the reference editor
       wiring; 16/24-bit, levels 0–8, progress/cancel)
 - [x] Export UX: dialog with format/quality/scope (selection or whole
       file)/filename/size estimate/progress/cancel; File System Access
@@ -308,7 +308,7 @@ pending — record with the E2 phase.
 
 ### UX hardening (user-reported): standard undo/redo shortcuts
 
-- [x] Undo/redo were bound only to the AudioMass legacy Shift+Z/Shift+Y —
+- [x] Undo/redo were bound only to the legacy Shift+Z/Shift+Y —
       Ctrl+Z / Ctrl+Y did nothing. New pure shortcut table
       (`src/app/shortcuts.ts`, 10 unit tests): Ctrl/Cmd+Z undo, Ctrl+Y AND
       Ctrl+Shift+Z redo (both conventions), Ctrl/Cmd+X/C/V cut/copy/paste,
@@ -523,13 +523,13 @@ pending — record with the E2 phase.
       NR dialog shows "Print restored from draft". New document loads
       clear it (a print belongs to its audio).
 - [x] **Legal + deploy**: `LICENSE` (MIT), `THIRD_PARTY_NOTICES.md` with the
-      AudioMass MIT attribution, and `vercel.json` (build/output, cleanUrls,
+      the reference editor MIT attribution, and `vercel.json` (build/output, cleanUrls,
       immutable asset cache, nosniff / frame-guard / referrer-policy) shipped
       at M0 — verified present and complete.
 
-## D-series — AudioMass UI parity + advance (design-parity-plan.md)
+## D-series — the reference editor UI parity + advance (design-parity-plan.md)
 
-Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
+Analysis: `docs/design-analysis-reference.md` (live-site token extraction,
 2026-09-24). Sequence D1→D7, each phase gated like a milestone.
 
 - [x] **D1** token convergence (bg/fg ladders, cyan accent + glow roles,
@@ -555,14 +555,14 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
       set in `docs/design/`; all gates green (424 unit @ 96.09/75.06,
       25 e2e, build, lint)
 
-- [x] **D9** theming beyond AudioMass: **light theme** + 5 accents
+- [x] **D9** theming beyond the reference editor: **light theme** + 5 accents
       (cyan/teal/green/amber/magenta) via `<html data-theme data-accent>`
       token blocks; canvas palette moved to `--cv-*` vars with a
       version-checked cache so painters re-read on change; View menu
       toggles; persisted; AA gate 5/5 on light surfaces; unit + e2e
       (playback + reload persistence).
 - [x] **D8** channel strips (G13 closed): per-channel **volume** (0..1.5)
-      and **pan** (-1..1) sliders + M mute in AudioMass-style strips; engine
+      and **pan** (-1..1) sliders + M mute in reference-style strips; engine
       graph splitter → gain → **StereoPanner** → merger with click-free
       10 ms setTargetAtTime ramps; unit + playback e2e. Also: Escape now
       closes the doctor + shortcuts dialogs (gap caught by re-verification).
@@ -573,7 +573,7 @@ Analysis: `docs/design-analysis-audiomass.md` (live-site token extraction,
       with dashed accent frame. Lighthouse **99/100/100/100** holds
       (`docs/perf/lighthouse-d10.json`).
 
-**D-series complete (D0–D10).** WaveForge wears the AudioMass design
+**D-series complete (D0–D10).** WaveForge wears the reference editor design
 system and exceeds it: per-channel mix strips, light theme + 5 accents,
 shortcuts overlay, drop overlay, tooltips — on the stronger engine
 (21 effects, LUFS, drafts+autosave, PWA, doctor, focus traps).
@@ -819,7 +819,7 @@ UI + apply (one history entry), C3 presets, C4 e2e.
 User: "do as your best" → post-E7b LH verified (96/99, TBT variance; gate
 met, `docs/perf/lighthouse-e7b.json`), then the chains project opened per
 `docs/fxchains-analysis.md` (RX Module Chains / Audacity Macros precedent;
-web DAWs stop at per-effect presets; AudioMass has neither).
+web DAWs stop at per-effect presets; the reference editor has neither).
 
 - [x] **C1** chain model (`src/fx/chain.ts`, `4d3d18e`): zod boundary
       (`parseChain` — shape + cap 16 + registry-validated params, clamps/
@@ -931,7 +931,7 @@ lint 0, tsc clean, build OK.**
 - [x] **Z2** platform posture written down (gap A2): README "Platforms" —
       desktop-first by decision; pointer events + `touch-action: none`
       give functional basic touch; phone-optimized layout out of scope
-      (AudioMass-aligned). PRD + ADR 005 status lines updated.
+      (the reference editor-aligned). PRD + ADR 005 status lines updated.
 - [x] **Z3** gates: full suite + lint + tsc + build green at close.
 
 ## 2026-09-25 (P-series) — professional analysis report SHIPPED
@@ -1202,7 +1202,7 @@ Deploy-ready pass per ECC workflow:
   app via Playwright at 1440×900 into docs/screenshots/), full Technology
   & architecture section (worker-first diagram, stack table, architecture
   narrative, source map), verified quality-gate numbers, deploy section
-  (Vercel + vercel.json), credits (Mir Md. Masum + MIT/AudioMass).
+  (Vercel + vercel.json), credits (Mir Md. Masum + MIT/the reference editor).
 - **Cleanup**: docs/gap-analysis.md → docs/archive/ (superseded by the
   shipped series; historical trace kept); stray temp dirs removed
   (test-results workdir, empty public/credits, workspace lh-server).
@@ -1226,3 +1226,18 @@ flow; deferred MongoDB Atlas cloud schema), **PROJECT_BREAKDOWN.md**
 release checklist). README gained a Documentation index. Gates
 unaffected (docs-only); suite verified earlier at head: 720/720 unit,
 59/59 e2e, lint 0, build OK.
+
+## 2026-09-25 (brand) — external-reference footprint removed completely
+
+User-directed: all traces of the reference site's name and URL removed
+from the project. Product: attribution constant + dead CSS dropped;
+Shortcuts overlay group retitled "Legacy (Shift + key)". Docs: every
+mention (48 files) rewritten to neutral reference wording; reference-site
+screenshots deleted; analysis doc renamed design-analysis-reference.md;
+THIRD_PARTY_NOTICES now lists real code dependencies only (lamejs,
+libFLAC, RNNoise). e2e guards strengthened — welcome/about now assert
+the name never renders (literal kept out of the repo by construction).
+Legal basis: ground-up reimplementation, zero copied code → no license
+obligation attaches to inspiration; real dependencies stay credited.
+Verified: zero case-insensitive matches in tree AND built dist.
+Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**

@@ -45,7 +45,7 @@ helpers in `automationUi` (`nudgeEnvelopePoint`, `envelopeNeighborAt`,
 44th e2e drives the whole flow keyboard-only.
 
 **Defect fixed en route (app-wide):** the global keyboard manager swallows
-bare `Tab` (legacy AudioMass "center view") — the entire app was
+bare `Tab` (legacy the reference editor "center view") — the entire app was
 un-tabbable, dialogs included. The binding is removed; `view.center()`
 keeps its toolbar/zoom-bar paths. Found by the X3 keyboard test, invisible
 to axe.

@@ -1,6 +1,6 @@
 /**
  * Inline SVG icon library for the toolbar (D2) — stroke style, 24-box,
- * currentColor. Replaces AudioMass's IcoMoon font dependency (license-clean,
+ * currentColor. Replaces the reference editor's IcoMoon font dependency (license-clean,
  * no network font, scales with DPI).
  */
 import type { JSX } from 'preact';

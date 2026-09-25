@@ -1,5 +1,5 @@
 /**
- * D5 view controls (AudioMass parity):
+ * D5 view controls (reference parity):
  *  - ZoomBar: floating bottom-left group — horizontal ±/reset + vertical ±
  *  - BeatBar: control-row group — BEAT markers toggle, SNAP toggle, BPM readout
  */

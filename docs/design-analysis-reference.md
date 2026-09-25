@@ -1,19 +1,19 @@
-# WaveForge ↔ AudioMass Design Analysis (UI parity for the "light version" → advanced)
+# WaveForge ↔ the reference editor Design Analysis (UI parity for the "light version" → advanced)
 
 **Date:** 2026-09-24 · **Method (ECC evidence-first):** fetched the live
-`audiomass.co` DOM (rendered text map), its production stylesheet
+`the reference site` DOM (rendered text map), its production stylesheet
 (`all.css`, 53 KB) and app bundle (`all.build.js`, 425 KB); extracted the
 complete token system, component anatomy and canvas colors from source.
 Compared component-by-component against WaveForge at `a1157f8`.
 
-> Attribution: AudioMass by Pantelis Kalogiros (MIT). WaveForge is a
+> Attribution: the reference editor by Pantelis Kalogiros (MIT). WaveForge is a
 > ground-up reimplementation; visual parity here means matching the
 > *design system*, not copying assets. The IcoMoon icon font is replaced
 > with inline SVG (no font dependency, license-clean, preview-safe).
 
 ---
 
-## 1. The AudioMass design system (extracted, live 2026 site)
+## 1. The reference design system (extracted, live 2026 site)
 
 ### 1.1 Tokens (`:root` of all.css)
 
@@ -53,7 +53,7 @@ buttons. (docs/design/*.png)
 ### 1.3 Layout anatomy (rendered DOM map)
 
 ```
-┌ Header: logo "AudioMass" · File Edit Effects View Help        (pk_hdr, pk_btn, pk_menu)
+┌ Header: logo "the reference editor" · File Edit Effects View Help        (pk_hdr, pk_btn, pk_menu)
 ├ Control row(s), 46px gradient groups (bg-2→bg-1, 1px bd, r-md, inset-hi):
 │   [icon toolbar (pk_tbc): Copy Paste InsertSilence …]  [time display]
 │   [transport: play/stop/loop/record + shortcut tooltips]
@@ -69,7 +69,7 @@ Tooltips (custom) · context menu · toasts (oneup)
 
 ## 2. Gap table (component by component)
 
-| # | Area | AudioMass | WaveForge | Verdict |
+| # | Area | the reference editor | WaveForge | Verdict |
 |---|---|---|---|---|
 | G1 | Design tokens | 5-step bg ladder, 4-step fg, cyan accent + glow roles, radii 2/4/8, spacing scale, 160 ms motion, glow/inset shadows | 3 surface tones, teal accent, opaque lines, 8/5 px radii, no motion/shadow tokens | **PARTIAL → D1** |
 | G2 | Icon toolbar | Icon button row (cut/copy/paste/silence…) with shortcut tooltips + disable states + overflow scroll | none — edits/effects live in text menus only | **MISSING → D2** |
@@ -102,7 +102,7 @@ Vercel-ready.
 
 1. **Rebrand stays**: WaveForge name/logo/brand.ts untouched; only the skin
    converges. MIT attribution files unchanged.
-2. **A11y regression guard**: AudioMass's own `--fg-2 #6a7380` is 3.9:1 —
+2. **A11y regression guard**: the reference editor's own `--fg-2 #6a7380` is 3.9:1 —
    below AA. We adopt the ladder but keep our ≥4.5:1 rule for body text
    (deviation documented in D1).
 3. **No behavioral regressions**: every phase re-runs the full gate
@@ -119,4 +119,4 @@ Functionality parity: **achieved and exceeded** (M0–M7 + effects-v2).
 UI parity: **the real gap** — tokens (G1), icon toolbar (G2), selection
 readout (G3), canvas skin (G4/G6/G9), zoom/beat rows (G7/G8). The phased
 plan in `design-parity-plan.md` closes G1–G12 and then advances beyond
-AudioMass (per-channel pan backlog G13, richer tooltips G12).
+the reference editor (per-channel pan backlog G13, richer tooltips G12).

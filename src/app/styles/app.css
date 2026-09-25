@@ -784,12 +784,6 @@
   font-size: 12px;
 }
 
-.welcome-attribution {
-  margin: 4px 0 0;
-  color: var(--text-faint);
-  font-size: 11px;
-}
-
 .welcome-start {
   align-self: flex-start;
 }

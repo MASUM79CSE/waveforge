@@ -13,7 +13,7 @@ it does not replace it (every lane becomes a single-clip track — see §3).
 - **Desktop DAWs (Live/Cubase/Pro Tools)**: clips/regions reference shared
   audio pools — non-destructive arrangement on top of recorded takes.
 - Takeaway: region editing is table stakes for an "advanced beyond
-  AudioMass" editor. WaveForge's lane model covers recording/mixing;
+  the reference editor" editor. WaveForge's lane model covers recording/mixing;
   **arrangement (split/move/copy/duplicate without destroying takes) is the
   gap M9 closes**.
 

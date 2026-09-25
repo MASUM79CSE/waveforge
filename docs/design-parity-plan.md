@@ -1,6 +1,6 @@
-# Design-Parity Plan — "AudioMass skin, WaveForge bones, then advance" (v1.0)
+# Design-Parity Plan — "the reference editor skin, WaveForge bones, then advance" (v1.0)
 
-**Sequel to:** `design-analysis-audiomass.md` · **Baseline:** `a1157f8`
+**Sequel to:** `design-analysis-reference.md` · **Baseline:** `a1157f8`
 **Sequence (ECC):** analysis ✅ → this plan → gated build, one D-phase at a
 time; every phase ends green (unit+coverage, e2e, build, lint) and commits
 in conventional style before the next opens.
@@ -18,7 +18,7 @@ in conventional style before the next opens.
 
 ## D1 — Token system convergence (restyle, no behavior)
 
-- Map `tokens.css` onto the AudioMass ladder: bg-0..4, fg-0..3 (fg body
+- Map `tokens.css` onto the reference editor ladder: bg-0..4, fg-0..3 (fg body
   kept ≥4.5:1 — documented deviation), accent `#5af2ff` + `-soft/-glow/
   -ink/-2`, `--rec #ff3355`, `--solo #28c8f0`, `--warn`, `--ok #6ecc87`,
   `--playhead #ff8c35`, border trio (incl. accent hover), radii 2/4/8,
@@ -29,7 +29,7 @@ in conventional style before the next opens.
 - **Gates:** build, lint, unit, e2e (all standing), contrast script ≥4.5:1
   for `--text/-dim/-faint` on their real backgrounds, before/after
   screenshots (`docs/design/`).
-- **Commit:** `feat(d1): audiomass design-token convergence`.
+- **Commit:** `feat(d1): design-token convergence`.
 
 ## D2 — Icon toolbar (behavioral, TDD)
 
@@ -61,13 +61,13 @@ in conventional style before the next opens.
 
 ## D4 — Canvas skin + dB scale (restyle + small painter work)
 
-- `waveDraw.ts` THEME → AudioMass canvas palette: wave `#9dff6a`
+- `waveDraw.ts` THEME → the reference editor canvas palette: wave `#9dff6a`
   (disabled/muted variant), center line, selection accent-soft + accent
   borders, playhead `#ff8c35`, ruler labels `#d9d955` on black strip,
   lane bg from bg-0, peak separators (`#365457` family) at zoomed-in spp.
 - Bottom **dB amplitude axis** (canvas-drawn, -Inf..0, matching the
   reference screenshot) + L/R channel labels on the left rail, with a
-  View-menu toggle (default on), AudioMass "Timeline ✔"-style.
+  View-menu toggle (default on), the reference editor "Timeline ✔"-style.
 - **Tests:** existing anchors prove geometry unchanged; add View-toggle
   e2e (state persists via viewState signals).
 - **Commit:** `feat(d4): canvas skin + dB scale column`.
@@ -86,11 +86,11 @@ in conventional style before the next opens.
 
 ## D6 — Dialog/overlay restyle + shortcuts overlay (restyle + small behavior)
 
-- Welcome modal → AudioMass anatomy (logo, tips incl. Shift-key note, OK),
+- Welcome modal → the reference editor anatomy (logo, tips incl. Shift-key note, OK),
   progress modal polish (percent + cancel), toasts/menus with motion
   tokens; full-window drag-n-drop overlay.
 - **Help → Keyboard Shortcuts** overlay: generated from `shortcuts.ts` +
-  legacy shift-letters table (AudioMass-parity discoverability; also an
+  legacy shift-letters table (reference-parity discoverability; also an
   a11y win).
 - **Commit:** `feat(d6): dialog/overlay restyle + shortcuts overlay`.
 

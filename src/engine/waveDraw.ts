@@ -15,7 +15,7 @@ import { paletteVersionNow } from '../app/theme';
 import * as V from './viewState';
 
 export const RULER_H = 28;
-/** D4: left channel rail + bottom amplitude axis (AudioMass layout). */
+/** D4: left channel rail + bottom amplitude axis (reference layout). */
 export const RAIL_W = 26;
 export const AXIS_H = 22;
 
@@ -348,7 +348,7 @@ function drawRail(ctx: FullCtx): void {
   g.textAlign = 'start';
 }
 
-/** Bottom amplitude axis: dBFS labels, 2 dB steps, AudioMass style. */
+/** Bottom amplitude axis: dBFS labels, 2 dB steps, reference style. */
 function drawAmplitudeAxis(ctx: FullCtx): void {
   const { g, cssW: W, cssH: H } = ctx;
   g.fillStyle = currentTheme().rulerBg;

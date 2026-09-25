@@ -1,5 +1,5 @@
 /**
- * Help → Keyboard Shortcuts overlay (D6) — AudioMass-parity discoverability:
+ * Help → Keyboard Shortcuts overlay (D6) — reference-parity discoverability:
  * every binding in one place, legacy shift-letter layer included.
  */
 import { shortcutCatalog } from '../shortcutCatalog';

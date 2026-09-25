@@ -69,7 +69,7 @@ Clarity"** (vendored wasm). ADR 009 + `docs/effects-v2-plan.md` §8.
 Standard `Ctrl+Z/Y/X/C/V/A` table alongside legacy shift-letters, single
 source `shortcuts.ts`, platform-aware menu hints.
 
-### D-series — AudioMass design parity (≈ 14)
+### D-series — reference design parity (≈ 14)
 D0 live-reference analysis → D1 tokens → D2 icon toolbar → D3 selection
 readout (+ `Q` clear) → D4 canvas skin + amplitude axis/channel rail →
 D5 zoom/vertical-zoom/beat row → D6 shortcuts overlay + welcome tips →

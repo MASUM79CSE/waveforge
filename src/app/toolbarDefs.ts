@@ -13,7 +13,7 @@ export interface ToolDef {
   command: string;
 }
 
-/** AudioMass-style row: edit cluster, quick-fx cluster, zoom cluster. */
+/** reference-style row: edit cluster, quick-fx cluster, zoom cluster. */
 export const toolbarDefs: ToolDef[][] = [
   [
     { icon: 'cut', command: 'edit.cut' },

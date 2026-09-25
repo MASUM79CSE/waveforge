@@ -119,7 +119,7 @@ export class WaveRenderer {
     this.emitView();
   }
 
-  /** D4: toggle the left rail + bottom amplitude axis (AudioMass layout). */
+  /** D4: toggle the left rail + bottom amplitude axis (reference layout). */
   setAxisVisible(visible: boolean): void {
     this.axis = visible;
     this.requestDraw();

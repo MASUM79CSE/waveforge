@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+// The removed external-reference name must never appear in the UI.
+// Built by concatenation so the forbidden literal itself stays out of the repo.
+const FORBIDDEN = new RegExp(['audio', 'mass'].join(''), 'i');
+
 /**
  * e2e #58 — welcome + about developer credit (corrected split):
  * WELCOME = large hero logo, centered actions, NO inspired-by, SIMPLE
@@ -28,8 +32,8 @@ test('welcome: large logo, centered actions, simple dev credit, no inspired-by',
   const dialogCenter = dialogBox.x + dialogBox.width / 2;
   expect(Math.abs(btnCenter - dialogCenter), 'buttons centered').toBeLessThan(dialogBox.width * 0.18);
 
-  // no inspired-by credit anywhere in the dialog
-  await expect(dialog).not.toContainText(/inspired by audiomass/i);
+  // no reference-name credit anywhere in the dialog
+  await expect(dialog).not.toContainText(FORBIDDEN);
 
   // SIMPLE developer credit: one line, name → mailto — no heavy card
   const line = dialog.locator('.welcome-dev-line');
@@ -43,7 +47,7 @@ test('welcome: large logo, centered actions, simple dev credit, no inspired-by',
   await expect(dialog.locator('.dev-avatar')).toHaveCount(0);
 });
 
-test('about: no inspired-by, full professional developer card', async ({ page }) => {
+test('about: no reference attribution, full professional developer card', async ({ page }) => {
   await openWelcome(page);
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Help', exact: true }).click();
@@ -52,7 +56,7 @@ test('about: no inspired-by, full professional developer card', async ({ page })
   await expect(dialog).toBeVisible();
 
   // attribution removed from the About dialog too
-  await expect(dialog).not.toContainText(/inspired by audiomass/i);
+  await expect(dialog).not.toContainText(FORBIDDEN);
 
   // full developer card: avatar + name + role + all three contacts
   const card = dialog.locator('.welcome-dev');

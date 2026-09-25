@@ -4,10 +4,10 @@
 > **Applies to:** `c0a1baa` and later
 > **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/design/](docs/design) · [docs/design-parity-plan.md](docs/design-parity-plan.md)
 
-WaveForge's interface follows a **pro--tool visual language** — a close,
-rebrandable homage to [AudioMass](https://audiomass.co), extended with the
-zone-cluster conventions of professional DAWs (Adobe Audition-style
-labeled transport groups). Dark-first, canvas-centric, keyboard-complete.
+WaveForge's interface follows a **pro--tool visual language** — original
+and rebrandable, extended with the zone-cluster conventions of
+professional DAWs (Adobe Audition-style labeled transport groups).
+Dark-first, canvas-centric, keyboard-complete.
 
 ---
 
@@ -18,7 +18,7 @@ labeled transport groups). Dark-first, canvas-centric, keyboard-complete.
 | Name | **WaveForge** |
 | Mark | Rounded-square badge, cyan waveform stroke, dark gradient fill + glow |
 | Voice | Direct, professional, zero marketing fluff ("No uploads, no accounts, no tracking") |
-| License posture | MIT; AudioMass attribution carried by `LICENSE` + `src/brand.ts` |
+| License posture | MIT; third-party notices in `THIRD_PARTY_NOTICES.md` |
 | Developer credit | Welcome: one line ("Developed by Mir Md. Masum", name → mailto) · About: full card (avatar + role + contacts) |
 
 All brand strings live in one module (`src/brand.ts`) — rebranding the
@@ -34,7 +34,7 @@ CSS vars** so themes stay consistent between DOM and canvas.
 - **Accent**: cyan (`#3be1ec`-family) for primary actions, playhead,
   selection border, focus rings; amber/red reserved for record and
   destructive states.
-- **Waveform**: bright green-on-black (AudioMass heritage) with muted
+- **Waveform**: bright green-on-black (classic web-editor heritage) with muted
   selection tint; lane clip blocks use per-lane hue variants.
 - **Text**: 3-step hierarchy (primary / secondary / faint) — all steps
   meet WCAG 2.1 AA contrast on their backgrounds (axe-gated; the faint

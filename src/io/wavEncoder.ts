@@ -94,7 +94,7 @@ function writePcm16(channels: Float32Array[], out: Uint8Array, offset: number): 
   for (let i = 0; i < frames; ++i) {
     for (let ch = 0; ch < chCount; ++ch) {
       // negative side scales by 32768 so -1.0 maps to full range (matches
-      // the MP3 path and AudioMass); positive side by 32767 (no clip)
+      // the MP3 path and the reference editor); positive side by 32767 (no clip)
       const x = channels[ch]?.[i] ?? 0;
       const s = clamp(Math.round(x < 0 ? x * 32768 : x * 32767), -32768, 32767);
       out[pos] = s & 0xff;

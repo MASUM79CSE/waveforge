@@ -8,7 +8,7 @@
 A free, private, installable web audio editor: trim, clean, effect, record,
 and export audio **entirely in the browser**. No uploads, no accounts, no tracking.
 
-## v1 scope (AudioMass single-track parity)
+## v1 scope (the reference editor single-track parity)
 
 - **Load:** aac aif aiff flac m4a mp3 oga ogg opus wav webm — picker, drag&drop, URL (CORS), sample
 - **Record:** mic via AudioWorklet, constraints toggles, level meter

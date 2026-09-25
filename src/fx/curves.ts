@@ -3,9 +3,9 @@
  * reverb IR uses a seeded PRNG instead of Math.random so golden tests and
  * repeat applies are reproducible.
  *
- * Deltas from AudioMass (documented in ADR 005): the distortion curve is
- * scaled x3 so 0% drive = unity (AudioMass attenuates by 1/3 at zero);
- * delay/reverb mix uses equal-power crossfade (AudioMass's linear map sums
+ * Deltas from the reference design (documented in ADR 005): the distortion curve is
+ * scaled x3 so 0% drive = unity (the reference editor attenuates by 1/3 at zero);
+ * delay/reverb mix uses equal-power crossfade (the reference editor's linear map sums
  * to +6 dB at center).
  */
 import { FX_CURVE_SAMPLES } from '../core/constants';
@@ -25,9 +25,9 @@ export function mulberry32(seed: number): () => number {
 const DEG = Math.PI / 180;
 
 /**
- * WaveShaper curve (AudioMass formula, scaled x3 for unity at zero drive):
+ * WaveShaper curve (reference formula, scaled x3 for unity at zero drive):
  * f(x) = (3 + g) * x * 20deg / (PI + g*|x|) with g = round(amount).
- * Index mapping follows the WaveShaper spec: x = 2i/(n-1) - 1 (AudioMass
+ * Index mapping follows the WaveShaper spec: x = 2i/(n-1) - 1 (the reference editor
  * generated with 2i/n, which misses the +1 endpoint by 2/n — inaudible,
  * but spec-correct mapping also gives exact mirror symmetry).
  */

@@ -30,7 +30,7 @@ output paths.
    - **FLAC:** libflacjs's emscripten build (`libflac.min.wasm.js` + wasm)
      vendored to `public/vendor/` and driven by a **classic worker**
      (`public/workers/flac-export.worker.js`) via `importScripts` — the
-     exact AudioMass-proven pattern (bundler-free wasm loading). 16/24-bit,
+     exact reference-proven pattern (bundler-free wasm loading). 16/24-bit,
      compression 0–8, progress + cancel.
    - Worker messages are validated at the boundary (zod on the main-thread
      side, defensive checks in the classic worker).
@@ -40,7 +40,7 @@ output paths.
    after use. Filenames pass through a pure sanitizer (control chars,
    separators, length) with a safe default.
 4. **Selection semantics.** Export scope = selection when one exists,
-   else the whole document (AudioMass parity).
+   else the whole document (reference parity).
 5. **Validation gate (revised during bring-up).** `scripts/validate-
    encoders.mjs` encodes in Node and asserts MP3 frame sync + size bounds
    at all four bitrates. FLAC's emscripten wasm build only runs in a real

@@ -1,5 +1,5 @@
 /**
- * Selection readout group (D3) — AudioMass parity: Start / End / Duration
+ * Selection readout group (D3) — reference parity: Start / End / Duration
  * with a Clear button wired to `edit.deselect` (Q). Dashes when empty.
  */
 import { runCommand } from '../commands';

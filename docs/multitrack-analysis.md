@@ -19,7 +19,7 @@ Takeaways:
    differentiator (same lane as the NR positioning: honest local tools).
 2. openDAW independently validates "no-login browser DAW with stem export" as
    a 2026-relevant lane — but AGPL forbids code reuse; design stays ours.
-3. None of the leaders target **AudioMass's simplicity class** (single-pane
+3. None of the leaders target **the reference editor's simplicity class** (single-pane
    editor). M8 must add tracks without becoming a heavy DAW: lane stack +
    track strips, same single-timeline editing model.
 
@@ -65,7 +65,7 @@ arrangement model.**
   the doctor panel showing memory).
 
 Rejected: clip/arrangement model (deferred to M9+ — it reworks undo, export,
-playback and the canvas at once; too big a bite, and AudioMass-class users
+playback and the canvas at once; too big a bite, and the reference editor-class users
 think in lanes, not clips).
 
 ## 4. Phasing (each phase RED→green, full gates, conventional commit)

@@ -257,9 +257,9 @@ function writeStoredBool(key: string, value: boolean): void {
 }
 
 export const zeroCrossEnabled = signal(readStoredBool('zerocross', true));
-/** D4: amplitude axis + channel rail along the canvas edges (AudioMass parity). */
+/** D4: amplitude axis + channel rail along the canvas edges (reference parity). */
 export const amplitudeAxis = signal(readStoredBool('amplitudeaxis', true));
-/** D5: vertical zoom — wave amplitude scale, clamped 0.5..3 (AudioMass parity). */
+/** D5: vertical zoom — wave amplitude scale, clamped 0.5..3 (reference parity). */
 export const VZOOM_MIN = 0.5;
 export const VZOOM_MAX = 3;
 export const vzoom = signal(clampVZoom(readStoredNumber('vzoom', 1)));

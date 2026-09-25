@@ -22,7 +22,7 @@ export function pickPeakLevel(spp: number): number {
   return PEAK_LEVELS[PEAK_LEVELS.length - 1] ?? 65536;
 }
 
-/** Wheel/pinch zoom factor — exponential feel, clamped (AudioMass-style). */
+/** Wheel/pinch zoom factor — exponential feel, clamped (reference-style). */
 export function zoomFactor(delta: number): number {
   return Math.max(0.2, Math.min(5, Math.pow(1.0025, -delta)));
 }

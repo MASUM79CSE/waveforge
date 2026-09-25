@@ -1,6 +1,6 @@
 /**
  * Global shortcut table (UX hardening): professional standard combos with
- * the AudioMass legacy shift-letter set preserved for muscle memory.
+ * the legacy shift-letter set preserved for muscle memory.
  *
  * Pure module — `resolveShortcut` maps a key event to a command id; the
  * browser glue in keyboard.ts runs the command and calls preventDefault.
@@ -84,7 +84,7 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
   }
 
   // arrangement plain keys (typing guards are the caller's job) — then the
-  // legacy AudioMass shift-letter layer
+  // legacy the reference editor shift-letter layer
   if (!event.shift) {
     switch (key) {
       case 's':

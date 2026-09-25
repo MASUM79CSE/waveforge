@@ -8,9 +8,8 @@ accounts, no tracking — your audio never leaves your machine.
   <img src="docs/screenshots/editor-overview.png" alt="WaveForge editor — zone-based transport, waveform with selection, meter bridge" width="960" />
 </p>
 
-WaveForge began as a light-edition homage to
-[AudioMass](https://audiomass.co) — its visual language and interaction
-model — and has grown beyond it: multitrack lanes with a clip/arrangement
+WaveForge began as a light-edition browser-based audio editor and has
+grown into a full production tool: multitrack lanes with a clip/arrangement
 timeline, an FX rack with per-parameter automation envelopes, three noise
 reduction engines (including an RNNoise "AI Voice Clarity" mode), a studio
 recording flow with punch in/out, and a LUFS mastering suite with
@@ -196,6 +195,5 @@ build time; no environment variables or server components are required.
   [mirmasum@mail.com](mailto:mirmasum@mail.com) ·
   [Instagram @mirmd_masum](https://instagram.com/mirmd_masum) · Discord
   `mir_masum`
-- MIT — see [LICENSE](LICENSE). WaveForge is inspired by AudioMass
-  (MIT); third-party notices in
-  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- MIT — see [LICENSE](LICENSE). Third-party notices for the bundled
+  encoders/runtimes in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
