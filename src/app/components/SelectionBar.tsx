@@ -16,7 +16,6 @@ export function SelectionBar() {
   const dur = has ? Math.max(0, sel.end - sel.start) : 0;
   return (
     <div class="toolbar-group selgroup" role="group" aria-label="Selection">
-      <span class="sel-title">Selection:</span>
       <span class="sel-cell">
         <span class="sel-label">Start:</span>
         <span class="sel-val">{has ? fmt(sel.start) : '-'}</span>
@@ -36,7 +35,7 @@ export function SelectionBar() {
         disabled={!has}
         onClick={() => runCommand('edit.deselect')}
       >
-        clear selection
+        ✕
       </button>
     </div>
   );

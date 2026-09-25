@@ -1069,3 +1069,20 @@ from all 26 Effects-menu labels (i18n en.ts only — File menu and progress
 messages untouched). Visual proof via screenshot: clean single-line names
 ("Compressor", "Noise Reduction v3 (natural voice)"). Gates: 716/716
 unit, 54/54 e2e, lint 0, tsc clean, build OK.
+
+## 2026-09-25 (redesign) — Transport bar zones SHIPPED
+
+Marketplace-informed reorganization of the crowded single transport row
+into seven labeled zone panels (Audition/BandLab pattern): TRANSPORT /
+POSITION / EDIT TOOLS / SELECTION / BEAT GRID left, RECORD / MASTER
+right-anchored via the spacer. Mechanics: `Zone` wrapper (`section`
+role=group + aria-label + micro-caption), legacy inner group chrome
+(borders/gradients/46px height) flattens inside the zone frame; selection
+"Selection:" title dropped (zone caption covers it), clear button compact
+(✕, aria unchanged); captions hidden <1024px; records cluster finally
+lives in its own right-side panel. Axe caught two REAL contrast issues
+en route (9–9.5px labels on decoration-only --fg-2): tz-cap/sel-label/
+sel-clear/strip-lab now --fg-1 (AA). e2e #55: zones labeled + ordered,
+RECORD right-anchored, clock visible, per-size (1920→375) reachability +
+no-clip at 1920 + record controls visible everywhere. Gates: **716/716
+unit, 56/56 e2e (axe zero violations), lint 0, tsc clean, build OK.**

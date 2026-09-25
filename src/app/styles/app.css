@@ -176,15 +176,63 @@
 /* Transport */
 .transport {
   display: flex;
-  align-items: center;
-  gap: var(--s3);
+  align-items: stretch;
+  gap: 6px;
   background: var(--bg-0);
   border-bottom: 1px solid var(--bd);
-  padding: 0 var(--s3);
+  padding: 4px var(--s3) 6px;
   min-height: var(--transport-h);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
+}
+
+/* Redesign: labeled zone panels — grouped clusters with micro-captions
+   (Audition-style). Inner markup/behavior unchanged. */
+.tz {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 9px 6px;
+  background: var(--bg-1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  flex: none;
+}
+.tz-cap {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-1); /* AA on --bg-1 (fg-2 is decoration-only, 3.9:1) */
+  line-height: 1;
+  user-select: none;
+  white-space: nowrap;
+}
+.tz-body {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex: 1;
+}
+/* the zone is the frame — legacy inner group chrome flattens inside it */
+.tz .toolbar-group,
+.tz .transport-group {
+  height: auto;
+  align-self: stretch;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+@media (max-width: 1023px) {
+  .tz-cap {
+    display: none;
+  }
+  .tz {
+    padding: 2px 7px;
+  }
 }
 
 .transport::-webkit-scrollbar {
@@ -306,7 +354,7 @@
 }
 
 .selgroup {
-  gap: var(--s3);
+  gap: 10px;
 }
 
 .sel-title {
@@ -321,7 +369,7 @@
 }
 
 .sel-label {
-  color: var(--fg-2);
+  color: var(--fg-1); /* meaningful text — AA (fg-2 is decoration-only) */
   font-size: 9.5px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -331,12 +379,13 @@
   color: var(--ac);
   font-family: var(--font-mono);
   font-size: 12px;
-  min-width: 72px;
+  min-width: 64px;
+  white-space: nowrap;
 }
 
 .sel-clear {
   align-self: center;
-  color: var(--fg-2);
+  color: var(--fg-1);
   font-size: 11px;
   padding: 4px 8px;
   border-radius: var(--r);
@@ -453,7 +502,7 @@
 }
 
 .strip-lab {
-  color: var(--fg-2);
+  color: var(--fg-1); /* meaningful text — AA */
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
