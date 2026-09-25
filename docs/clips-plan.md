@@ -635,8 +635,8 @@ no-account lane; decision: lane-based single timeline, not clips).
       lane-1 fix) with draft-restore re-opening lanes; record with a
       project open lands the take as a NEW LANE (M4 new-doc behavior kept
       otherwise). Boundary: quick edit-menu commands (Gain/Fades/Normalize/
-      Reverse/Invert/Remove Silence) remain doc-scoped until the edit
-      routing sweep (post-M8 backlog, small mechanical follow-up).
+      Reverse/Invert/Remove Silence) route through `safeTrackEdit` — the edit
+      routing sweep LANDED (lanes ≥ 2 commit through the project history).
 - [x] **M8g** hardening + close: coarse lane envelope buckets
       (`laneBuckets`/`lanePeaksFromBuckets`, 256-sample) — zoom/pan reads
       ≈3 ms for 6×3-min lanes (build 184 ms per edit, cached per version);

@@ -12,9 +12,10 @@
 2. Pro tools that reuse what M5/M6 already shipped (LUFS kernels, settings, quota) instead of new infrastructure.
 3. Keep the architecture: pure kernels first, worker only when a profiling gate demands it; browser-only code excluded from unit coverage per ADR 005 convention.
 
-**Non-goals (still parked)**
-- RNNoise wasm (E6 is the in-house fallback, now noise-print based).
-- Formant-preserving pitch shift, multitrack, MIDI. Cloud anything.
+**Non-goals — status update (2026-09-25):** RNNoise wasm SHIPPED as E7b
+`fx.rnvoice` (the park note predates it); multitrack SHIPPED (M8) and
+clips/arrangement SHIPPED (M9). Still parked: formant-preserving pitch
+shift, MIDI, cloud anything.
 
 **Architecture extension (one small change)**
 `KernelEffectDef` gains optional `tail?: (params) => number` — fxActions slices `len + tail·sr` frames and appends post-region context so wet tails (reverb, delay, stretch) work for pure kernels exactly as `tailSeconds` works for graph effects today. No other plumbing changes: new effects stay registry entries + i18n + optional menu rows.

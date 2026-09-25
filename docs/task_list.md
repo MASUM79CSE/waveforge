@@ -30,9 +30,10 @@
       (`scripts/gen-sample.mjs` → `public/samples/demo.wav`)
 - [x] Keyboard map (Space/arrows/Home/End/L/±/0/Tab/Q/Shift+A/Ctrl+O), follow cursor
 - [x] URL dialog, loading overlay, status bar (selection/zoom/position)
-- [ ] e2e flow #1 — **moved to M4** with the Playwright suite (deviation logged:
+- [x] e2e flow #1 — **moved to M4** with the Playwright suite (deviation logged:
       §8.4 schedules Playwright from M4; M1 verified via live-server smoke of all
-      modules + pure-math integration tests instead)
+      modules + pure-math integration tests instead). RESOLVED: the Playwright
+      suite has run every milestone since M4 (47 specs as of X-series).
 
 ## M2 — Editing & History (complete)
 
@@ -75,8 +76,9 @@
       Esc closes; Effects menu expanded; 10 fx.* commands
 - [x] Deltas from AudioMass logged in ADR 005 §5 (limiter algorithm, mix
       law, tail retention, GEQ20 band layout, rate = varispeed)
-- [ ] **Automation envelope editor → scheduled with M5** (needs the canvas
-      timeline infra landing with the analysers; deviation logged in ADR 005)
+- [x] **Automation envelope editor → SHIPPED as A7** (docs/automation-plan.md;
+      the ADR 005 deviation resolved — per-param FX curves + track automation
+      lanes all landed with the A-series)
 - [x] RNNoise denoise shipped as E7b `fx.rnvoice` (see E-series) — un-parks
       this note; pitch-preserving stretch SHIPPED as E5 WSOLA
       (`fx.stretch`, stretch/semitones with the pitch anchor) — gated
@@ -656,8 +658,8 @@ no-account lane; decision: lane-based single timeline, not clips).
       lane-1 fix) with draft-restore re-opening lanes; record with a
       project open lands the take as a NEW LANE (M4 new-doc behavior kept
       otherwise). Boundary: quick edit-menu commands (Gain/Fades/Normalize/
-      Reverse/Invert/Remove Silence) remain doc-scoped until the edit
-      routing sweep (post-M8 backlog, small mechanical follow-up).
+      Reverse/Invert/Remove Silence) route through `safeTrackEdit` — the edit
+      routing sweep LANDED (lanes ≥ 2 commit through the project history).
 - [x] **M8g** hardening + close: coarse lane envelope buckets
       (`laneBuckets`/`lanePeaksFromBuckets`, 256-sample) — zoom/pan reads
       ≈3 ms for 6×3-min lanes (build 184 ms per edit, cached per version);
@@ -689,16 +691,17 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
       interactions (select/move/trim/split S/Ctrl+D/Del, per-asset
       envelopes, drag preview → one history entry per gesture) · M9d3
       gate e2e (split→drag→undo×2→dup→play). 35 e2e total
-- [ ] M9e history/commands polish (interleave anchor) → M9f drafts v3 +
-      export parity
+- [x] M9e history/commands polish (interleave anchor) → M9f drafts v3 +
+      export parity — SHIPPED (stamped in the M9 section below)
 - [x] **M9a** clip core (`src/engine/clips.ts`): placement kernels
       (sorted insert w/ overlap refusal, split w/ offset accumulation,
       neighbour-clamped move/trim, duplicate, remove) + render kernels
       (stereo Float64 fixed-order render, region render for the bounce
       path, slow bit-exact reference). 13 anchors; render 60 s single-clip
       ≈ 75 ms, 200-clip ≈ 29 ms (budgets 120/400 uninstrumented)
-- [ ] M9b asset store + lane bridge → M9c clip playback → M9d arrangement
-      UI → M9e history/commands → M9f persistence v3 + export parity
+- [x] M9b asset store + lane bridge → M9c clip playback → M9d arrangement
+      UI → M9e history/commands → M9f persistence v3 + export parity —
+      ALL SHIPPED (M9a–M9f stamped in the M9 section below)
 
 ## M8+ — post-v1 (see Build Plan §10 roadmap)
 
