@@ -73,6 +73,7 @@ export const menus: MenuDef[] = [
       'fx.deesser',
       'fx.nr3',
       'fx.nrPrint',
+      'fx.rnvoice',
       'fx.rate',
       'fx.stretch',
       '-',

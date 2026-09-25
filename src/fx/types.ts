@@ -17,6 +17,9 @@ export interface ParamSpec {
   max: number;
   step: number;
   default: number | boolean;
+  /** A7 envelope (∿) availability; false = static-only param (no swept
+   * kernel exists — fx.rnvoice mix for v1). Default: available. */
+  curve?: boolean;
 }
 
 export type Params = Record<string, number | boolean>;

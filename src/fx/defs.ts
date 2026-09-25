@@ -26,6 +26,7 @@ import { EQ_BAND_COUNT, eqBandsFromParams, processParamEq, processParamEqSwept }
 import { reverb2Process, reverb2ProcessSwept } from './reverb2';
 import { nr3Process } from './nr3';
 import { nrProcess } from './nrPrint';
+import { rnVoiceProcess } from './nrVoice';
 import { deesserProcess } from './deesser';
 import { wsolaStretch } from './wsola';
 import { registerEffect } from './registry';
@@ -437,6 +438,17 @@ const DEFS: EffectDef[] = [
       num('alpha', 'paramAlpha', 1, 4, 0.1, 2),
       num('floor', 'paramFloor', 0.01, 0.2, 0.01, 0.05),
     ],
+  },
+  {
+    // E7b: RNNoise "AI Voice Clarity" — mix-only, static path for v1
+    // (no swept variant; the ∿ envelope toggle is off via curve:false).
+    // Lazily loads the vendored wasm; the dialog gates on readiness.
+    id: 'fx.rnvoice',
+    labelKey: 'fxRnvoice',
+    kind: 'kernel',
+    process: (channels, sampleRate, params) =>
+      rnVoiceProcess(channels, sampleRate, { mix: Number(params.mix) }),
+    specs: [{ ...num('mix', 'paramMix', 0, 1, 0.01, 1), curve: false }],
   },
   {
     id: 'fx.rate',

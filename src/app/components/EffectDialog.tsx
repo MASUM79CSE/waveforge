@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { defaultParams, getEffect } from '../../fx/registry';
 import type { Params, ParamSpec } from '../../fx/types';
+import { ensureRnVoice, rnvoiceStatus } from '../../fx/nrVoice';
 import { applyEffect, effectLabel, preparePreview } from '../fxActions';
 import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { closeEffectDialog } from '../actions';
@@ -22,12 +23,17 @@ export function EffectDialog() {
   const id = effectDialogId.value;
   const def = id ? getEffect(id) : undefined;
   const [params, setParams] = useState<Params>({});
+  // E7b: fx.rnvoice lazily loads its vendored wasm; Preview/Apply stay
+  // disabled (with a status line) until the model reports ready.
+  const isRnvoice = def?.id === 'fx.rnvoice';
+  const rnReady = !isRnvoice || rnvoiceStatus.value === 'ready';
 
   useEffect(() => {
     if (def) setParams(defaultParams(def));
     // A7: fresh envelope draft per dialog open; x domain = target region
     resetFxCurves();
     setFxCurveRegion(targetRange()?.len ?? 1);
+    if (def?.id === 'fx.rnvoice') void ensureRnVoice().catch(() => undefined);
   }, [id]);
 
   if (!def) return null;
@@ -38,7 +44,7 @@ export function EffectDialog() {
   const runCtx = { noisePrint: sessionNoisePrint.value ?? undefined, paramCurves: fxCurvesOrUndefined() };
 
   const restartPreview = (next: Params): void => {
-    if (!previewActive.value) return;
+    if (!previewActive.value || !rnReady) return;
     stopPreview();
     const plan = preparePreview(def.id, next, runCtx);
     if (plan) startPreview(plan);
@@ -55,6 +61,7 @@ export function EffectDialog() {
       stopPreview();
       return;
     }
+    if (!rnReady) return;
     const plan = preparePreview(def.id, params, runCtx);
     if (plan) startPreview(plan);
   };
@@ -75,7 +82,7 @@ export function EffectDialog() {
               value={params[spec.key]}
               onChange={setParam}
               curveToggle={
-                spec.kind === 'number'
+                spec.kind === 'number' && spec.curve !== false
                   ? {
                       armed: fxEnvelopeParam.value === spec.key,
                       onToggle: (): void => toggleFxCurveParam(spec.key),
@@ -88,8 +95,21 @@ export function EffectDialog() {
             )}
           </div>
         ))}
+        {isRnvoice && rnvoiceStatus.value !== 'ready' && (
+          <p class="fx-status" data-testid="rnvoice-status" role="status">
+            {rnvoiceStatus.value === 'error' ? t().rnvoiceError : t().rnvoiceLoading}
+            {rnvoiceStatus.value === 'error' && (
+              <button
+                class="btn-secondary fx-status-retry"
+                onClick={(): void => void ensureRnVoice().catch(() => undefined)}
+              >
+                {t().rnvoiceRetry}
+              </button>
+            )}
+          </p>
+        )}
         <div class="fx-actions">
-          <button class="btn-secondary" onClick={onPreviewToggle}>
+          <button class="btn-secondary" disabled={!rnReady} onClick={onPreviewToggle}>
             {previewActive.value ? t().fxPreviewStop : t().fxPreviewAB}
           </button>
           {previewActive.value && (
@@ -101,7 +121,7 @@ export function EffectDialog() {
           <button class="btn-secondary" onClick={closeEffectDialog}>
             Cancel
           </button>
-          <button class="btn-primary" onClick={onApply}>
+          <button class="btn-primary" disabled={!rnReady} onClick={onApply}>
             {t().fxApply}
           </button>
         </div>

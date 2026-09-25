@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
  * const discipline. Formatting belongs to Prettier, not ESLint.
  */
 export default tseslint.config(
-  { ignores: ['dist/', 'coverage/', 'node_modules/', 'public/'] },
+  { ignores: ['dist/', 'coverage/', 'node_modules/', 'public/', 'src/vendor/**'] },
   ...tseslint.configs.recommended,
   {
     rules: {
