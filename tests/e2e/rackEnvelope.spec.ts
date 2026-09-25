@@ -23,13 +23,7 @@ test('rack entry envelope: author tremolo depth curve, apply, undo, redo (C5)', 
 }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);

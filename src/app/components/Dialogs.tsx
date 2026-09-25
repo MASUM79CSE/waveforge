@@ -1,4 +1,3 @@
-import { useState } from 'preact/hooks';
 import { Brand } from '../../brand';
 import { t } from '../../i18n';
 import { closeAbout, closeWelcome, loadSample, pickAudioFile } from '../actions';
@@ -6,25 +5,12 @@ import { aboutOpen, welcomeOpen } from '../state';
 import { Modal } from './Modal';
 import { BrandMark } from './MenuBar';
 
-/** Developer profile image with a graceful monogram fallback. */
+/** Developer avatar — local monogram mark (zero external dependencies). */
 function DevAvatar() {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <span class="dev-avatar dev-avatar-mono" aria-hidden="true">
-        MM
-      </span>
-    );
-  }
   return (
-    <img
-      class="dev-avatar"
-      src="https://pbs.twimg.com/profile_images/2045439954629849088/9jL1-cqa.jpg"
-      alt=""
-      width={52}
-      height={52}
-      onError={() => setFailed(true)}
-    />
+    <span class="dev-avatar dev-avatar-mono" aria-hidden="true">
+      MM
+    </span>
   );
 }
 

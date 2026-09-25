@@ -219,3 +219,15 @@ developer credit), LH desktop 97/100/100/96, mobile 99. Known follow-up:
 the avatar CDN URL returns 404 in production → monogram fallback shows
 and best-practices loses 2 pts; replace with a committed/working image
 to restore 100.
+
+## Appendix — post-launch hardening (2026-09-26)
+
+- **Avatar localized**: the external CDN URL died (404 in production);
+  the "MM" monogram is now the designed, always-on avatar — zero external
+  requests, one fewer third-party dependency; 11 e2e console collectors
+  simplified (twimg exceptions removed); CSP img-src CDN exception dropped.
+- **og:image shipped**: real-product 1200×630 OG image committed
+  (public/og-image.png), og:url + large-image card meta added — link
+  previews now show the actual editor (post-deploy gap closed).
+- LH after: **desktop 98/100/100/100, mobile 99** (best-practices 96 → 100).
+Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**

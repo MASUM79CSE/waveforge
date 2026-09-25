@@ -28,13 +28,7 @@ async function openRack(page: Page): Promise<void> {
 test('fx rack: add, reorder, bypass, apply once, undo, redo (C2)', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);
@@ -79,13 +73,7 @@ test('voice rescue preset: rnvoice → deesser → compressor applies from the r
 }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);

@@ -45,13 +45,7 @@ function wavBytes(seconds = 0.1): Buffer {
 test('multitrack: add lanes, solo, play, remove + undo (M8d)', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
 
@@ -103,13 +97,7 @@ test('multitrack: add lanes, solo, play, remove + undo (M8d)', async ({ page }) 
 test('multitrack: drafts v2 round-trip + mixdown/stems export (M8e)', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);
@@ -171,13 +159,7 @@ test('multitrack: effects apply to the active lane and record lands a lane (M8f)
 }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);
@@ -225,13 +207,7 @@ test('multitrack: quick edit commands (Reverse) target the active lane (M8f+)', 
 }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);
@@ -259,13 +235,7 @@ test('arrangement: split at cursor, drag right, undo x2, duplicate, play (M9d)',
 }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);
@@ -328,13 +298,7 @@ test('drafts v3: arranged project survives save/reload with clip lists (M9f)', a
 }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
-        // real deployments load it — ignore that one external line
-        if (
-          m.type() === 'error' &&
-          !m.location()?.url.includes('pbs.twimg.com')
-        )
-          consoleErrors.push(m.text());
+  if (m.type() === 'error') consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);
