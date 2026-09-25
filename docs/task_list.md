@@ -972,3 +972,31 @@ text summary. ReportBlock: Export CSV (blob download `analysis-report.csv`)
 gates + **49th e2e** (download content assertions via the real download
 file + clipboard readback with granted permissions). Gates: **704/704
 unit (84 files), 49/49 e2e, lint 0, tsc clean, build OK.** `94efdf2`.
+
+## 2026-09-25 (R-series) — studio recording SHIPPED
+
+`docs/recording-analysis.md` (market audit: BandLab/Soundtrap/punch
+workflows) → `docs/recording-plan.md` → executed:
+
+- [x] **R1** arm/roll split: RecorderEngine `open/beginCapture/disarm`
+      (+engine-side capture gate); armed state = mic open + live peak-hold
+      meter + latching clip LED BEFORE rolling; input monitoring toggle
+      (feedback-safe default OFF, wired-headphones warning on first arm).
+- [x] **R2** count-in + metronome: pure `metronome.ts` clickSchedule
+      (40–240 clamped, seamless negative grid), 4·3·2·1 on-screen beats,
+      accent/beat oscillator clicks (1320/880 Hz) on the shared context;
+      settings persisted (bars 0–4, click volume, manual/detected BPM).
+      `M` toggles the metronome (BandLab parity).
+- [x] **R3** takes: pure `takes.ts` reducer (append/keep/discardLast) +
+      takes strip in Record settings + discard-last.
+- [x] **R4** punch in/out: pure `punch.ts` punchPlan (playFrom clamp,
+      count-in lead-in, empty-selection guard); selection + monitoring →
+      count-in → 1.5 s pre-roll playback → capture between the edges →
+      ONE undoable `makeOverwritePaste` edit (non-destructive). `P`
+      shortcut; auto-arms; monitoring enforcement toast.
+- [x] **R5** e2e: #50 studio flow (arm → meter → monitor → roll → take →
+      takes list → metronome persistence), #51 punch (undo restores,
+      redo re-applies). Escape now also closes record settings + cancels
+      count-in. Legacy one-click record tests migrated to arm→roll.
+
+Gates: **714/714 unit (85 files), 51/51 e2e, lint 0, tsc clean, build OK.**
