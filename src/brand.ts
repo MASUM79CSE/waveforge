@@ -5,6 +5,6 @@
 export const Brand = {
   name: 'WaveForge',
   tagline: 'Free · Private · Runs entirely in your browser',
-  version: '0.1.0',
+  version: '1.0.0',
   repo: 'https://github.com/your-name/waveforge',
 } as const;

@@ -189,3 +189,11 @@ added the note "Designed, architected & developed from scratch."
 i18n-keyed, token-styled (theme-agnostic), e2e contract #58 extended.
 Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK;**
 verified at 1280 px and 375 px.
+
+## Appendix — v1.0.0 release stamp (2026-09-26)
+
+Version bumped 0.1.0 → **1.0.0** (brand.ts + package.json) to match the
+shipped production reality the documentation set already claimed.
+Lighthouse re-stamped after the credit change: **desktop 97/100/100/100
+(perf varies 97–99 across runs, gate ≥95), mobile 99.** Gates:
+**720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
