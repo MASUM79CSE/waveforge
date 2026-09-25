@@ -456,7 +456,6 @@ export const en = {
   metadataSongInfo: 'Song Info…',
 
   // toast helpers
-  notYet: (feature: string, milestone: string) => `${feature} — arrives in ${milestone}`,
 
   // error catalog (Build Plan §6.1) — keys are the ErrorCode values
   errors: {

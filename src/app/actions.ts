@@ -31,11 +31,6 @@ function reportError(error: unknown): void {
   pushToast('err', tError('WF-E601'));
 }
 
-/** Honest placeholder for features landing in a later milestone. */
-export function toastNotYet(feature: string, milestone: string): void {
-  pushToast('info', t().notYet(feature, milestone));
-}
-
 export function isFollowOn(): boolean {
   return S.followCursor.value;
 }

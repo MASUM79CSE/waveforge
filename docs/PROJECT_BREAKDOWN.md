@@ -197,3 +197,14 @@ shipped production reality the documentation set already claimed.
 Lighthouse re-stamped after the credit change: **desktop 97/100/100/100
 (perf varies 97–99 across runs, gate ≥95), mobile 99.** Gates:
 **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
+
+## Appendix — full gap audit (2026-09-26, v1.0.0)
+
+Complete project audit (product/code/tests/CI/deploy/docs/legal).
+Verdict: **no blocking gaps.** Fixed in this pass: brand repo URL
+placeholder, LICENSE sole-authorship (Mir Md. Masum), OG/Twitter meta,
+dead `toastNotYet` code path, CI now runs the e2e suite (dedicated job
++ report artifact). Open-by-decision items recorded in
+**docs/GAP_ANALYSIS.md** (cloud M12 parked, CSP report-only,
+cross-browser partial, >400-line file debt, og:image post-domain).
+Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
