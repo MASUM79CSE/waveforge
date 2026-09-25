@@ -791,3 +791,17 @@ is pure TBT throttling variance (150→190→50 ms on the SAME build); FCP
 untouched by E7b (vendor js + wasm are lazy chunks loaded only on dialog
 open; `rnnoise-*.wasm` 125 713 B ships as its own asset). Artifact
 `docs/perf/lighthouse-e7b.json`.
+
+## 2026-09-25 (C1) — FX chain model SHIPPED
+
+C-series opened (`docs/fxchains-analysis.md` + `docs/fxchains-plan.md`:
+market = RX Module Chains / Audacity Macros / per-effect-preset web DAWs;
+decision = serial rack + built-in recipes incl. **Voice rescue**
+(`fx.rnvoice → fx.deesser → fx.compressor`) + shareable JSON). C1 pure
+model `src/fx/chain.ts`: zod boundary (`parseChain`, cap 16, bool-coercing
+bypass), registry-validated params (clamps + defaults = single source of
+truth), `foldChain` with injected stage runner (bypass skips bit-exactly,
+all-bypassed = identity, length-changing stages flow through),
+`exportChain` stable JSON. 10 gates (parse ×5, fold ×5) RED→green;
+full suite **676/676 unit (78 files), lint 0, tsc clean**. Next: C2 rack
+UI + apply (one history entry), C3 presets, C4 e2e.
