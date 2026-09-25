@@ -53,6 +53,16 @@ Requirements: Node 20+. The unit suite enforces coverage thresholds
 gate (zero WCAG A/AA violations) and runs the production build through the
 real service worker for the offline flow.
 
+### Browser support (verified by the Y3 cross-browser pass)
+
+| Engine | Result | Notes |
+| --- | --- | --- |
+| Chromium | 47/47 e2e | primary target (Playwright fake media) |
+| Firefox 155 | 44/45 | the mic-recording spec is harness-limited (Playwright's fake media is Chromium-only); offline flow PASSES |
+| WebKit 26.6 | 43/45 | same mic limit + Playwright-WebKit `reload()` internal error in the offline spec (known harness quirk; verify offline on real Safari after deploy) |
+
+Cross-browser check: `npx playwright test --config=playwright.other.config.ts`.
+
 ## Deploy (Vercel)
 
 The repo ships `vercel.json` (static build, immutable asset caching, SPA

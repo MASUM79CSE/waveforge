@@ -62,6 +62,20 @@ Coverage thresholds 80/80/75/80 enforced and green · export formats WAV
 metadata, URL import, recording, offline flow #6, drafts + autosave ring,
 toasts `aria-live`, zero TODO/FIXME in src, lint/tsc/e2e gates green.
 
+## Resolution progress (2026-09-25, Y-series)
+
+- **A1 RESOLVED (Y3):** Firefox 155 + WebKit 26.6 pass the full e2e suite
+  except the mic-recording specs (Playwright fake media is Chromium-only —
+  harness, not app) and WebKit's offline `reload()` internal error (known
+  Playwright-WebKit quirk; Firefox passes the same flow). Config:
+  `playwright.other.config.ts`; matrix in README. Remaining: one manual
+  Safari/offline check on the real deployment (user-side).
+- **A3 RESOLVED (Y2):** `docs/acceptance-trace.md` + the undo-depth test
+  (which CORRECTED the economics — entries charge both edit sides).
+- **B5–B7, B8, C15 RESOLVED (Y1):** truth sweep + README + vercel rewrite/
+  CSP-Report-Only.
+- **A2, A4:** open (touch posture note; stretch-flake root-cause below).
+
 ## Recommended order (if "continue")
 
 **Y1 (doc-truth sweep)** — B5 + B6 + B7 stamps + B8 README (+ C15
