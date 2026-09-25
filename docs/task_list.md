@@ -1028,3 +1028,13 @@ Lighthouse re-check: desktop **100/100/100/100**; mobile 87 perf = FCP
 under emulated slow-4G (TBT 70 ms, CLS 0, lean 376 K main chunk) —
 main-chunk splitting noted as a future optimization, not a regression.
 Gates: **716/716 unit (85 files), 53/53 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (perf audit) — mobile Lighthouse resolved: server artifact
+
+The mobile 87 reported with R6 was an artifact of the local LH test
+server serving UNCOMPRESSED bytes (Lighthouse itself flagged "use text
+compression, ~281 KiB"). Re-run with production-grade gzip (as Vercel
+serves by default): **mobile 97/100/100/100** (FCP 1.72 s, LCP 1.90 s,
+TBT 141 ms) alongside desktop 100/100/100/100. No code change needed —
+the app meets the ≥95/95/100/100 gate in both form factors on real
+deploy targets. Main-chunk splitting stays optional polish.
