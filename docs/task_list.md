@@ -77,7 +77,8 @@
       law, tail retention, GEQ20 band layout, rate = varispeed)
 - [ ] **Automation envelope editor → scheduled with M5** (needs the canvas
       timeline infra landing with the analysers; deviation logged in ADR 005)
-- [ ] RNNoise denoise + pitch-preserving stretch remain parked (§11 v1 deltas)
+- [x] RNNoise denoise shipped as E7b `fx.rnvoice` (see E-series) — un-parks
+      this note; pitch-preserving stretch remains parked (§11 v1 deltas)
 
 ### Defects fixed (post-M3, user-reported)
 
@@ -587,8 +588,27 @@ package ADR 007, RNNoise).
       per-bin dB-flicker ratio ≤ 2.5; ≤4 dB frame jumps; gap floor held;
       stereo per-channel; determinism; 60 s stereo profile **2974 ms**
       (half-complex real-FFT pair). 11 kernel tests; legacy `fx.nrPrint`
-      retained. E7b RNNoise "AI Voice" mode parked (`@echogarden/
-      rnnoise-wasm`, BSD-3-Clause — sole license-clean vendor).
+      retained. E7b RNNoise "AI Voice" mode shipped below.
+- [x] **E7b RNNoise "AI Voice Clarity"** (`docs/effects-nr-e7b-plan.md`,
+      2026-09-25): vendored `@echogarden/rnnoise-wasm` **0.2.0**
+      (BSD-3-Clause, `src/vendor/rnnoise/` + THIRD_PARTY_NOTICES row) as
+      new kernel `fx.rnvoice` — the ML speech-separator lineage beside the
+      statistical E7a engine, voice-first (never a default; degrades
+      music). Contract: 480-sample frames @ 48 kHz mono, f32 in s16 scale,
+      per-channel fresh GRU states, deterministic; non-48k round-trips the
+      varispeed resampler with an exact-length law; **mix-only param**
+      (0..1, step 0.01, default 1 — mix=0 bit-exact), static path for v1
+      (∿ suppressed via `spec.curve=false`). **Streaming handle**
+      (`createRnVoiceStream`) stitches bit-identically to one-shot through
+      one state per channel (anchor-tested) — the worker migration seam.
+      Worker deviation kept per plan §2 (main-thread; per-frame cost an
+      order below the E7a WOLA engine). Dialog lazily loads the wasm on
+      open (status line + retry; Preview/Apply disabled until ready).
+      Gates: 9 unit (load/determinism/silence→zeros/≥6 dB drop/pitch via
+      ACF lag + tone level + crossing convergence/chunk stitching/mix law/
+      44.1k length/stereo) + 39th e2e (gate→apply→undo/redo, console-
+      clean); full suite 666 unit (77 files) / 39 e2e / lint 0 / build OK.
+      Commits: vendor+plan `ecd3751`, feat `f936f7a`, test `710542e`.
 
 ## M8 — multitrack (lanes, docs/multitrack-plan.md)
 
@@ -750,3 +770,14 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
 - Artifact: docs/perf/lighthouse-a7.json. Recipe lesson re-confirmed:
   plain-curl `/` 404s by design (non-nav); verify with nav headers
   (Sec-Fetch-Dest: document) or just trust the LH run itself.
+
+## 2026-09-25 (E7b) — RNNoise "AI Voice Clarity" SHIPPED
+
+User-selected from the post-A7 candidate menu (rnnoise / fx_chains /
+automation_polish / other). `fx.rnvoice` shipped per
+`docs/effects-nr-e7b-plan.md`: vendored RNNoise 0.2.0 (BSD-3-Clause),
+mix-only static kernel, lazily wasm-loaded dialog with readiness gating,
+9 contract gates + 39th e2e, streaming handle as the worker seam
+(main-thread deviation documented). E7b note in §11 v1 deltas un-parked
+(stretch still parked). Full gates at ship: **666/666 unit (77 files),
+39/39 e2e, lint 0, tsc clean, build OK**.

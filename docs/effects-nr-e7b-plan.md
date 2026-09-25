@@ -3,6 +3,16 @@
 **Date:** 2026-09-25 · **Extends:** `docs/effects-nr-v3-plan.md` §1 (market analysis,
 Phase-2 option) · **Un-parks:** the E7b note (task_list §11 v1 deltas).
 
+> **STATUS: SHIPPED (2026-09-25).** Vendor+plan `ecd3751` · feat `f936f7a`
+> (kernel `src/fx/nrVoice.ts` + def/menu/command + gated dialog + i18n/css)
+> · test `710542e` (9 unit gates + 39th e2e). Full gates at ship: 666/666
+> unit (77 files), 39/39 e2e, lint 0, tsc clean, build OK. §2 deviation
+> shipped as documented (main-thread; `createRnVoiceStream` is the worker
+> seam). §3 pitch anchor landed as physics-verified literals: ACF lag
+> 218 = 48000/220 preserved, tone level within −0.02 dB, crossings
+> converge to 2f (noise removal LOWERS ZCR — the naive ±25 % input-ZCR
+> band was backwards).
+
 ## 0. What ships
 
 A new kernel effect **`fx.rnvoice` — "AI Voice Clarity"** (RNNoise WASM), the

@@ -22,11 +22,13 @@ private** — so the right "more advanced, natural, no quality loss" move is
 the **statistical estimation lineage done properly** (the RX-family
 approach), not a voice-only separator that would eat music.
 
-**Phase-2 option (documented, not built now):** RNNoise as an optional
-"AI Voice" mode — `@echogarden/rnnoise-wasm` is BSD-3-Clause and vendoring
-matches our libflac precedent; but it is 48 kHz mono, voice-optimized
-(degrades music), and needs its own worker + anchor strategy. Parked as
-E7b; this phase ships E7a below.
+**Phase-2 option (SHIPPED as E7b, 2026-09-25):** RNNoise as an optional
+"AI Voice" mode — `@echogarden/rnnoise-wasm` 0.2.0 (BSD-3-Clause) vendored
+like our libflac precedent. Built as `fx.rnvoice` "AI Voice Clarity" per
+`docs/effects-nr-e7b-plan.md` (feat `f936f7a`, test `710542e`): 48 kHz
+mono contract handled via per-channel states + varispeed round trip,
+mix-only static param, main-thread v1 (worker seam = the streaming
+handle), 9 contract gates + 39th e2e. E7a below shipped first (E7).
 
 ## 2. Theory → algorithm (E7a, deterministic, pure TS)
 
