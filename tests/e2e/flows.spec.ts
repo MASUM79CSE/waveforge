@@ -48,7 +48,11 @@ test('flow #3: record a take with the fake microphone', async ({ page }) => {
   await page.goto('/');
   // dismiss welcome (recording installs its own document)
   await page.getByRole('button', { name: /skip|close|✕/i }).first().click().catch(() => {});
-  await page.getByRole('button', { name: /record/i }).first().click();
+  // studio flow (R1): first press ARMS (mic + meter), second ROLLS
+  const recordBtn = page.getByTestId('record-toggle');
+  await recordBtn.click();
+  await expect(recordBtn).toHaveClass(/armed/);
+  await recordBtn.click();
   await page.waitForTimeout(2500); // record ~2.5 s
   await page.getByRole('button', { name: /stop recording/i }).click();
 

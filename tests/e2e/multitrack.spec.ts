@@ -187,7 +187,11 @@ test('multitrack: effects apply to the active lane and record lands a lane (M8f)
   await expect(page.locator('.lane', { hasText: 'vox' })).toBeVisible();
 
   // record while the project is open → the take becomes a new lane
-  await page.getByRole('button', { name: /record/i }).first().click();
+  // (R-series studio flow: arm, then roll)
+  const recordBtn = page.getByTestId('record-toggle');
+  await recordBtn.click();
+  await expect(recordBtn).toHaveClass(/armed/);
+  await recordBtn.click();
   await page.waitForTimeout(1500);
   await page.getByRole('button', { name: /stop recording/i }).click();
   await expect(page.locator('.lane', { hasText: 'Recording 1' })).toBeVisible({

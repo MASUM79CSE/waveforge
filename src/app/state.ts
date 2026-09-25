@@ -1,3 +1,4 @@
+import { createTakes, type TakesState } from '../engine/takes';
 import { signal } from '@preact/signals';
 import { STORAGE_PREFIX } from '../core/constants';
 
@@ -77,6 +78,33 @@ export const previewActive = signal(false);
 export const recording = signal(false);
 export const recLevel = signal({ peakDb: Number.NEGATIVE_INFINITY, rmsDb: Number.NEGATIVE_INFINITY });
 export const recSeconds = signal(0);
+
+/** R1: armed = mic open + meter live, waiting for the roll. */
+export const armed = signal(false);
+/** R1: peak-hold (dBFS) + latched clip LED for the studio meter. */
+export const peakHoldDb = signal(Number.NEGATIVE_INFINITY);
+export const clipLatched = signal(false);
+/** R2: beats remaining in the count-in (0 = no count-in running). */
+export const countInBeat = signal(0);
+/** R3: session takes (pure reducer state, docs/recording-plan.md). */
+export const takes = signal<TakesState>(createTakes());
+/** R-series studio recording settings (persisted). */
+export interface RecStudioSettings {
+  countInBars: number; // 0–4
+  metronome: boolean;
+  useDetectedBpm: boolean;
+  manualBpm: number; // 40–240
+  clickVolume: number; // 0–1
+  monitoring: boolean; // input monitor — feedback-safe default OFF
+}
+export const recStudio = signal<RecStudioSettings>({
+  countInBars: 1,
+  metronome: false,
+  useDetectedBpm: false,
+  manualBpm: 120,
+  clickVolume: 0.8,
+  monitoring: false,
+});
 export const recordSettingsOpen = signal(false);
 export const exportOpen = signal(false);
 export const exportBusy = signal(false);

@@ -16,8 +16,23 @@ import {
   toggleChannelMute,
   toggleChannelsSwapped,
 } from '../editActions';
-import { toggleRecord } from '../recordActions';
-import { recording, recLevel, recSeconds } from '../state';
+import {
+  punchRecord,
+  resetClipLatch,
+  setMonitoring,
+  toggleRecord,
+} from '../recordActions';
+import {
+  armed,
+  clipLatched,
+  countInBeat,
+  recLevel,
+  recording,
+  recSeconds,
+  selection,
+  peakHoldDb,
+  recStudio,
+} from '../state';
 import { engine } from '../runtime';
 import { ensureProject } from '../projectActions';
 import { ToolBar } from './ToolBar';
@@ -105,19 +120,59 @@ export function TransportBar() {
       )}
 
       <button
-        class={`tbtn ${recording.value ? 'recording' : ''}`}
-        title={recording.value ? t().recordStop : t().recordStart}
+        class={`tbtn rec-btn ${recording.value ? 'recording' : ''} ${armed.value && !recording.value ? 'armed' : ''}`}
+        title={
+          recording.value
+            ? t().recordStop
+            : armed.value
+              ? t().recArmed
+              : t().recordStart
+        }
+        data-testid="record-toggle"
         onClick={() => void toggleRecord()}
       >
         <Svg d="M12 7a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0v-3a5 5 0 0 1 5-5zM8 21h8" />
       </button>
-      {recording.value && (
+      <button
+        class={`tbtn ${recStudio.value.monitoring ? 'active' : ''}`}
+        title={t().monitorTitle}
+        data-testid="monitor-toggle"
+        onClick={() => setMonitoring(!recStudio.value.monitoring)}
+      >
+        <Svg d="M4 14v-2a8 8 0 0 1 16 0v2M4 14a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1v-6H4zm16 0a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1v-6h1z" />
+      </button>
+      <button
+        class="tbtn"
+        title={t().punchIn}
+        data-testid="punch-button"
+        disabled={recording.value || !selection.value}
+        onClick={() => void punchRecord()}
+      >
+        <Svg d="M9 4h2v16H9zM14 4h1a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-1zM5 6h2v12H5z" />
+      </button>
+      {(recording.value || armed.value) && (
         <span class="rec-meter" title={`${Math.round(recLevel.value.peakDb)} dB`}>
           <span
             class="rec-meter-fill"
             style={{ width: `${meterPercent(recLevel.value.peakDb)}%` }}
           />
-          <span class="rec-time">{fmtClock(recSeconds.value)}</span>
+          <span
+            class="rec-meter-hold"
+            style={{ left: `${meterPercent(peakHoldDb.value)}%` }}
+          />
+          <button
+            class={`rec-clip ${clipLatched.value ? 'latched' : ''}`}
+            title="Clip — click to reset"
+            aria-label="Clip indicator"
+            data-testid="clip-led"
+            onClick={resetClipLatch}
+          />
+          {recording.value && <span class="rec-time">{fmtClock(recSeconds.value)}</span>}
+        </span>
+      )}
+      {countInBeat.value > 0 && (
+        <span class="count-chip" data-testid="count-in">
+          {countInBeat.value}
         </span>
       )}
 

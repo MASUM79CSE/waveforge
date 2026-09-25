@@ -7,7 +7,8 @@ const HINTS = kbdHints();
 import * as EA from './editActions';
 import * as AN from './analysisActions';
 import * as CA from './clipActions';
-import { projectOpen } from './state';
+import * as RA from './recordActions';
+import { projectOpen, recStudio } from './state';
 import { toastInfo } from './toast';
 
 /**
@@ -34,6 +35,10 @@ export const commands: Command[] = [
     label: () => t().fileRecord,
     run: () => A.openRecordSettings(),
   },
+  { id: 'record.toggle', label: () => t().recordStart, run: () => void RA.toggleRecord() },
+  { id: 'record.punch', label: () => t().punchIn, run: () => void RA.punchRecord() },
+  { id: 'record.monitor', label: () => t().monitorTitle, run: () => RA.setMonitoring(!recStudio.value.monitoring) },
+  { id: 'record.metronome', label: () => t().studioMetronome, run: () => RA.toggleMetronome() },
   {
     id: 'file.export',
     label: () => t().fileExport,

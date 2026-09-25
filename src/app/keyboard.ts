@@ -2,16 +2,19 @@ import { runCommand } from './commands';
 import {
   closeDoctor,
   closeEffectDialog,
+  closeRecordSettings,
   closeShortcuts,
   edit,
   transport,
   view,
 } from './actions';
 import { resolveShortcut } from './shortcuts';
+import { cancelCountIn } from './recordActions';
 import {
   aboutOpen,
   doctorOpen,
   effectDialogId,
+  recordSettingsOpen,
   shortcutsOpen,
   urlOpen,
   welcomeOpen,
@@ -27,9 +30,11 @@ export function bindKeyboard(): void {
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     if (isTypingTarget(event.target)) return;
 
-    // Escape closes dialogs (topmost first)
+    // Escape closes dialogs (topmost first); a running count-in wins
     if (event.key === 'Escape') {
+      cancelCountIn();
       if (effectDialogId.value) closeEffectDialog();
+      else if (recordSettingsOpen.value) closeRecordSettings();
       else if (urlOpen.value) urlOpen.value = false;
       else if (doctorOpen.value) closeDoctor();
       else if (shortcutsOpen.value) closeShortcuts();

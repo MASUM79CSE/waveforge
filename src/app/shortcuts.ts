@@ -29,7 +29,11 @@ export type ShortcutCommand =
   | 'clip.split'
   | 'clip.delete'
   | 'clip.duplicate'
-  | 'automation.toggle';
+  | 'automation.toggle'
+  | 'record.toggle'
+  | 'record.punch'
+  | 'record.monitor'
+  | 'record.metronome';
 
 function isMacLike(): boolean {
   return typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform ?? '');
@@ -47,6 +51,14 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
   if (event.alt) return null;
   const key = event.key.toLowerCase();
   const mod = event.ctrl || event.meta;
+
+  // R-series: bare letters (no modifier — modifier combos stay with the
+  // browser). Single source here so menus/hints stay in sync.
+  if (!mod) {
+    if (key === 'r') return 'record.toggle';
+    if (key === 'p') return 'record.punch';
+    if (key === 'm') return 'record.metronome'; // BandLab parity: M = click
+  }
 
   if (mod) {
     switch (key) {

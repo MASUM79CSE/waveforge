@@ -960,7 +960,88 @@
   flex: 1;
 }
 
-/* Recording (M4) */
+/* Recording (M4) + R-series studio states */
+.tbtn.armed {
+  color: var(--warn, #e5c515);
+  background: var(--ac-soft);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(229, 197, 21, 0.35);
+}
+.tbtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.rec-meter {
+  position: relative;
+}
+.rec-meter-hold {
+  position: absolute;
+  left: 0;
+  top: -2px;
+  width: 2px;
+  height: 10px;
+  background: #fff;
+  opacity: 0.85;
+  border-radius: 1px;
+  transition: left 80ms linear;
+  pointer-events: none;
+}
+.rec-clip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--bd-h);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+.rec-clip.latched {
+  background: var(--danger);
+  box-shadow: 0 0 8px var(--danger);
+}
+.count-chip {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--warn, #e5c515);
+  border: 1px solid var(--bd-h);
+  border-radius: 50%;
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.fx-section-head,
+.fx-section-head .fx-label {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-top: 6px;
+}
+.takes-row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.takes-names {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.take-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--bd-h);
+  opacity: 0.85;
+}
+.take-chip.kept {
+  border-color: var(--ac);
+  color: var(--ac);
+}
+
 .tbtn.recording {
   color: var(--rec);
   background: var(--rec);

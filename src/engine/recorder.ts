@@ -21,7 +21,7 @@ export interface RecordingTake {
   sampleRate: number;
 }
 
-export type RecorderState = 'idle' | 'recording';
+export type RecorderState = 'idle' | 'armed' | 'recording';
 
 const FALLBACK_BUFFER_FRAMES = 4096;
 
@@ -39,6 +39,8 @@ export class RecorderEngine {
   private meterData: Float32Array<ArrayBuffer> = new Float32Array(1024);
 
   state: RecorderState = 'idle';
+  /** R1: chunks reach the buffer only while capturing (armed ≠ rolling). */
+  private capture = false;
   onLevel: ((level: MeterLevel) => void) | null = null;
   onChunkError: ((detail: string) => void) | null = null;
 
@@ -46,8 +48,8 @@ export class RecorderEngine {
     return this.ctx?.sampleRate ?? 48000;
   }
 
-  async start(constraints: MicConstraints): Promise<void> {
-    if (this.state === 'recording') return;
+  async open(constraints: MicConstraints): Promise<void> {
+    if (this.state !== 'idle') return;
     const audio: MediaTrackConstraints = {
       echoCancellation: constraints.echoCancellation,
       noiseSuppression: constraints.noiseSuppression,
@@ -66,7 +68,7 @@ export class RecorderEngine {
     this.analyser = this.ctx.createAnalyser();
     this.analyser.fftSize = this.meterData.length;
     this.sink = this.ctx.createGain();
-    this.sink.gain.value = 0; // monitor path exists but is muted (no feedback)
+    this.sink.gain.value = 0; // monitor opt-in (R1): feedback-safe default
 
     let usedWorklet = false;
     try {
@@ -101,8 +103,31 @@ export class RecorderEngine {
     this.source.connect(this.analyser);
     this.sink.connect(this.ctx.destination);
 
-    this.state = 'recording';
+    // R1: armed = device open + meter live, NOT yet recording
+    this.state = 'armed';
+    this.capture = false;
+    this.buffer!.reset();
     this.tickMeter();
+  }
+
+  /** R1: roll — capture starts from silence, instantly (device is open). */
+  beginCapture(): void {
+    if (this.state !== 'armed') return;
+    this.buffer!.reset();
+    this.capture = true;
+    this.state = 'recording';
+  }
+
+  /** R1: input monitoring (feedback-safe: caller warns about headphones). */
+  setMonitor(on: boolean): void {
+    if (this.sink) this.sink.gain.value = on ? 1 : 0;
+  }
+
+  /** R1: tear down from the armed state without producing a take. */
+  async disarm(): Promise<void> {
+    if (this.state !== 'armed') return;
+    this.state = 'idle';
+    this.teardown();
   }
 
   async stop(): Promise<RecordingTake | null> {
@@ -128,6 +153,7 @@ export class RecorderEngine {
   }
 
   private pushChunks(chunks: Float32Array[]): void {
+    if (!this.capture) return; // armed: meter only, nothing recorded
     try {
       this.buffer?.push(chunks);
     } catch (error: unknown) {
@@ -136,7 +162,7 @@ export class RecorderEngine {
   }
 
   private tickMeter = (): void => {
-    if (this.state !== 'recording' || !this.analyser) return;
+    if (this.state === 'idle' || !this.analyser) return; // meter in armed AND recording
     this.analyser.getFloatTimeDomainData(this.meterData);
     this.onLevel?.(meterLevel(this.meterData));
     this.meterRaf = requestAnimationFrame(this.tickMeter);
