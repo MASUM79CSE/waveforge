@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import '../../src/fx/defs'; // side-effect: populates the registry with built-ins
 import { getEffect, registerEffect, validateParams } from '../../src/fx/registry';
 import type { Chain, ChainEntry } from '../../src/fx/chain';
-import { exportChain, foldChain, parseChain } from '../../src/fx/chain';
+import { exportChain, foldChain, foldChainAsync, parseChain } from '../../src/fx/chain';
 import type { EffectDef, Params } from '../../src/fx/types';
 
 /**
@@ -164,5 +164,42 @@ describe('C1 — fold (pure)', () => {
       const cycled = foldChain(input, 48000, round.chain, run);
       expect(cycled[0]).toEqual(direct[0]);
     }
+  });
+});
+
+describe('C2 — async fold (graph stages render offline)', () => {
+  // registry is global — the fxTest.* defs registered in the C1 describe
+  const baseRun = (effectId: string, channels: Float32Array[]): Float32Array[] =>
+    (getEffect(effectId) as Extract<EffectDef, { kind: 'kernel' }>).process(
+      channels.map((ch) => ch.slice()),
+      48000,
+      {} as Params,
+    );
+  /** Async wrapper over the sync test runner (the offline-render shape). */
+  const runAsync = async (effectId: string, channels: Float32Array[]): Promise<Float32Array[]> =>
+    baseRun(effectId, channels);
+
+  test('g10: async runner composition == sync composition', async () => {
+    const input = [Float32Array.from([1, 2, 3])];
+    const chain: Chain = [
+      { effectId: 'fxTest.a', params: {}, bypass: false },
+      { effectId: 'fxTest.b', params: {}, bypass: false },
+    ];
+    const sync = foldChain(input, 48000, chain, baseRun);
+    const asyncOut = await foldChainAsync(input, 48000, chain, runAsync);
+    expect(Array.from(asyncOut[0]!)).toEqual(Array.from(sync[0]!));
+  });
+
+  test('g11: async fold honors bypass + all-bypassed identity', async () => {
+    const input = [Float32Array.from([1, 2, 3])];
+    const mixed: Chain = [
+      { effectId: 'fxTest.a', params: {}, bypass: true },
+      { effectId: 'fxTest.b', params: {}, bypass: false },
+    ];
+    const out = await foldChainAsync(input, 48000, mixed, runAsync);
+    expect(Array.from(out[0]!)).toEqual([1.5, 2.5, 3.5]);
+    const allBypassed: Chain = [{ effectId: 'fxTest.a', params: {}, bypass: true }];
+    const identity = await foldChainAsync(input, 48000, allBypassed, runAsync);
+    expect(identity[0]).toBe(input[0]);
   });
 });
