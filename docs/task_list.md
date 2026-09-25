@@ -1059,3 +1059,13 @@ e2e #54: all 5 longest labels asserted readable at
 AND per dropdown, box inside viewport, one-line at ≥768, no menu-induced
 page h-scroll). Gates: **716/716 unit, 54/54 e2e (axe clean), lint 0,
 tsc clean, build OK.**
+
+## 2026-09-25 (fix) — Effects labels: trailing ellipsis removed SHIPPED
+
+User read-out: the menu was not clipping at all — every `fx.*` label
+carried a literal trailing `…` (the "opens a dialog" desktop convention),
+which read exactly like truncation ("Compressor…"). Removed the suffix
+from all 26 Effects-menu labels (i18n en.ts only — File menu and progress
+messages untouched). Visual proof via screenshot: clean single-line names
+("Compressor", "Noise Reduction v3 (natural voice)"). Gates: 716/716
+unit, 54/54 e2e, lint 0, tsc clean, build OK.
