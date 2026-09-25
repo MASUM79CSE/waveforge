@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import { detectTempo, onsetEnvelope } from '../engine/bpm';
 import { integrateLoudness, momentaryTrack } from '../engine/lufs';
+import { analyzeReport } from '../engine/analysisReport';
 
 const requestSchema = z.discriminatedUnion('cmd', [
   z.object({
@@ -19,6 +20,13 @@ const requestSchema = z.discriminatedUnion('cmd', [
   }),
   z.object({
     cmd: z.literal('measure-lufs'),
+    id: z.number(),
+    sampleRate: z.number().int().positive(),
+    left: z.instanceof(Float32Array),
+    right: z.instanceof(Float32Array).optional(),
+  }),
+  z.object({
+    cmd: z.literal('analysis-report'),
     id: z.number(),
     sampleRate: z.number().int().positive(),
     left: z.instanceof(Float32Array),
@@ -53,6 +61,19 @@ self.onmessage = (event: MessageEvent) => {
       confidence: tempo.confidence,
       frameSeconds,
       profile: { onsetMs: Math.round(onsetMs), detectMs: Math.round(detectMs) },
+    });
+    return;
+  }
+
+  if (msg.cmd === 'analysis-report') {
+    const t0 = performance.now();
+    const report = analyzeReport(channels, msg.sampleRate);
+    const reportMs = performance.now() - t0;
+    post({
+      type: 'report',
+      id: msg.id,
+      report,
+      profile: { reportMs: Math.round(reportMs) },
     });
     return;
   }

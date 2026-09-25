@@ -151,8 +151,12 @@ export interface LufsResult {
 }
 export const bpmResult = signal<BpmResult | null>(null);
 export const lufsResult = signal<LufsResult | null>(null);
+/** P2: full professional analysis report (docs/analyze-plan.md). */
+export const analysisReport = signal<import('../engine/analysisReport').AnalysisReport | null>(
+  null,
+);
 export const beats = signal<number[]>([]); // seconds, ascending
-export const analysisBusy = signal<'bpm' | 'lufs' | null>(null);
+export const analysisBusy = signal<'bpm' | 'lufs' | 'report' | null>(null);
 export const analysisPanelOpen = signal(readStoredBool('analysis', false));
 export const beatsShown = signal(readStoredBool('beats', true));
 

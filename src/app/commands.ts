@@ -5,6 +5,7 @@ import { kbdHints } from './shortcuts';
 
 const HINTS = kbdHints();
 import * as EA from './editActions';
+import * as AN from './analysisActions';
 import * as CA from './clipActions';
 import { projectOpen } from './state';
 import { toastInfo } from './toast';
@@ -156,6 +157,14 @@ export const commands: Command[] = [
     isChecked: () => A.isAmplitudeAxisOn(),
   },
   // Analyze (M5)
+  {
+    id: 'analyze.report',
+    label: () => t().analysisReport,
+    run: () => {
+      if (!AN.isAnalysisPanelOn()) AN.toggleAnalysisPanel();
+      AN.runFullReport();
+    },
+  },
   {
     id: 'analyze.lufs',
     label: () => t().analyzeLoudness,

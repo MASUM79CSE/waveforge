@@ -96,6 +96,7 @@ export const menus: MenuDef[] = [
     title: () => t().menuAnalyze,
     items: [
       'analyze.lufs',
+      'analyze.report',
       'analyze.bpm',
       '-',
       'analyze.beats',

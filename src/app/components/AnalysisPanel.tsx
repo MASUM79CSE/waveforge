@@ -12,8 +12,11 @@ import {
   isAnalysisBusy,
   isBeatsShown,
   measureLoudness,
+  runFullReport,
+  selectFirstClippedRun,
   toggleBeatsShown,
 } from '../analysisActions';
+import { verdicts } from '../../engine/analysisReport';
 import * as S from '../state';
 import { engine } from '../runtime';
 
@@ -77,6 +80,88 @@ function SpectrumCanvas(): JSX.Element {
   return <canvas ref={canvasRef} class="analysis-spectrum" style={{ height: `${BAR_H}px` }} />;
 }
 
+function db(n: number | null | undefined): string {
+  if (n === null || n === undefined) return '—';
+  return n <= Number.NEGATIVE_INFINITY ? '−∞' : n >= Number.POSITIVE_INFINITY ? '+∞' : n.toFixed(1);
+}
+
+/** P2: the professional report — verdict table + audits (docs/analyze-plan.md). */
+function ReportBlock(): JSX.Element | null {
+  const report = S.analysisReport.value;
+  if (!report) return null;
+  const rows = verdicts(report);
+  const st = report.stereo;
+  const integrity = report.integrity;
+  return (
+    <div class="report-block" data-testid="analysis-report">
+      <div class="report-row">
+        <span class="report-key">{t().reportLoudness}</span>
+        <span class="report-val">
+          {t().analysisIntegrated} {db(report.lufs.integrated)} LUFS · {t().reportLra}{' '}
+          {db(report.lufs.lra)} LU · {t().reportPlr} {db(report.lufs.plr)} dB ·{' '}
+          {t().reportTruePeak} {db(report.truePeakDb)} dBTP
+        </span>
+      </div>
+      <div class="report-row" data-testid="report-verdicts">
+        <span class="report-key">{t().reportTargets}</span>
+        <span class="report-val report-table">
+          {rows.map((v) => (
+            <span class="report-chip" key={v.id}>
+              <b>{v.label}</b> {v.gainDb >= 0 ? '+' : ''}
+              {v.gainDb.toFixed(1)} dB · TP {v.tpSafe ? '✓' : '✗'}
+            </span>
+          ))}
+        </span>
+      </div>
+      {st && (
+        <div class="report-row">
+          <span class="report-key">{t().reportStereo}</span>
+          <span class="report-val">
+            {t().reportCorrelation} {st.correlationMean.toFixed(2)} (min {st.correlationMin.toFixed(2)}) ·{' '}
+            {t().reportSide} {st.sidePct.toFixed(1)} %
+          </span>
+        </div>
+      )}
+      {!st && (
+        <div class="report-row">
+          <span class="report-key">{t().reportStereo}</span>
+          <span class="report-val">{t().reportMono}</span>
+        </div>
+      )}
+      <div class="report-row">
+        <span class="report-key">{t().reportIntegrity}</span>
+        <span class="report-val">
+          {t().reportClipping} {integrity.clippedSamples === 0 ? '—' : `${integrity.clippedSamples} (${integrity.clippedRuns} runs)`} ·{' '}
+          {t().reportDc} {integrity.dc.map((d) => (d * 100).toFixed(3)).join(' / ')} % ·{' '}
+          {t().reportSamplePeak} {db(integrity.samplePeakDb)} dBFS
+          {integrity.firstRun && (
+            <button type="button" class="btn-secondary analysis-btn" onClick={() => selectFirstClippedRun()}>
+              {t().reportSelectClip}
+            </button>
+          )}
+        </span>
+      </div>
+      <div class="report-row">
+        <span class="report-key">{t().reportBalance}</span>
+        <span class="report-val report-bars">
+          {report.balance.map((pct, i) => (
+            <span class="report-bar" key={i} title={`${pct.toFixed(1)} %`}>
+              <span style={{ height: `${Math.min(100, Math.max(2, pct))}%` }} />
+            </span>
+          ))}
+        </span>
+      </div>
+      <div class="report-row">
+        <span class="report-key">{t().reportNoise}</span>
+        <span class="report-val">
+          {t().reportFloor} {db(report.noise.floorDb)} dBFS · {t().reportSnr}{' '}
+          {db(report.noise.snrDb)} dB · {t().reportSilence} {report.noise.silencePct.toFixed(1)} %
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Panel strip. Rendered while `analysisPanelOpen` — App mounts it fresh on
  * toggle, so the one-shot effect above re-subscribes per open.
@@ -124,8 +209,18 @@ export function AnalysisPanel(): JSX.Element | null {
             <input type="checkbox" checked={isBeatsShown()} onChange={() => toggleBeatsShown()} />
             {t().analyzeBeats}
           </label>
+          <button
+            type="button"
+            class="btn-secondary analysis-btn"
+            data-testid="report-run"
+            disabled={busy !== null}
+            onClick={() => runFullReport()}
+          >
+            {busy === 'report' ? t().analysisAnalyzing : t().analysisReport}
+          </button>
         </span>
       </div>
+      <ReportBlock />
     </section>
   );
 }

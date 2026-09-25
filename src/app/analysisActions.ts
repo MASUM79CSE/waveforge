@@ -26,7 +26,13 @@ interface LufsReply {
   momentaryBlocks: number;
   profile: { lufsMs: number };
 }
-type Reply = BpmReply | LufsReply | { type: 'error'; detail: string };
+interface ReportReply {
+  type: 'report';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  report: any; // shape anchored by the P1 kernel tests (docs/analyze-plan.md)
+  profile: { reportMs: number };
+}
+type Reply = BpmReply | LufsReply | ReportReply | { type: 'error'; detail: string };
 
 function spawnAnalysisWorker(): Worker {
   return new Worker(new URL('../workers/analysis.worker.ts', import.meta.url), {
@@ -48,7 +54,8 @@ function sendTo(
   worker: Worker,
   message:
     | { cmd: 'measure-lufs'; id: number; sampleRate: number; left?: Float32Array; right?: Float32Array }
-    | { cmd: 'detect-bpm'; id: number; sampleRate: number; left?: Float32Array; right?: Float32Array },
+    | { cmd: 'detect-bpm'; id: number; sampleRate: number; left?: Float32Array; right?: Float32Array }
+    | { cmd: 'analysis-report'; id: number; sampleRate: number; left?: Float32Array; right?: Float32Array },
 ): void {
   const left = message.left;
   const right = message.right;
@@ -171,7 +178,7 @@ export function isAnalysisPanelOn(): boolean {
   return S.analysisPanelOpen.value;
 }
 
-export function isAnalysisBusy(): 'bpm' | 'lufs' | null {
+export function isAnalysisBusy(): 'bpm' | 'lufs' | 'report' | null {
   return S.analysisBusy.value;
 }
 
@@ -179,6 +186,50 @@ export function isAnalysisBusy(): 'bpm' | 'lufs' | null {
 export function invalidateAnalysis(): void {
   S.bpmResult.value = null;
   S.lufsResult.value = null;
+  S.analysisReport.value = null;
   S.beats.value = [];
   applyBeatGrid();
+}
+
+/** P2: the full professional report — one worker scan, result in the panel. */
+export function runFullReport(): void {
+  const doc = getDoc();
+  if (!doc || S.analysisBusy.value) return;
+  S.analysisBusy.value = 'report';
+  const worker = spawnAnalysisWorker();
+  worker.onerror = () => {
+    worker.terminate();
+    S.analysisBusy.value = null;
+    toastError(t().analyzeFailed);
+  };
+  worker.onmessage = (event: MessageEvent<Reply>) => {
+    const msg = event.data;
+    worker.terminate();
+    S.analysisBusy.value = null;
+    if (msg.type !== 'report') {
+      toastError(t().analyzeFailed);
+      return;
+    }
+    logger.info('[profile] full report', { ms: msg.profile.reportMs, sr: doc.sampleRate });
+    S.analysisReport.value = msg.report;
+    toastInfo(t().reportDone);
+  };
+  const channels = channelCopies();
+  sendTo(worker, {
+    cmd: 'analysis-report',
+    id: 1,
+    sampleRate: doc.sampleRate,
+    left: channels[0],
+    right: channels[1],
+  });
+}
+
+/** P2: jump-to-offender — select the first clipped run in the document. */
+export function selectFirstClippedRun(): void {
+  const doc = getDoc();
+  const report = S.analysisReport.value;
+  if (!doc || !report?.integrity.firstRun) return;
+  const [start, len] = report.integrity.firstRun;
+  S.selection.value = { start, end: start + len };
+  toastInfo(t().reportClipSelected);
 }
