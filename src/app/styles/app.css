@@ -802,6 +802,32 @@
   padding: 3px 6px;
 }
 
+.fx-curve-toggle {
+  font-size: 11px;
+  margin-right: 4px;
+}
+.fx-envelope {
+  margin: 4px 0 8px;
+}
+.fx-envelope-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+.fx-envelope-title {
+  font-weight: 600;
+}
+.fx-envelope-canvas {
+  width: 100%;
+  height: 96px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  touch-action: none;
+  cursor: crosshair;
+}
+
 .fx-actions {
   display: flex;
   align-items: center;

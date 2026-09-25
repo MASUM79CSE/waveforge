@@ -6,6 +6,7 @@
  * Browser-only glue — kept thin, decisions live in fx/registry + fxActions.
  */
 import { buildGraph } from '../fx/graphs';
+import { scheduleFxAuto, type FxCurves } from '../fx/fxCurves';
 import type { EffectDef, Params } from '../fx/types';
 import { getSharedContext, resumeSharedContext } from '../io/decode';
 import { previewActive } from './state';
@@ -29,6 +30,9 @@ export interface PreviewPlan {
   params: Params;
   /** Kernel effects: the precomputed wet region buffer. */
   wetBuffer?: AudioBuffer;
+  /** A7: authored param curves — graph preview schedules them on the live
+   * graph (kernel previews baked them into wetBuffer already). */
+  curves?: FxCurves;
 }
 
 export function startPreview(plan: PreviewPlan): void {
@@ -57,6 +61,10 @@ export function startPreview(plan: PreviewPlan): void {
     const graph = buildGraph(ctx, plan.def.graphId, plan.params, {
       channels: plan.buffer.numberOfChannels,
     });
+    // A7: source starts at t≈0 — knots map source-relative like the render
+    if (plan.curves && Object.keys(plan.curves).length > 0) {
+      scheduleFxAuto(graph.auto ?? {}, plan.curves, ctx.sampleRate, plan.durSec * ctx.sampleRate);
+    }
     src.connect(graph.input);
     graph.output.connect(wet);
     // wet tail rings out past the source end (delay repeats / reverb decay)

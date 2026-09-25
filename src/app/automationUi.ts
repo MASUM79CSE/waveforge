@@ -48,6 +48,12 @@ export const AUTOMATION_DOMAINS: Record<AutomationParam, { min: number; max: num
   pan: { min: -1, max: 1 },
 };
 
+/** Inclusive value range of an envelope's y axis (A7: any param domain). */
+export interface ValueDomain {
+  min: number;
+  max: number;
+}
+
 /** Everything the overlay painter and hit tests need, in CSS pixels. */
 export interface OverlayGeom {
   width: number;
@@ -71,16 +77,24 @@ export function sampleAtX(x: number, geom: OverlayGeom): number {
 
 /** Param value → CSS y (piecewise domain mapping; clamped to the lane). */
 export function curveY(value: number, param: AutomationParam, geom: OverlayGeom): number {
-  const { min, max } = AUTOMATION_DOMAINS[param];
-  const v = Math.min(Math.max(value, min), max);
-  return geom.height * (1 - (v - min) / (max - min));
+  return curveYIn(value, AUTOMATION_DOMAINS[param], geom);
+}
+
+/** A7: value → CSS y over ANY domain (clamped to the lane). */
+export function curveYIn(value: number, domain: ValueDomain, geom: OverlayGeom): number {
+  const v = Math.min(Math.max(value, domain.min), domain.max);
+  return geom.height * (1 - (v - domain.min) / (domain.max - domain.min));
 }
 
 /** Pointer y → param value, clamped into the param domain. */
 export function automationValueAt(y: number, param: AutomationParam, geom: OverlayGeom): number {
-  const { min, max } = AUTOMATION_DOMAINS[param];
+  return valueAtIn(y, AUTOMATION_DOMAINS[param], geom);
+}
+
+/** A7: pointer y → value over ANY domain (clamped). */
+export function valueAtIn(y: number, domain: ValueDomain, geom: OverlayGeom): number {
   const frac = 1 - y / geom.height;
-  return Math.min(Math.max(min + frac * (max - min), min), max);
+  return Math.min(Math.max(domain.min + frac * (domain.max - domain.min), domain.min), domain.max);
 }
 
 /** Hit radius in CSS px (x) / tolerance band (y). */
@@ -97,9 +111,19 @@ export function automationHitAt(
   param: AutomationParam,
   geom: OverlayGeom,
 ): number | null {
+  return hitPointIn(points, pointer, AUTOMATION_DOMAINS[param], geom);
+}
+
+/** A7: hit test over ANY domain (same radii as the A4 overlay). */
+export function hitPointIn(
+  points: readonly AutomationPoint[],
+  pointer: { x: number; y: number },
+  domain: ValueDomain,
+  geom: OverlayGeom,
+): number | null {
   for (let i = 0; i < points.length; ++i) {
     const dx = Math.abs(xAtSample(points[i]!.at, geom) - pointer.x);
-    const dy = Math.abs(curveY(points[i]!.value, param, geom) - pointer.y);
+    const dy = Math.abs(curveYIn(points[i]!.value, domain, geom) - pointer.y);
     if (dx <= HIT_X && dy <= HIT_Y) return i;
   }
   return null;
@@ -126,17 +150,32 @@ export function beginAutomationGesture(
   pointer: { x: number; y: number },
   geom: OverlayGeom,
 ): AutomationGesture {
+  const g = beginEnvelopeGesture(current, pointer, AUTOMATION_DOMAINS[param], geom);
+  return { trackId, param, points: g.points, index: g.index, before: g.before };
+}
+
+/** A7: generic gesture over ANY domain (grab existing or click-insert). */
+export interface EnvelopeGesture {
+  points: AutomationPoint[];
+  index: number;
+  before: AutomationPoint[];
+}
+
+export function beginEnvelopeGesture(
+  current: readonly AutomationPoint[],
+  pointer: { x: number; y: number },
+  domain: ValueDomain,
+  geom: OverlayGeom,
+): EnvelopeGesture {
   const points = current.map((p) => ({ ...p }));
-  const hit = automationHitAt(points, pointer, param, geom);
+  const hit = hitPointIn(points, pointer, domain, geom);
   const sample = Math.max(0, sampleAtX(pointer.x, geom));
   if (hit !== null) {
-    return { trackId, param, points, index: hit, before: points.map((p) => ({ ...p })) };
+    return { points, index: hit, before: points.map((p) => ({ ...p })) };
   }
-  const value = automationValueAt(pointer.y, param, geom);
+  const value = valueAtIn(pointer.y, domain, geom);
   const inserted = insertPoint(points, sample, value);
   return {
-    trackId,
-    param,
     points: inserted,
     index: inserted.findIndex((p) => p.at === sample),
     before: points.map((p) => ({ ...p })),
@@ -150,9 +189,20 @@ export function dragAutomationTo(
   geom: OverlayGeom,
   laneEndSample: number,
 ): void {
-  const at = Math.max(0, Math.min(sampleAtX(pointer.x, geom), laneEndSample));
-  const value = automationValueAt(pointer.y, gesture.param, geom);
-  gesture.points = movePoint(gesture.points, gesture.index, at, value, AUTOMATION_DOMAINS[gesture.param]);
+  dragEnvelopeTo(gesture, pointer, AUTOMATION_DOMAINS[gesture.param], geom, laneEndSample);
+}
+
+/** A7: drag update over ANY domain (movePoint clamps included). */
+export function dragEnvelopeTo(
+  gesture: EnvelopeGesture,
+  pointer: { x: number; y: number },
+  domain: ValueDomain,
+  geom: OverlayGeom,
+  maxAt: number,
+): void {
+  const at = Math.max(0, Math.min(sampleAtX(pointer.x, geom), maxAt));
+  const value = valueAtIn(pointer.y, domain, geom);
+  gesture.points = movePoint(gesture.points, gesture.index, at, value, domain);
   // index stays valid: movePoint never removes or reorders past the neighbours
   gesture.index = gesture.points.findIndex((p) => p === gesture.points[gesture.index]);
   if (gesture.index < 0) gesture.index = 0;
@@ -165,7 +215,17 @@ export function removeAutomationPointAt(
   param: AutomationParam,
   geom: OverlayGeom,
 ): AutomationPoint[] {
-  const hit = automationHitAt(current, pointer, param, geom);
+  return removeEnvelopePointAt(current, pointer, AUTOMATION_DOMAINS[param], geom);
+}
+
+/** A7: remove the point under the pointer over ANY domain. */
+export function removeEnvelopePointAt(
+  current: readonly AutomationPoint[],
+  pointer: { x: number; y: number },
+  domain: ValueDomain,
+  geom: OverlayGeom,
+): AutomationPoint[] {
+  const hit = hitPointIn(current, pointer, domain, geom);
   if (hit === null) return [...current];
   return removePoint([...current], hit);
 }

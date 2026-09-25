@@ -5,8 +5,17 @@ import { applyEffect, effectLabel, preparePreview } from '../fxActions';
 import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { closeEffectDialog } from '../actions';
 import { effectDialogId, previewActive, sessionNoisePrint } from '../state';
-import { t } from '../../i18n';
+import { targetRange } from '../editActions';
+import {
+  fxEnvelopeParam,
+  fxCurvesOrUndefined,
+  resetFxCurves,
+  setFxCurveRegion,
+  toggleFxCurveParam,
+} from '../fxEnvelope';
+import { FxCurveEditor } from './FxCurveEditor';
 import { Modal } from './Modal';
+import { t } from '../../i18n';
 
 /** Registry-driven effect dialog: params + A/B preview + apply (ADR 005). */
 export function EffectDialog() {
@@ -16,13 +25,17 @@ export function EffectDialog() {
 
   useEffect(() => {
     if (def) setParams(defaultParams(def));
+    // A7: fresh envelope draft per dialog open; x domain = target region
+    resetFxCurves();
+    setFxCurveRegion(targetRange()?.len ?? 1);
   }, [id]);
 
   if (!def) return null;
 
   // Learned noise print rides along as an optional seed (E7: used by
-  // fx.nr3; other effects ignore it).
-  const runCtx = { noisePrint: sessionNoisePrint.value ?? undefined };
+  // fx.nr3; other effects ignore it). A7: authored param curves ride
+  // paramCurves into BOTH preview and apply.
+  const runCtx = { noisePrint: sessionNoisePrint.value ?? undefined, paramCurves: fxCurvesOrUndefined() };
 
   const restartPreview = (next: Params): void => {
     if (!previewActive.value) return;
@@ -56,7 +69,24 @@ export function EffectDialog() {
     <Modal title={effectLabel(def)} onClose={closeEffectDialog}>
       <div class="fx-dialog">
         {def.specs.map((spec) => (
-          <ParamRow key={spec.key} spec={spec} value={params[spec.key]} onChange={setParam} />
+          <div key={spec.key}>
+            <ParamRow
+              spec={spec}
+              value={params[spec.key]}
+              onChange={setParam}
+              curveToggle={
+                spec.kind === 'number'
+                  ? {
+                      armed: fxEnvelopeParam.value === spec.key,
+                      onToggle: (): void => toggleFxCurveParam(spec.key),
+                    }
+                  : undefined
+              }
+            />
+            {fxEnvelopeParam.value === spec.key && (
+              <FxCurveEditor spec={spec} staticValue={typeof params[spec.key] === 'number' ? (params[spec.key] as number) : (spec.default as number)} />
+            )}
+          </div>
         ))}
         <div class="fx-actions">
           <button class="btn-secondary" onClick={onPreviewToggle}>
@@ -84,10 +114,13 @@ export function ParamRow({
   spec,
   value,
   onChange,
+  curveToggle,
 }: {
   spec: ParamSpec;
   value: number | boolean | undefined;
   onChange: (key: string, value: number | boolean) => void;
+  /** A7: ∿ envelope toggle (numeric rows only). */
+  curveToggle?: { armed: boolean; onToggle: () => void };
 }) {
   const catalog = t() as unknown as Record<string, string>;
   const label = catalog[spec.labelKey] ?? spec.key;
@@ -114,6 +147,17 @@ export function ParamRow({
       <label class="fx-label" for={`fx-${spec.key}`}>
         {label}
       </label>
+      {curveToggle && (
+        <button
+          class={`chbtn fx-curve-toggle ${curveToggle.armed ? 'soloed' : ''}`}
+          aria-pressed={curveToggle.armed}
+          aria-label={`${label} ${t().fxEnvelope}`}
+          title={t().fxEnvelope}
+          onClick={curveToggle.onToggle}
+        >
+          ∿
+        </button>
+      )}
       <input
         class="fx-slider"
         id={`fx-${spec.key}`}

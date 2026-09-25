@@ -63,6 +63,7 @@ export function preparePreview(
     durSec,
     def,
     params: safeParams,
+    curves: ctx?.paramCurves,
   };
 
   if (def.kind === 'kernel') {
@@ -105,7 +106,15 @@ export async function applyEffect(
         wet = kernelProcess(def, target.channels, range.start, range.len, doc.sampleRate, params, ctx);
       } else {
         const trackBuffer = bufferFactory(target.channels, doc.sampleRate) as unknown as AudioBuffer;
-        wet = await renderEffectOffline(trackBuffer, target.channels.length, range.start, range.len, def, params);
+        wet = await renderEffectOffline(
+          trackBuffer,
+          target.channels.length,
+          range.start,
+          range.len,
+          def,
+          params,
+          ctx?.paramCurves ?? {},
+        );
       }
       const outcome = makeOverwritePaste(target.channels, range.start, range.len, wet);
       if (commitTrackChannels(target.trackId, outcome.channels, effectLabel(def))) {
@@ -141,6 +150,7 @@ export async function applyEffect(
         range.len,
         def,
         params,
+        ctx?.paramCurves ?? {},
       );
       if (getDoc() !== before) {
         toastInfo(t().editFailed); // document changed while rendering
