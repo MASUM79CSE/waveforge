@@ -960,3 +960,15 @@ RX/Auphonic-style one-scan audits with jump-to-offender).
       fixture uses long flat runs; CLIP_EPS 1e−4.
 
 Gates: **700/700 unit (83 files), 48/48 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (P4) — report export SHIPPED
+
+The report is deliverable (the engineers-attach-reports-to-masters loop):
+`src/engine/reportExport.ts` — CSV (header, exactly 4 fields per row =
+locale-safe dot decimals, every section + per-platform gain/tp_safe
+verdict rows, Inf → -Inf/+Inf, deterministic) and a readable clipboard
+text summary. ReportBlock: Export CSV (blob download `analysis-report.csv`)
++ Copy report (clipboard + confirmation toast, graceful failure). 4 unit
+gates + **49th e2e** (download content assertions via the real download
+file + clipboard readback with granted permissions). Gates: **704/704
+unit (84 files), 49/49 e2e, lint 0, tsc clean, build OK.** `94efdf2`.

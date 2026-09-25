@@ -11,6 +11,12 @@
 > momentary-block approximation; CLIP_EPS 1e−4 (≈0 dBFS) after the e2e
 > caught short-run resample smearing — long flat runs are the robust
 > fixture pattern.
+>
+> **P4 SHIPPED (2026-09-25, `94efdf2`):** report export — CSV (header +
+> exactly 4 fields/row, dot decimals, verdict rows per platform, Inf →
+> -Inf/+Inf) + Copy report (clipboard text summary + toast). 4 unit
+> gates + 49th e2e (real download content + clipboard read). The
+> "report export" non-goal is hereby resolved.
 
 ## P1 — report kernel (pure, this phase)
 
