@@ -1038,3 +1038,24 @@ serves by default): **mobile 97/100/100/100** (FCP 1.72 s, LCP 1.90 s,
 TBT 141 ms) alongside desktop 100/100/100/100. No code change needed —
 the app meets the ≥95/95/100/100 gate in both form factors on real
 deploy targets. Main-chunk splitting stays optional polish.
+
+## 2026-09-25 (fix) — Effects dropdown text clipping SHIPPED
+
+Root cause (inspect-first): the dropdown is abspos inside the narrow
+`.menu` wrapper with a hand-computed `min-width: 232px` (sized for the
+pre-grouping labels), and `.menu-label` carried
+`nowrap + overflow:hidden + text-overflow:ellipsis` — long names
+("Noise Reduction v3 (natural voice)…", "AI Voice Clarity (RNNoise)…")
+were ellipsized; below ~550px the uncapped box also ran off-screen.
+Fix (container level, no truncation): `.menu-dropdown` is now
+content-aware — `width: max-content; min-width: 232px;
+max-width: calc(100vw - 16px)` — labels dropped nowrap/hidden/ellipsis
+(wrap fully only when the viewport cap binds), and MenuDropdown gained a
+~10-line right-edge clamp (shift left just enough, never past the left
+margin; vertical space stays max-height + internal scroll). No
+positioning dependency added; design/hierarchy/hover/focus untouched.
+e2e #54: all 5 longest labels asserted readable at
+1920/1440/1280/1024/768/600/480/375 (scrollWidth≤clientWidth per label
+AND per dropdown, box inside viewport, one-line at ≥768, no menu-induced
+page h-scroll). Gates: **716/716 unit, 54/54 e2e (axe clean), lint 0,
+tsc clean, build OK.**

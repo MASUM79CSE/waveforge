@@ -93,7 +93,12 @@
   top: 100%;
   left: 0;
   z-index: 50;
-  min-width: 232px; /* widest label ("Playback Rate (varispeed)…") + kbd, one line */
+  /* Content-aware width (clip fix): size to the longest label so every
+     effect name stays on one line and fully readable; never wider than
+     the viewport (no page-level horizontal scroll). */
+  width: max-content;
+  min-width: 232px; /* short menus stay visually compact */
+  max-width: calc(100vw - 16px);
   max-height: calc(100vh - 88px); /* never run past the viewport bottom */
   overflow-y: auto;
   background: var(--bg-2);
@@ -127,9 +132,9 @@
 
 .menu-label {
   flex: 1;
-  white-space: nowrap; /* labels stay on one line (dropdown is sized for them) */
-  overflow: hidden;
-  text-overflow: ellipsis; /* last-resort guard far below the min width */
+  /* No truncation (clip fix): the dropdown is sized to the longest label
+     (width: max-content); only when the viewport cap binds may a label
+     wrap — always completely, never ellipsized or hidden. */
 }
 
 .menu-kbd {

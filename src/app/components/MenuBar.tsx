@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { foldMenuItems, menus } from '../menus';
 import { commands, type Command } from '../commands';
 import { Brand } from '../../brand';
@@ -88,6 +88,23 @@ export function MenuDropdown({
   onRun: () => void;
 }) {
   const rows = foldMenuItems(items, (id) => commands.find((c) => c.id === id)?.label() ?? id);
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  // Viewport-edge handling (clip fix): the dropdown is plain abspos (this
+  // app has no positioning library), so shift it left just enough to clear
+  // the right edge — never past the left margin. Vertical space is already
+  // handled by max-height + internal scroll (menus open from the top bar).
+  useLayoutEffect(() => {
+    const el = dropRef.current;
+    if (!el) return;
+    const margin = 8;
+    const rect = el.getBoundingClientRect();
+    const over = rect.right - (window.innerWidth - margin);
+    if (over > 0) {
+      el.style.left = `${Math.max(-over, margin - rect.left)}px`;
+    }
+  }, []);
+
   const groups = new Map<number, typeof rows>();
   for (const row of rows) {
     if (row.group !== undefined) {
@@ -97,7 +114,7 @@ export function MenuDropdown({
     }
   }
   return (
-    <div class="menu-dropdown" role="menu" data-menu={menuId}>
+    <div ref={dropRef} class="menu-dropdown" role="menu" data-menu={menuId}>
       {rows.map((row, i) => {
         if (row.kind === 'header') {
           return (
