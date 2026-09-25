@@ -17,6 +17,8 @@ import {
   toggleBeatsShown,
 } from '../analysisActions';
 import { verdicts } from '../../engine/analysisReport';
+import { reportToCsv, reportToText } from '../../engine/reportExport';
+import { toastInfo, toastError } from '../actions';
 import * as S from '../state';
 import { engine } from '../runtime';
 
@@ -92,8 +94,33 @@ function ReportBlock(): JSX.Element | null {
   const rows = verdicts(report);
   const st = report.stereo;
   const integrity = report.integrity;
+
+  const exportCsv = (): void => {
+    const blob = new Blob([reportToCsv(report, rows)], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analysis-report.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const copyReport = (): void => {
+    navigator.clipboard
+      .writeText(reportToText(report, rows))
+      .then(() => toastInfo(t().reportCopied))
+      .catch(() => toastError(t().reportCopyFailed));
+  };
+
   return (
     <div class="report-block" data-testid="analysis-report">
+      <div class="report-actions">
+        <button type="button" class="btn-secondary analysis-btn" data-testid="report-export" onClick={exportCsv}>
+          {t().reportExportCsv}
+        </button>
+        <button type="button" class="btn-secondary analysis-btn" data-testid="report-copy" onClick={copyReport}>
+          {t().reportCopy}
+        </button>
+      </div>
       <div class="report-row">
         <span class="report-key">{t().reportLoudness}</span>
         <span class="report-val">
