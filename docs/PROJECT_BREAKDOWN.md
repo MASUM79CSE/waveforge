@@ -183,7 +183,7 @@ series section and stamps it in this file's timeline (ECC convention).*
 ## Appendix — credit update (2026-09-26)
 
 About-dialog developer card evolved in place (no UI/UX change): name
-"Mir Masum", role line promoted to the full professional title
+"Mir Md. Masum", role line promoted to the full professional title
 ("Full-Stack Software Engineer, System Architect & Audio Engineer"),
 added the note "Designed, architected & developed from scratch."
 i18n-keyed, token-styled (theme-agnostic), e2e contract #58 extended.

@@ -61,7 +61,7 @@ test('about: no reference attribution, full professional developer card', async 
   // full developer card: avatar + name + professional title + note + contacts
   const card = dialog.locator('.welcome-dev');
   await expect(card).toBeVisible();
-  await expect(card).toContainText('Mir Masum');
+  await expect(card).toContainText('Mir Md. Masum');
   await expect(card).toContainText(/full-stack software engineer/i);
   await expect(card).toContainText(/system architect/i);
   await expect(card).toContainText(/audio engineer/i);
