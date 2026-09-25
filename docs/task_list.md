@@ -1142,3 +1142,15 @@ progress/FSA/ID3 all intact). Unit g1–g3 (catalog invariants); e2e #57
 legacy #26/#48 specs migrated off the removed #export-format dropdown.
 Gates: **719/719 unit (86 files), 57/57 e2e, lint 0, tsc clean,
 build OK.**
+
+## 2026-09-25 (polish) — File & View menus grouped + suite hardening
+
+Consistency pass with the Effects organization: FILE menu → Import /
+Record / Export / Drafts; VIEW menu → Zoom / Cursor & axis / Appearance
+(same {header, items} machinery + foldMenuItems; item identities and
+shortcuts unchanged, so all existing e2e selectors hold). g13 unit:
+both menus fully grouped, no duplicates, namespace-complete.
+Suite hardening: playwright retries 1 (the observed full-suite flakes
+were infra load-timing, not product — the previously flaky multitrack
+suite now passes repeatedly). Gates: **720/720 unit (86 files),
+57/57 e2e, lint 0, tsc clean, build OK.**

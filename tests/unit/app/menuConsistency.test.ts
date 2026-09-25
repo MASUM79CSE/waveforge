@@ -27,7 +27,7 @@ describe('M9e menu/command consistency', () => {
   });
 });
 
-describe('effects menu organization (R-follow-up)', () => {
+describe('grouped menus (effects / file / view)', () => {
   const effects = menus.find((m) => m.id === 'effects')!;
 
   test('g11: every non-rack effect lives in exactly one labelled group; no duplicates', () => {
@@ -58,6 +58,27 @@ describe('effects menu organization (R-follow-up)', () => {
     expect(rows[4]).toMatchObject({ kind: 'command', id: 'fx.deesser', group: 0 });
     expect(rows).toHaveLength(5);
   });
+});
+
+test('g13: file + view menus are fully grouped, no duplicates', () => {
+  for (const menuId of ['file', 'view']) {
+    const menu = menus.find((m) => m.id === menuId)!;
+    const grouped: string[] = [];
+    for (const item of menu.items) {
+      expect(item !== '-' && typeof item !== 'string', `${menuId} uses labelled groups`).toBe(true);
+      for (const id of (item as { items: string[] }).items) {
+        grouped.push(id);
+        expect(ids(id), `${menuId}:${id} registered`).toBe(true);
+      }
+    }
+    expect(new Set(grouped).size).toBe(grouped.length);
+    // the menu references every command of its namespace, all grouped
+    const prefix = menuId === 'file' ? ['file.', 'record.'] : ['view.'];
+    const expected = commands.map((c) => c.id).filter((id) => prefix.some((p) => id.startsWith(p)));
+    for (const id of expected) {
+      expect(grouped, `${menuId} groups ${id}`).toContain(id);
+    }
+  }
 });
 
 function ids(id: string): boolean {

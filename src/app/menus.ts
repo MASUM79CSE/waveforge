@@ -47,19 +47,10 @@ export const menus: MenuDef[] = [
     id: 'file',
     title: () => t().menuFile,
     items: [
-      'file.open',
-      'file.url',
-      'file.sample',
-      '-',
-      'file.recordSettings',
-      'record.toggle',
-      'record.punch',
-      'record.monitor',
-      'record.metronome',
-      'file.export',
-      '-',
-      'file.draftSave',
-      'file.draftOpen',
+      { header: () => t().menuGroupImport, items: ['file.open', 'file.url', 'file.sample'] },
+      { header: () => t().menuGroupRecord, items: ['file.recordSettings', 'record.toggle', 'record.punch', 'record.monitor', 'record.metronome'] },
+      { header: () => t().menuGroupExport, items: ['file.export'] },
+      { header: () => t().menuGroupDrafts, items: ['file.draftSave', 'file.draftOpen'] },
     ],
   },
   {
@@ -117,7 +108,11 @@ export const menus: MenuDef[] = [
   {
     id: 'view',
     title: () => t().menuView,
-    items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', '-', 'view.center', '-', 'view.follow', 'view.zerocross', 'view.axis', 'view.theme', 'view.accent'],
+    items: [
+      { header: () => t().menuGroupZoom, items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', 'view.center'] },
+      { header: () => t().menuGroupCursor, items: ['view.follow', 'view.zerocross', 'view.axis'] },
+      { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent'] },
+    ],
   },
   {
     id: 'help',
