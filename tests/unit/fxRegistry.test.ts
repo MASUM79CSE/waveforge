@@ -25,6 +25,7 @@ const EXPECTED_ORDER = [
   'fx.deesser',
   'fx.nr3',
   'fx.nrPrint',
+  'fx.rnvoice',
   'fx.rate',
   'fx.stretch',
 ];
@@ -93,6 +94,7 @@ describe('fx definitions hygiene', () => {
       'fx.deesser': 'kernel',
       'fx.nr3': 'kernel',
       'fx.nrPrint': 'kernel',
+      'fx.rnvoice': 'kernel',
       'fx.rate': 'kernel',
       'fx.stretch': 'kernel',
     });
