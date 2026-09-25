@@ -1211,3 +1211,18 @@ Deploy-ready pass per ECC workflow:
 - **Product fix en route**: Escape now closes the Export dialog (was
   missing from the dialog chain — caught by the screenshot run).
 Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (docs) — production documentation set shipped
+
+Full-history analysis (192 commits, scaffold → c0a1baa) distilled into
+five root documents, ECC-style: **ARCHITECTURE.md** (principles, system
+diagram, module map, data flows, threading, effects pipeline, security,
+extensibility, ADR index), **DESIGN.md** (brand, tokens, layout anatomy,
+component contracts, interactions, a11y/responsive gates), **MEMORY.md**
+(runtime/EDL-history/peaks/worker/session/durable memory + budgets),
+**DATABASE.md** (IndexedDB stores, WFD1→3 versioning, autosave/crash
+flow; deferred MongoDB Atlas cloud schema), **PROJECT_BREAKDOWN.md**
+(phase-by-phase timeline M0→launch, workstream matrix, gate evolution,
+release checklist). README gained a Documentation index. Gates
+unaffected (docs-only); suite verified earlier at head: 720/720 unit,
+59/59 e2e, lint 0, build OK.

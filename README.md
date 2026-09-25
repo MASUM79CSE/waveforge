@@ -148,6 +148,23 @@ src/
 └── vendor/      rnnoise wasm glue, libflac vendored builds
 ```
 
+## Documentation
+
+Production documentation set (root):
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — system architecture, data flows,
+  threading model, extensibility, ADR index
+- [DESIGN.md](DESIGN.md) — design tokens, layout anatomy, component
+  contracts, interaction patterns, accessibility gates
+- [MEMORY.md](MEMORY.md) — runtime/undo/session/durable memory models
+  and budgets
+- [DATABASE.md](DATABASE.md) — IndexedDB schema & versioning (WFD#),
+  autosave/crash recovery, deferred MongoDB Atlas cloud design
+- [PROJECT_BREAKDOWN.md](PROJECT_BREAKDOWN.md) — the full build history:
+  192 commits broken down phase by phase, with gates and metrics
+- [docs/](docs) — governance (PRD, task list), 10 ADRs, per-feature
+  analysis/plan/stamp records
+
 ## Development
 
 ```bash
