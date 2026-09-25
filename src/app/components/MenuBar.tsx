@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { menus } from '../menus';
 import { commands, type Command } from '../commands';
-import { experimentalFx } from '../state';
 import { Brand } from '../../brand';
 
 export function MenuBar() {
@@ -58,7 +57,6 @@ export function MenuBar() {
                 if (item === '-') return <div class="menu-sep" key={`sep-${i}`} />;
                 const cmd = commands.find((c) => c.id === item);
                 if (!cmd) return null;
-                if (cmd.experimental && !experimentalFx.value) return null;
                 return <MenuItem key={item} cmd={cmd} onRun={() => setOpenId(null)} />;
               })}
             </div>

@@ -21,8 +21,6 @@ export interface Command {
   check?: boolean; // renders with a checkmark state
   isChecked?: () => boolean;
   sep?: boolean; // separator after this entry
-  /** Hidden unless settings.experimentalFx is on (E5 gate, effects v2). */
-  experimental?: boolean;
 }
 
 export const commands: Command[] = [
@@ -105,7 +103,7 @@ export const commands: Command[] = [
   { id: 'fx.rnvoice', label: () => t().fxRnvoice, run: () => A.openEffectDialog('fx.rnvoice') },
   { id: 'fx.rack', label: () => t().fxRack, run: () => A.openFxRack() },
   { id: 'fx.rate', label: () => t().fxRate, run: () => A.openEffectDialog('fx.rate') },
-  { id: 'fx.stretch', label: () => t().fxStretch, run: () => A.openEffectDialog('fx.stretch'), experimental: true },
+  { id: 'fx.stretch', label: () => t().fxStretch, run: () => A.openEffectDialog('fx.stretch') },
 
   // View
   { id: 'view.zoomIn', label: () => t().viewZoomIn, kbd: () => '+', run: () => A.view.zoomIn() },
@@ -157,14 +155,6 @@ export const commands: Command[] = [
     check: true,
     isChecked: () => A.isAmplitudeAxisOn(),
   },
-  {
-    id: 'view.experimental',
-    label: () => t().viewExperimental,
-    run: () => A.toggleExperimentalFx(),
-    check: true,
-    isChecked: () => A.isExperimentalFxOn(),
-  },
-
   // Analyze (M5)
   {
     id: 'analyze.lufs',

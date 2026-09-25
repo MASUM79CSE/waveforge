@@ -164,14 +164,6 @@ export function toggleZeroCross(): void {
   S.setZeroCrossEnabled(!S.zeroCrossEnabled.value);
 }
 
-export function isExperimentalFxOn(): boolean {
-  return S.experimentalFx.value;
-}
-
-export function toggleExperimentalFx(): void {
-  S.setExperimentalFx(!S.experimentalFx.value);
-}
-
 // ---- loading ----
 
 function beginLoading(label: string): void {

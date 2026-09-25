@@ -168,21 +168,11 @@ test('effects: Noise Reduction v3 applies with no print (auto mode) and undoes (
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
 });
 
-test('effects: Stretch / Pitch stays hidden until experimental is enabled, then applies ×1.25', async ({
+test('effects: Stretch / Pitch applies ×1.25 from the Effects menu (promoted, Z1)', async ({
   page,
 }) => {
   await loadSample(page);
-  // hidden by default (experimental gate)
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
-  await expect(page.getByRole('menuitem', { name: /^Stretch \/ Pitch/ })).toHaveCount(0);
-  await page.keyboard.press('Escape');
-  // enable via the View toggle (Y4 hardening: assert-then-click at each
-  // menu step — one historic flake landed in the menu hover-switch window)
-  await page.getByRole('button', { name: 'View', exact: true }).click();
-  const experimental = page.getByRole('menuitem', { name: /Experimental effects/i });
-  await expect(experimental).toBeVisible();
-  await experimental.click();
-  // now visible and applies ×1.25 → 9.27 s becomes ~11.59 s
+  // Z1 promotion: a first-class menu item — no experimental gate
   await page.getByRole('button', { name: 'Effects', exact: true }).click();
   const stretch = page.getByRole('menuitem', { name: /^Stretch \/ Pitch/ });
   await expect(stretch).toBeVisible();
