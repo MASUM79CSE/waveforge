@@ -69,12 +69,14 @@ export function parseChain(raw: unknown): ParseResult {
   return { ok: true, chain };
 }
 
-/** The app layer supplies this: kernel process or offline graph render. */
+/** The app layer supplies this: kernel process or offline graph render.
+ * `entryIndex` = the running entry's position (C5: routes per-entry curves). */
 export type StageRunner = (
   effectId: string,
   channels: Float32Array[],
   sampleRate: number,
   params: Params,
+  entryIndex: number,
 ) => Float32Array[];
 
 /**
@@ -89,9 +91,10 @@ export function foldChain(
   run: StageRunner,
 ): Float32Array[] {
   let current = channels;
-  for (const entry of chain) {
+  for (let i = 0; i < chain.length; ++i) {
+    const entry = chain[i]!;
     if (entry.bypass) continue;
-    current = run(entry.effectId, current, sampleRate, entry.params);
+    current = run(entry.effectId, current, sampleRate, entry.params, i);
   }
   return current;
 }
@@ -102,6 +105,7 @@ export type AsyncStageRunner = (
   channels: Float32Array[],
   sampleRate: number,
   params: Params,
+  entryIndex: number,
 ) => Promise<Float32Array[]>;
 
 /** Sequential fold with async stages (same bypass/identity laws). */
@@ -112,9 +116,10 @@ export async function foldChainAsync(
   run: AsyncStageRunner,
 ): Promise<Float32Array[]> {
   let current = channels;
-  for (const entry of chain) {
+  for (let i = 0; i < chain.length; ++i) {
+    const entry = chain[i]!;
     if (entry.bypass) continue;
-    current = await run(entry.effectId, current, sampleRate, entry.params);
+    current = await run(entry.effectId, current, sampleRate, entry.params, i);
   }
   return current;
 }

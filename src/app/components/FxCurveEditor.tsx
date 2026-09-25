@@ -26,10 +26,21 @@ import { t } from '../../i18n';
 
 const POINT = 5;
 
-export function FxCurveEditor({ spec, staticValue }: { spec: ParamSpec; staticValue: number }) {
+export function FxCurveEditor({
+  spec,
+  staticValue,
+  curveKey,
+}: {
+  spec: ParamSpec;
+  staticValue: number;
+  /** C5: draft key override (rack entries namespace `${index}:${key}`);
+   * defaults to spec.key (single-effect dialogs). */
+  curveKey?: string;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gesture = useRef<EnvelopeGesture | null>(null);
   const domain: ValueDomain = { min: spec.min, max: spec.max };
+  const key = curveKey ?? spec.key;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -61,7 +72,7 @@ export function FxCurveEditor({ spec, staticValue }: { spec: ParamSpec; staticVa
       ctx2d.fillStyle = theme.laneBg;
       ctx2d.fillRect(0, 0, w, h);
       const geom = geomNow();
-      const points = fxCurvesDraft.value[spec.key] ?? [];
+      const points = fxCurvesDraft.value[key] ?? [];
       const yOf = (v: number): number => curveYIn(v, domain, geom);
       if (points.length === 0) {
         // dashed static baseline — where a first point would act
@@ -99,9 +110,9 @@ export function FxCurveEditor({ spec, staticValue }: { spec: ParamSpec; staticVa
 
     const onDown = (e: PointerEvent): void => {
       if (e.button !== 0) return;
-      const g = beginEnvelopeGesture(fxCurvesDraft.value[spec.key] ?? [], pointer(e), domain, geomNow());
+      const g = beginEnvelopeGesture(fxCurvesDraft.value[key] ?? [], pointer(e), domain, geomNow());
       gesture.current = g;
-      setFxCurvePoints(spec.key, g.points);
+      setFxCurvePoints(key, g.points);
       canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
@@ -109,7 +120,7 @@ export function FxCurveEditor({ spec, staticValue }: { spec: ParamSpec; staticVa
       const g = gesture.current;
       if (!g) return;
       dragEnvelopeTo(g, pointer(e), domain, geomNow(), fxRegionLen.value);
-      setFxCurvePoints(spec.key, g.points);
+      setFxCurvePoints(key, g.points);
       e.preventDefault();
     };
     const onUp = (e: PointerEvent): void => {
@@ -123,8 +134,8 @@ export function FxCurveEditor({ spec, staticValue }: { spec: ParamSpec; staticVa
     };
     const onContextMenu = (e: MouseEvent): void => {
       e.preventDefault();
-      const after = removeEnvelopePointAt(fxCurvesDraft.value[spec.key] ?? [], pointer(e), domain, geomNow());
-      setFxCurvePoints(spec.key, after);
+      const after = removeEnvelopePointAt(fxCurvesDraft.value[key] ?? [], pointer(e), domain, geomNow());
+      setFxCurvePoints(key, after);
     };
 
     draw();
@@ -143,23 +154,23 @@ export function FxCurveEditor({ spec, staticValue }: { spec: ParamSpec; staticVa
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('contextmenu', onContextMenu);
     };
-  }, [spec.key, spec.min, spec.max, staticValue]);
+  }, [key, spec.min, spec.max, staticValue]);
 
-  const armed = fxEnvelopeParam.value === spec.key;
-  const count = (fxCurvesDraft.value[spec.key] ?? []).length;
+  const armed = fxEnvelopeParam.value === key;
+  const count = (fxCurvesDraft.value[key] ?? []).length;
   return (
-    <div class="fx-envelope" data-testid={`fx-envelope-${spec.key}`}>
+    <div class="fx-envelope" data-testid={`fx-envelope-${key}`}>
       <div class="fx-envelope-head">
         <span class="fx-envelope-title">
           {t().fxEnvelope}: {spec.key}
         </span>
         <span class="fx-envelope-hint">{t().fxEnvelopeHint}</span>
-        <button class="chbtn danger" aria-label={t().fxEnvelopeClear} onClick={() => removeFxCurve(spec.key)}>
+        <button class="chbtn danger" aria-label={t().fxEnvelopeClear} onClick={() => removeFxCurve(key)}>
           ×
         </button>
       </div>
       <canvas ref={canvasRef} class="fx-envelope-canvas" aria-label={`${t().fxEnvelope} ${spec.key}`} />
-      <span class="visually-hidden" data-testid={`fx-env-count-${spec.key}`}>
+      <span class="visually-hidden" data-testid={`fx-env-count-${key}`}>
         {armed ? count : 0}
       </span>
     </div>

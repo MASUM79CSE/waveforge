@@ -22,6 +22,10 @@ import { activeTrackTarget, commitTrackChannels, ensureProject } from './project
 import { bufferFactory, getDoc, performEdit } from './runtime';
 import type { PreviewPlan } from './preview';
 import type { Params } from '../fx/types';
+import type { AutomationCurve } from '../engine/automation';
+
+/** C5: per-entry param curves — entry index → param key → curve. */
+export type ChainCurves = Record<number, Record<string, AutomationCurve>>;
 
 /** Rack label without the trailing ellipsis (history + toast). */
 export function rackLabel(): string {
@@ -47,13 +51,16 @@ async function runStage(
   channels: Float32Array[],
   sampleRate: number,
   params: Params,
+  entryIndex: number,
+  curves?: ChainCurves,
 ): Promise<Float32Array[]> {
   const def = getEffect(effectId)!; // chain entries are registry-validated
+  const entryCurves = curves?.[entryIndex];
   if (def.kind === 'kernel') {
-    return def.process(channels, sampleRate, params, undefined);
+    return def.process(channels, sampleRate, params, entryCurves ? { paramCurves: entryCurves } : undefined);
   }
   const buffer = bufferFactory(channels, sampleRate) as unknown as AudioBuffer;
-  return renderEffectOffline(buffer, channels.length, 0, channels.length, def, params, {});
+  return renderEffectOffline(buffer, channels.length, 0, channels.length, def, params, entryCurves ?? {});
 }
 
 /**
@@ -67,19 +74,20 @@ export async function renderChain(
   start: number,
   len: number,
   chain: Chain,
+  curves?: ChainCurves,
 ): Promise<Float32Array[]> {
   if (chain.some((e) => !e.bypass && e.effectId === 'fx.rnvoice')) {
     await ensureRnVoice();
   }
   const total = len + Math.round(chainTailSeconds(chain) * sampleRate);
   const input = regionWithTail(channels, start, total);
-  return foldChainAsync(input, sampleRate, chain, (id, chans, sr, params) =>
-    runStage(id, chans, sr, params),
+  return foldChainAsync(input, sampleRate, chain, (id, chans, sr, params, index) =>
+    runStage(id, chans, sr, params, index, curves),
   );
 }
 
 /** Apply the whole chain to the target region as ONE undoable edit. */
-export async function applyChain(chain: Chain): Promise<void> {
+export async function applyChain(chain: Chain, curves?: ChainCurves): Promise<void> {
   const doc = getDoc();
   if (!doc || chain.length === 0) {
     toastInfo(t().fxNoDoc);
@@ -91,7 +99,7 @@ export async function applyChain(chain: Chain): Promise<void> {
   const target = activeTrackTarget();
   const channels = target?.channels ?? currentChannels();
   try {
-    const wet = await renderChain(channels, doc.sampleRate, range.start, range.len, chain);
+    const wet = await renderChain(channels, doc.sampleRate, range.start, range.len, chain, curves);
     if (!target && getDoc() !== doc) {
       toastInfo(t().editFailed); // document changed while rendering
       return;
@@ -114,7 +122,7 @@ export async function applyChain(chain: Chain): Promise<void> {
 }
 
 /** Whole-chain A/B preview plan: offline fold → wet buffer (def-less). */
-export async function prepareChainPreview(chain: Chain): Promise<PreviewPlan | null> {
+export async function prepareChainPreview(chain: Chain, curves?: ChainCurves): Promise<PreviewPlan | null> {
   const doc = getDoc();
   const range = targetRange();
   if (!doc || !range || chain.length === 0) {
@@ -127,7 +135,7 @@ export async function prepareChainPreview(chain: Chain): Promise<PreviewPlan | n
   const before = doc;
   let wet: Float32Array[];
   try {
-    wet = await renderChain(dryChannels, doc.sampleRate, range.start, range.len, chain);
+    wet = await renderChain(dryChannels, doc.sampleRate, range.start, range.len, chain, curves);
   } catch (error: unknown) {
     logger.error('fx chain preview failed', { detail: String(error) });
     toastInfo(t().editFailed);

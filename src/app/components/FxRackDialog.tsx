@@ -9,11 +9,14 @@ import {
   loadUserPreset,
   saveUserPreset,
 } from '../../storage/presetStore';
-import { applyChain, prepareChainPreview, rackLabel } from '../fxChainActions';
+import { applyChain, prepareChainPreview, rackLabel, type ChainCurves } from '../fxChainActions';
 import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { previewActive, rackOpen } from '../state';
 import { closeFxRack, toastInfo } from '../actions';
 import { ParamRow } from './EffectDialog';
+import { FxCurveEditor } from './FxCurveEditor';
+import { fxCurvesDraft, fxEnvelopeParam, resetFxCurves, setFxCurveRegion, toggleFxCurveParam } from '../fxEnvelope';
+import { targetRange } from '../editActions';
 import { Modal } from './Modal';
 import { t } from '../../i18n';
 
@@ -35,6 +38,9 @@ export function FxRackDialog() {
     void listUserPresets()
       .then(setUserPresets)
       .catch(() => setUserPresets([]));
+    // C5: fresh envelope draft per rack open; x domain = target region
+    resetFxCurves();
+    setFxCurveRegion(targetRange()?.len ?? 1);
   }, [rackOpen.value]);
 
   if (!rackOpen.value) return null;
@@ -43,6 +49,40 @@ export function FxRackDialog() {
   const labelOf = (key: string, fallback: string): string => catalog[key] ?? fallback;
 
   const update = (next: ChainEntry[]): void => setEntries(next.map((e) => ({ ...e })));
+
+  // --- C5: per-entry envelope drafts (namespaced `${index}:${param}` in the
+  // A7 draft signal; re-numbered when entries move, dropped when removed) ---
+  const curveKey = (index: number, key: string): string => `${index}:${key}`;
+
+  const renumberCurves = (map: Record<number, number | null>): void => {
+    const draft = fxCurvesDraft.value;
+    const next: typeof draft = {};
+    for (const [k, curve] of Object.entries(draft)) {
+      const idx = Number(k.slice(0, k.indexOf(':')));
+      const mapped = map[idx] ?? idx;
+      if (mapped === null) continue;
+      next[`${mapped}:${k.slice(k.indexOf(':') + 1)}`] = curve;
+    }
+    fxCurvesDraft.value = next;
+    const armed = fxEnvelopeParam.value;
+    if (armed) {
+      const idx = Number(armed.slice(0, armed.indexOf(':')));
+      const mapped = map[idx] ?? idx;
+      if (mapped !== null) fxEnvelopeParam.value = `${mapped}:${armed.slice(armed.indexOf(':') + 1)}`;
+      else fxEnvelopeParam.value = null;
+    }
+  };
+
+  /** The draft as ChainCurves (entry index → param key → non-empty curve). */
+  const chainCurves = (): ChainCurves => {
+    const out: ChainCurves = {};
+    for (const [k, curve] of Object.entries(fxCurvesDraft.value)) {
+      if (!curve || curve.length === 0) continue;
+      const idx = Number(k.slice(0, k.indexOf(':')));
+      (out[idx] ??= {})[k.slice(k.indexOf(':') + 1)] = curve;
+    }
+    return out;
+  };
 
   const setParam = (row: number, key: string, value: number | boolean): void => {
     const next = entries.map((e, i) => (i === row ? { ...e, params: { ...e.params, [key]: value } } : e));
@@ -54,10 +94,14 @@ export function FxRackDialog() {
     const next = [...entries];
     [next[row], next[to]] = [next[to]!, next[row]!];
     update(next);
+    renumberCurves({ [row]: to, [to]: row });
     if (expanded === row) setExpanded(to);
   };
   const remove = (row: number): void => {
     update(entries.filter((_, i) => i !== row));
+    const map: Record<number, number | null> = { [row]: null };
+    for (let i = row + 1; i < entries.length; ++i) map[i] = i - 1;
+    renumberCurves(map);
     if (expanded === row) setExpanded(null);
   };
   const addEffect = (effectId: string): void => {
@@ -68,7 +112,7 @@ export function FxRackDialog() {
   };
 
   const preview = (): Promise<void> =>
-    prepareChainPreview(entries).then((plan) => {
+    prepareChainPreview(entries, chainCurves()).then((plan) => {
       if (plan) startPreview(plan);
     });
   const restartPreviewIfLive = (): void => {
@@ -88,7 +132,7 @@ export function FxRackDialog() {
   const onApply = (): void => {
     stopPreview();
     closeFxRack();
-    void applyChain(entries);
+    void applyChain(entries, chainCurves());
   };
 
   const loadPreset = (): void => {
@@ -98,6 +142,7 @@ export function FxRackDialog() {
       const preset = chainPresetById(name);
       if (preset) {
         update(preset.chain.map((e) => ({ ...e })));
+        resetFxCurves();
         setExpanded(null);
       }
       return;
@@ -108,6 +153,7 @@ export function FxRackDialog() {
         const parsed = parseChain(JSON.parse(json));
         if (parsed.ok) {
           update(parsed.chain);
+          resetFxCurves();
           setExpanded(null);
         } else {
           toastInvalid();
@@ -158,6 +204,7 @@ export function FxRackDialog() {
           return;
         }
         update(parsed.chain);
+        resetFxCurves();
         setExpanded(null);
       } catch {
         toastInvalid();
@@ -279,15 +326,35 @@ export function FxRackDialog() {
               {expanded === i && (
                 <div class="rack-params">
                   {def.specs.map((spec) => (
-                    <ParamRow
-                      key={spec.key}
-                      spec={spec}
-                      value={entry.params[spec.key]}
-                      onChange={(key, value) => {
-                        setParam(i, key, value);
-                        restartPreviewIfLive();
-                      }}
-                    />
+                    <div key={spec.key}>
+                      <ParamRow
+                        spec={spec}
+                        value={entry.params[spec.key]}
+                        onChange={(key, value) => {
+                          setParam(i, key, value);
+                          restartPreviewIfLive();
+                        }}
+                        curveToggle={
+                          spec.kind === 'number' && spec.curve !== false
+                            ? {
+                                armed: fxEnvelopeParam.value === curveKey(i, spec.key),
+                                onToggle: (): void => toggleFxCurveParam(curveKey(i, spec.key)),
+                              }
+                            : undefined
+                        }
+                      />
+                      {fxEnvelopeParam.value === curveKey(i, spec.key) && (
+                        <FxCurveEditor
+                          spec={spec}
+                          curveKey={curveKey(i, spec.key)}
+                          staticValue={
+                            typeof entry.params[spec.key] === 'number'
+                              ? (entry.params[spec.key] as number)
+                              : (spec.default as number)
+                          }
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
@@ -296,7 +363,7 @@ export function FxRackDialog() {
         })}
 
         <div class="rack-add">
-          <select id="rack-add-select" value="">
+          <select id="rack-add-select">
             <option value="">{t().rackAdd}</option>
             {listEffects().map((def) => (
               <option key={def.id} value={def.id}>

@@ -167,14 +167,15 @@ describe('C1 — fold (pure)', () => {
   });
 });
 
+/** Shared sync runner (the fxTest.* defs register in the C1 describe). */
+const baseRun = (effectId: string, channels: Float32Array[]): Float32Array[] =>
+  (getEffect(effectId) as Extract<EffectDef, { kind: 'kernel' }>).process(
+    channels.map((ch) => ch.slice()),
+    48000,
+    {} as Params,
+  );
+
 describe('C2 — async fold (graph stages render offline)', () => {
-  // registry is global — the fxTest.* defs registered in the C1 describe
-  const baseRun = (effectId: string, channels: Float32Array[]): Float32Array[] =>
-    (getEffect(effectId) as Extract<EffectDef, { kind: 'kernel' }>).process(
-      channels.map((ch) => ch.slice()),
-      48000,
-      {} as Params,
-    );
   /** Async wrapper over the sync test runner (the offline-render shape). */
   const runAsync = async (effectId: string, channels: Float32Array[]): Promise<Float32Array[]> =>
     baseRun(effectId, channels);
@@ -201,5 +202,38 @@ describe('C2 — async fold (graph stages render offline)', () => {
     const allBypassed: Chain = [{ effectId: 'fxTest.a', params: {}, bypass: true }];
     const identity = await foldChainAsync(input, 48000, allBypassed, runAsync);
     expect(identity[0]).toBe(input[0]);
+  });
+});
+
+describe('C5 — entry-indexed curves (per-rack-entry envelopes)', () => {
+  test('g12: sync runner receives the running entry index; bypass never runs', () => {
+    const seen: number[] = [];
+    const input = [Float32Array.from([1, 2, 3])];
+    const chain: Chain = [
+      { effectId: 'fxTest.a', params: {}, bypass: false },
+      { effectId: 'fxTest.b', params: {}, bypass: true },
+      { effectId: 'fxTest.a', params: {}, bypass: false },
+    ];
+    const out = foldChain(input, 48000, chain, (id, chans, _sr, _params, index) => {
+      seen.push(index);
+      return baseRun(id, chans);
+    });
+    expect(seen).toEqual([0, 2]);
+    expect(Array.from(out[0]!)).toEqual([4, 8, 12]); // (x·2)·2 f32-exact
+  });
+
+  test('g13: async runner receives the entry index too', async () => {
+    const seen: number[] = [];
+    const input = [Float32Array.from([1, 2, 3])];
+    const chain: Chain = [
+      { effectId: 'fxTest.a', params: {}, bypass: false },
+      { effectId: 'fxTest.b', params: {}, bypass: false },
+    ];
+    const out = await foldChainAsync(input, 48000, chain, async (id, chans, _sr, _params, index) => {
+      seen.push(index);
+      return baseRun(id, chans);
+    });
+    expect(seen).toEqual([0, 1]);
+    expect(Array.from(out[0]!)).toEqual([2.5, 4.5, 6.5]);
   });
 });
