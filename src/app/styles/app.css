@@ -748,7 +748,13 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  line-height: 1.6;
   color: var(--fg-1);
+}
+.dev-note {
+  font-size: 11px;
+  color: var(--fg-1);
+  margin-top: 1px;
 }
 .dev-links {
   display: flex;

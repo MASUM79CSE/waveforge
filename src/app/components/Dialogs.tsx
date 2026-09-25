@@ -86,8 +86,9 @@ export function AboutDialog() {
         <div class="welcome-dev" role="contentinfo" aria-label={t().welcomeDevBy}>
           <DevAvatar />
           <div class="dev-info">
-            <span class="dev-name">Mir Md. Masum</span>
+            <span class="dev-name">Mir Masum</span>
             <span class="dev-role">{t().welcomeDevRole}</span>
+            <span class="dev-note">{t().devCreditNote}</span>
             <div class="dev-links">
               <a href="mailto:mirmasum@mail.com">{t().devEmail}: mirmasum@mail.com</a>
               <a href="https://instagram.com/mirmd_masum" target="_blank" rel="noreferrer">

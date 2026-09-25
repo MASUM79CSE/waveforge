@@ -179,3 +179,13 @@ LH 99/100/100/100 · axe 0 · tree clean.**
 
 *This file is the historical index of the build. New work appends a
 series section and stamps it in this file's timeline (ECC convention).*
+
+## Appendix — credit update (2026-09-26)
+
+About-dialog developer card evolved in place (no UI/UX change): name
+"Mir Masum", role line promoted to the full professional title
+("Full-Stack Software Engineer, System Architect & Audio Engineer"),
+added the note "Designed, architected & developed from scratch."
+i18n-keyed, token-styled (theme-agnostic), e2e contract #58 extended.
+Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK;**
+verified at 1280 px and 375 px.

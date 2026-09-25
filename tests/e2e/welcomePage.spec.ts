@@ -58,11 +58,14 @@ test('about: no reference attribution, full professional developer card', async 
   // attribution removed from the About dialog too
   await expect(dialog).not.toContainText(FORBIDDEN);
 
-  // full developer card: avatar + name + role + all three contacts
+  // full developer card: avatar + name + professional title + note + contacts
   const card = dialog.locator('.welcome-dev');
   await expect(card).toBeVisible();
-  await expect(card).toContainText('Mir Md. Masum');
-  await expect(card).toContainText(/developer/i);
+  await expect(card).toContainText('Mir Masum');
+  await expect(card).toContainText(/full-stack software engineer/i);
+  await expect(card).toContainText(/system architect/i);
+  await expect(card).toContainText(/audio engineer/i);
+  await expect(card.locator('.dev-note')).toContainText(/designed, architected & developed from scratch/i);
   await expect(card.locator('a[href^="mailto:mirmasum@mail.com"]')).toBeVisible();
   await expect(card.locator('a[href*="instagram.com/mirmd_masum"]')).toBeVisible();
   await expect(card).toContainText(/discord\s*·\s*mir_masum/i);
