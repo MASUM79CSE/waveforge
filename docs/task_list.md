@@ -78,7 +78,10 @@
 - [ ] **Automation envelope editor → scheduled with M5** (needs the canvas
       timeline infra landing with the analysers; deviation logged in ADR 005)
 - [x] RNNoise denoise shipped as E7b `fx.rnvoice` (see E-series) — un-parks
-      this note; pitch-preserving stretch remains parked (§11 v1 deltas)
+      this note; pitch-preserving stretch SHIPPED as E5 WSOLA
+      (`fx.stretch`, stretch/semitones with the pitch anchor) — gated
+      behind View → Experimental effects by design, so nothing remains
+      parked from the §11 v1 deltas
 
 ### Defects fixed (post-M3, user-reported)
 
@@ -838,3 +841,19 @@ web DAWs stop at per-effect presets; AudioMass has neither).
 
 Non-goals held: parallel/sidechain routing, per-entry automation curves
 (seam = paramCurves), preset cloud sync.
+
+## 2026-09-25 (C5) — per-entry chain envelopes SHIPPED
+
+The documented C-series seam closed: stage runners receive the entry
+index (`foldChain`/`foldChainAsync` 5th arg); `ChainCurves` (entry idx →
+param → curve) threads `EffectRunContext.paramCurves` into kernel stages
+and the offline schedule into graph stages; rack rows carry ∿ toggles
+(`FxCurveEditor curveKey` scoping, `${index}:${param}` namespaces,
+re-numbered on move/remove, reset on preset load). 42nd e2e: tremolo
+depth curve authored on a rack entry → apply → undo/redo. Flake
+hardening: the rack Add select is uncontrolled (background re-renders
+snapped the controlled value back to '' between select and Add — root
+cause of a full-suite flake; 3 consecutive green suites after). One
+pre-existing flake observed once (`effects.spec` experimental-stretch
+flow) — passed every run since, watch-listed. Gates: **685/685 unit
+(80 files), 42/42 e2e, lint 0, tsc clean**. Commit `f455033`.

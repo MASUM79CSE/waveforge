@@ -5,7 +5,8 @@ decisions) · Registry: ADR 005 · Apply/history rules: bounce precedent ·
 Envelopes: A6/A7 (`spec.curve` contract).
 
 > **STATUS: SHIPPED (2026-09-25).** C1 `4d3d18e` · C2+C3 `d94727a` · C4
-> `e90f016`. Gates at ship: 683/683 unit (80 files), 41/41 e2e, lint 0,
+> `e90f016` · C5 per-entry envelopes `f455033` (the documented seam:
+> entry-indexed runners + ChainCurves; ∿ in the rack). Gates at ship: 683/683 unit (80 files), 41/41 e2e, lint 0,
 > tsc clean, build OK; Lighthouse **98/100/100/100**
 > (`docs/perf/lighthouse-c2.json`). 12 C1/C2 model gates + 5 preset/store
 > unit gates + 40th/41st e2e. Ship notes: tails SUM across stages (v1
@@ -83,6 +84,6 @@ Envelopes: A6/A7 (`spec.curve` contract).
 
 ## Non-goals (this series)
 
-Parallel/sidechain routing; per-entry automation curves (seam documented);
-MIDI/external control; chain-level wet/dry macro; preset cloud sync
-(backend-free v1).
+Parallel/sidechain routing; ~~per-entry automation curves~~ (SHIPPED as C5,
+`f455033`); MIDI/external control; chain-level wet/dry macro; preset cloud
+sync (backend-free v1).
