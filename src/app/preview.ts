@@ -26,8 +26,10 @@ export interface PreviewPlan {
   buffer: AudioBuffer;
   startSec: number;
   durSec: number;
-  def: EffectDef;
-  params: Params;
+  /** Single effects drive the live-graph path (graph kind); undefined for
+   * C2 chain previews (wetBuffer only). */
+  def?: EffectDef;
+  params?: Params;
   /** Kernel effects: the precomputed wet region buffer. */
   wetBuffer?: AudioBuffer;
   /** A7: authored param curves — graph preview schedules them on the live
@@ -55,10 +57,10 @@ export function startPreview(plan: PreviewPlan): void {
   drySrc.start(0, plan.startSec, plan.durSec);
   sources.push(drySrc);
 
-  if (plan.def.kind === 'graph') {
+  if (plan.def?.kind === 'graph') {
     const src = ctx.createBufferSource();
     src.buffer = plan.buffer;
-    const graph = buildGraph(ctx, plan.def.graphId, plan.params, {
+    const graph = buildGraph(ctx, plan.def.graphId, plan.params ?? {}, {
       channels: plan.buffer.numberOfChannels,
     });
     // A7: source starts at t≈0 — knots map source-relative like the render

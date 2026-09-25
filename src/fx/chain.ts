@@ -95,3 +95,26 @@ export function foldChain(
   }
   return current;
 }
+
+/** C2: graph stages render offline — the runner awaits per stage. */
+export type AsyncStageRunner = (
+  effectId: string,
+  channels: Float32Array[],
+  sampleRate: number,
+  params: Params,
+) => Promise<Float32Array[]>;
+
+/** Sequential fold with async stages (same bypass/identity laws). */
+export async function foldChainAsync(
+  channels: Float32Array[],
+  sampleRate: number,
+  chain: Chain,
+  run: AsyncStageRunner,
+): Promise<Float32Array[]> {
+  let current = channels;
+  for (const entry of chain) {
+    if (entry.bypass) continue;
+    current = await run(entry.effectId, current, sampleRate, entry.params);
+  }
+  return current;
+}

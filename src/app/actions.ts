@@ -147,6 +147,15 @@ export function closeEffectDialog(): void {
   S.effectDialogId.value = null;
 }
 
+export function openFxRack(): void {
+  S.rackOpen.value = true;
+}
+
+export function closeFxRack(): void {
+  stopPreview();
+  S.rackOpen.value = false;
+}
+
 export function closeNormalizePrompt(): void {
   S.normalizePromptOpen.value = false;
 }

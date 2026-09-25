@@ -181,17 +181,25 @@ function kernelProcess(
   // are appended past doc end, and the overwrite paste grows the doc by
   // the padding, exactly like graph tailSeconds region growth.
   const tailLen = Math.max(0, Math.round((def.tail?.(params, ctx) ?? 0) * sampleRate));
-  const total = len + tailLen;
+  return def.process(regionWithTail(channels, start, len + tailLen), sampleRate, params, ctx);
+}
+
+/**
+ * Region [start, start+total) with zero-padding past doc end — the tail
+ * mechanism shared by single effects and C2 chain folds.
+ */
+export function regionWithTail(
+  channels: Float32Array[],
+  start: number,
+  total: number,
+): Float32Array[] {
   const region = sliceRegion(channels, start, total);
   const have = region[0]?.length ?? 0;
   const pad = total - have;
-  const input =
-    pad > 0
-      ? region.map((ch) => {
-          const out = new Float32Array(total);
-          out.set(ch, 0);
-          return out;
-        })
-      : region;
-  return def.process(input, sampleRate, params, ctx);
+  if (pad <= 0) return region;
+  return region.map((ch) => {
+    const out = new Float32Array(total);
+    out.set(ch, 0);
+    return out;
+  });
 }

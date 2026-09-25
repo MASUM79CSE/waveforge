@@ -69,6 +69,8 @@ export const activeTrackId = signal<string | null>(null);
 /** Bumped on every project mutation (lane redraws subscribe). */
 export const projectVersion = signal(0);
 export const effectDialogId = signal<string | null>(null);
+/** C2: FX Rack dialog open. */
+export const rackOpen = signal(false);
 export const previewActive = signal(false);
 
 // M4 — recording & export

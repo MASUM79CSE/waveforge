@@ -8,6 +8,7 @@ import { AboutDialog, WelcomeDialog } from './Dialogs';
 import { UrlDialog } from './UrlDialog';
 import { GainDialog, NormalizeDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
+import { FxRackDialog } from './FxRackDialog';
 import { Pgeq8Dialog } from './Pgeq8Dialog';
 import { Reverb2Dialog } from './Reverb2Dialog';
 import { NrPrintDialog } from './NrPrintDialog';
@@ -63,6 +64,7 @@ export function App() {
       ) : (
         <EffectDialog />
       )}
+      <FxRackDialog />
       {exportOpen.value && <ExportDialog />}
       {recordSettingsOpen.value && <RecordSettingsDialog />}
       {metadataOpen.value && <MetadataDialog />}

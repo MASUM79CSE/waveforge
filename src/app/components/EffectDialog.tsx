@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { defaultParams, getEffect } from '../../fx/registry';
 import type { Params, ParamSpec } from '../../fx/types';
 import { ensureRnVoice, rnvoiceStatus } from '../../fx/nrVoice';
+import { presetsForEffect } from '../../fx/presets';
 import { applyEffect, effectLabel, preparePreview } from '../fxActions';
 import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { closeEffectDialog } from '../actions';
@@ -72,9 +73,34 @@ export function EffectDialog() {
     void applyEffect(def.id, params, runCtx);
   };
 
+  const quickPresets = presetsForEffect(def.id);
+  const catalogX = t() as unknown as Record<string, string>;
+
   return (
     <Modal title={effectLabel(def)} onClose={closeEffectDialog}>
       <div class="fx-dialog">
+        {quickPresets.length > 0 && (
+          <div class="fx-preset-row">
+            <span class="fx-label">{t().fxPreset}</span>
+            <select
+              value=""
+              onChange={(e) => {
+                const quick = quickPresets.find((p) => p.id === (e.target as HTMLSelectElement).value);
+                if (!quick) return;
+                const next = { ...params, ...quick.params };
+                setParams(next);
+                restartPreview(next);
+              }}
+            >
+              <option value="">{catalogX.fxPreset ?? 'Preset'}</option>
+              {quickPresets.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {catalogX[p.nameKey] ?? p.id}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         {def.specs.map((spec) => (
           <div key={spec.key}>
             <ParamRow

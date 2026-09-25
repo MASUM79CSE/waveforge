@@ -50,6 +50,8 @@ export const menus: MenuDef[] = [
     id: 'effects',
     title: () => t().menuEffects,
     items: [
+      'fx.rack',
+      '-',
       'fx.compressor',
       'fx.limiter',
       '-',

@@ -45,9 +45,11 @@ const FRAME = 480; // verified against _rnnoise_get_frame_size (anchored)
 async function wasmBytes(url: string): Promise<ArrayBuffer> {
   if (typeof window === 'undefined') {
     // node (vitest): the url is a file URL, an absolute path, or a
-    // root-relative dev URL — resolve the candidates that exist
-    const fs = await import('node:fs');
-    const { fileURLToPath } = await import('node:url');
+    // root-relative dev URL — resolve the candidates that exist. The
+    // dynamic imports stay opaque to bundlers (@vite-ignore): browsers
+    // never take this branch, and node resolves them at runtime.
+    const fs = await import(/* @vite-ignore */ 'node:fs');
+    const { fileURLToPath } = await import(/* @vite-ignore */ 'node:url');
     const candidates = [
       url.startsWith('file:') ? fileURLToPath(url) : null,
       url.startsWith('/') ? url : null,
