@@ -66,29 +66,41 @@ export function TransportBar() {
         </div>
       </Zone>
 
+      <Zone label="Play">
+        <button
+          class={`tbtn tbtn-play-big ${playing.value ? 'playing' : ''}`}
+          title={playing.value ? t().pause : `${t().play} (Space)`}
+          aria-label={playing.value ? t().pause : `${t().play} (Space)`}
+          aria-pressed={playing.value}
+          data-testid="transport-play"
+          onClick={() => transport.togglePlay()}
+          disabled={!doc}
+        >
+          {playing.value ? <Svg d="M7 5h4v14H7zM13 5h4v14h-4z" /> : <Svg d="M8 5l12 7-12 7z" />}
+        </button>
+      </Zone>
+
       <Zone label="Transport">
         <div class="transport-group">
           <button
             class="tbtn"
-            title="Seek to Start (Home)"
-            aria-label="Seek to Start (Home)"
-            data-testid="transport-seek-start"
-            onClick={() => transport.seekStart()}
+            title="Back 5 s (Shift+←)"
+            aria-label="Back 5 seconds"
+            data-testid="transport-seek-back"
+            onClick={() => transport.nudge(-5)}
             disabled={!doc}
           >
-            <Svg d="M6 5v14M20 5l-11 7 11 7z" />
+            <Svg d="M11 6v12L2.5 12zM21 6v12l-8.5-6z" />
           </button>
           <button
-            class={`tbtn tbtn-play ${playing.value ? 'active' : ''}`}
-            title={`${t().play} (Space)`}
-            aria-label={`${t().play} (Space)`}
-            data-testid="transport-play"
-            onClick={() => {
-              if (!playing.value) transport.togglePlay();
-            }}
+            class="tbtn"
+            title="Forward 5 s (Shift+→)"
+            aria-label="Forward 5 seconds"
+            data-testid="transport-seek-fwd"
+            onClick={() => transport.nudge(5)}
             disabled={!doc}
           >
-            <Svg d="M7 4l14 8-14 8z" />
+            <Svg d="M13 6v12l8.5-6zM3 6v12l8.5-6z" />
           </button>
           <button
             class={`tbtn ${looping.value ? 'active' : ''}`}
@@ -111,16 +123,6 @@ export function TransportBar() {
             onClick={() => void toggleRecord()}
           >
             <Svg d="M12 7a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0v-3a5 5 0 0 1 5-5zM8 21h8" />
-          </button>
-          <button
-            class="tbtn"
-            title="Seek to End (End)"
-            aria-label="Seek to End (End)"
-            data-testid="transport-seek-end"
-            onClick={() => transport.seekEnd()}
-            disabled={!doc}
-          >
-            <Svg d="M18 5v14M4 5l11 7-11 7z" />
           </button>
         </div>
       </Zone>

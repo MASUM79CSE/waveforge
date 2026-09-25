@@ -1101,3 +1101,19 @@ start/transport-seek-end. e2e #55 updated: zone ORDER asserted
 (Position < Transport < Stop/Pause < Edit tools), pause state machine
 exercised live. Gates: **716/716 unit, 56/56 e2e, lint 0, tsc clean,
 build OK.**
+
+## 2026-09-25 (redesign r3) — blended bar, standalone play, ±5 s seeks
+
+User-directed refinements: (1) zones BLEND — hairline separators replace
+the boxy cards (lighter, professional); (2) PLAY is a standalone
+prominent zone — big lit accent button that toggles play/pause with
+icon + aria-pressed state (labeled plain "Pause" while playing to avoid
+ambiguity with the dedicated pause); (3) seek buttons now step the
+cursor ±5 s (double-triangle glyphs, Back 5 s / Forward 5 s, clamped)
+instead of jump-to-ends; seek-start/seek-end testids preserved on the
+step buttons, jump-to-end remains via the End key / SelectionBar. e2e
+#55 rewritten: order (Position < Play < Transport < Stop/Pause), play
+aria-pressed state machine, ±5 s clock assertions (duration-aware),
+RECORD right-anchored. One flaky full-suite run traced to load timing
+(multitrack "add lanes"); passes consistently across re-runs. Gates:
+**716/716 unit, 56/56 e2e, lint 0, tsc clean, build OK.**

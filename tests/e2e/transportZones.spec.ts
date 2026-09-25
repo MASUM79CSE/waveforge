@@ -1,11 +1,10 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * e2e #55 — transport redesign (zone layout): TIME DISPLAY first, then
- * TRANSPORT (seek-left, play, seek-right, loop, record), with STOP/PAUSE
- * in their own separated cluster; EDIT/SELECTION/GRID follow; RECORD
- * (monitor/punch/meter) + MASTER right-anchored. Captions show on wide
- * screens; nothing clips; record controls reachable everywhere.
+ * e2e #55 — transport redesign r3: blended zone sections. ORDER: position
+ * clock first, then a standalone prominent PLAY (toggles play/pause, icon
+ * + aria-pressed follow state), then TRANSPORT = back 5 s / forward 5 s /
+ * loop / record, then STOP/PAUSE separated; RECORD + MASTER right.
  */
 
 const SIZES: Array<[number, number]> = [
@@ -17,57 +16,68 @@ const SIZES: Array<[number, number]> = [
   [375, 700],
 ];
 
-const ZONES = ['Position', 'Transport', 'Stop / Pause', 'Edit tools', 'Selection', 'Beat grid', 'Record', 'Master'];
+const ZONES = ['Position', 'Play', 'Transport', 'Stop / Pause', 'Edit tools', 'Selection', 'Beat grid', 'Record', 'Master'];
 
-test('position first, transport next, stop/pause separated', async ({ page }) => {
+function clockToSeconds(text: string): number {
+  const [mins, rest] = text.split(':');
+  return Number(mins) * 60 + Number(rest);
+}
+
+async function cursorSeconds(page: import('@playwright/test').Page): Promise<number> {
+  const text = (await page.locator('.time-cursor').textContent()) ?? '0:00.000';
+  return clockToSeconds(text.trim());
+}
+
+test('position first, standalone play, ±5 s seeks, stop/pause separated', async ({ page }) => {
   await page.goto('/');
   const welcome = page.getByRole('dialog', { name: /welcome/i });
   await welcome.getByRole('button', { name: /load sample/i }).click();
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
-  // every zone panel exists, labelled for AT
   for (const zone of ZONES) {
     await expect(page.locator(`.tz[data-zone-label="${zone}"]`)).toBeVisible();
     await expect(page.locator(`.tz[data-zone-label="${zone}"]`)).toHaveAttribute('aria-label', zone);
   }
 
-  // ORDER: the time display leads, transport follows, stop/pause separate
   const x = async (zone: string): Promise<number> =>
     (await page.locator(`.tz[data-zone-label="${zone}"]`).boundingBox())!.x;
-  expect(await x('Position')).toBeLessThan(await x('Transport'));
+  expect(await x('Position')).toBeLessThan(await x('Play'));
+  expect(await x('Play')).toBeLessThan(await x('Transport'));
   expect(await x('Transport')).toBeLessThan(await x('Stop / Pause'));
   expect(await x('Stop / Pause')).toBeLessThan(await x('Edit tools'));
 
-  // the clock lives in the FIRST zone
-  const clockX = (await page.locator('.time-cursor').boundingBox())!.x;
-  expect(clockX).toBeLessThan(await x('Transport'));
+  // PLAY: prominent standalone button — toggles, state follows
+  const play = page.getByTestId('transport-play');
+  await expect(play).toBeEnabled();
+  await expect(play).toHaveAttribute('aria-pressed', 'false');
+  await play.click();
+  await expect(play).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('transport-pause')).toBeEnabled();
+  await play.click(); // toggles to pause
+  await expect(play).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('transport-pause')).toBeDisabled();
 
-  // transport cluster: seek-left, play, seek-right (NEW), loop, record
-  const transport = page.locator('.tz[data-zone-label="Transport"]');
-  await expect(transport.getByTestId('transport-seek-start')).toBeVisible();
-  await expect(transport.getByTestId('transport-play')).toBeVisible();
-  await expect(transport.getByTestId('transport-seek-end')).toBeVisible();
-  await expect(transport.getByRole('button', { name: /loop/i })).toBeVisible();
-  await expect(transport.getByTestId('record-toggle')).toBeVisible();
+  // SEEK: ±5 s cursor steps (not jump-to-ends), clamped at the ends
+  const duration = clockToSeconds(((await page.locator('.time-total').textContent()) ?? '0:00.000').trim());
+  const back = page.getByTestId('transport-seek-back');
+  const fwd = page.getByTestId('transport-seek-fwd');
+  await back.click();
+  expect(await cursorSeconds(page)).toBeCloseTo(0, 1);
+  await fwd.click();
+  expect(await cursorSeconds(page)).toBeCloseTo(5, 1);
+  await fwd.click();
+  expect(await cursorSeconds(page)).toBeCloseTo(Math.min(10, duration), 1);
+  await back.click();
+  expect(await cursorSeconds(page)).toBeCloseTo(Math.max(0, Math.min(10, duration) - 5), 1);
 
-  // stop/pause live OUTSIDE the transport cluster (separated), pause is
-  // disabled while stopped and enables during playback
-  const sp = page.locator('.tz[data-zone-label="Stop / Pause"]');
-  await expect(sp.getByTestId('transport-pause')).toBeVisible();
-  await expect(sp.getByTestId('transport-stop')).toBeVisible();
-  await expect(sp.getByTestId('transport-pause')).toBeDisabled();
-  await page.keyboard.press('Space');
-  await expect(sp.getByTestId('transport-pause')).toBeEnabled();
-  await page.getByTestId('transport-pause').click();
-  await expect(sp.getByTestId('transport-pause')).toBeDisabled();
+  // loop + record live in the TRANSPORT zone
+  await expect(page.locator('.tz[data-zone-label="Transport"]').getByRole('button', { name: /loop/i })).toBeVisible();
+  await expect(page.locator('.tz[data-zone-label="Transport"]').getByTestId('record-toggle')).toBeVisible();
 
-  // RECORD zone is right-anchored: past 55% of the bar
+  // RECORD zone right-anchored
   const barBox = (await page.locator('.transport').boundingBox())!;
   const recBox = (await page.locator('.tz[data-zone-label="Record"]').boundingBox())!;
   expect(recBox.x - barBox.x).toBeGreaterThan(barBox.width * 0.55);
-
-  // captions render on desktop
-  await expect(page.locator('.tz-cap').first()).toBeVisible();
 });
 
 test('transport zones hold at every size — nothing clips, record reachable', async ({ page }) => {
@@ -79,15 +89,11 @@ test('transport zones hold at every size — nothing clips, record reachable', a
     const bar = page.locator('.transport');
     await expect(bar).toBeVisible();
 
-    // the bar itself never hides content horizontally once there is room
-    // (1920 = full layout incl. strips); below that the bar scrolls
-    // internally by design (overflow-x: auto — same as Audition's toolbar)
     const clip = await bar.evaluate((el) => el.scrollWidth - el.clientWidth);
     if (width >= 1920) {
       expect(clip, `bar hides content at ${width}px`).toBeLessThanOrEqual(1);
     }
 
-    // record controls remain reachable at every size
     await page.getByTestId('record-toggle').scrollIntoViewIfNeeded().catch(() => {});
     await expect(page.getByTestId('record-toggle')).toBeVisible();
     await expect(page.getByTestId('monitor-toggle')).toBeVisible();

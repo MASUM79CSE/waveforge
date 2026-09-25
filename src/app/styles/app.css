@@ -187,27 +187,60 @@
   scrollbar-width: none;
 }
 
-/* Redesign: labeled zone panels — grouped clusters with micro-captions
-   (Audition-style). Inner markup/behavior unchanged. */
+/* Redesign r3: blended zone sections — no boxy cards; hairline separators
+   with micro-captions keep the grouping readable (Audition-style). */
 .tz {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 4px 9px 6px;
-  background: var(--bg-1);
-  border: 1px solid var(--bd);
-  border-radius: var(--r-md);
+  padding: 3px 14px 5px;
+  border-left: 1px solid var(--bd);
   flex: none;
+  min-width: 0;
+}
+.transport .tz:first-child {
+  border-left: none;
+  padding-left: 2px;
 }
 .tz-cap {
   font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-1); /* AA on --bg-1 (fg-2 is decoration-only, 3.9:1) */
   line-height: 1;
   user-select: none;
   white-space: nowrap;
+  opacity: 0.9;
+}
+
+/* Standalone prominent play (own zone) — lit while playing */
+.tbtn-play-big {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 32px;
+  border-radius: var(--r);
+  background: var(--ac);
+  color: var(--ac-ink);
+  box-shadow: 0 0 12px var(--ac-glow);
+  transition:
+    background var(--tr),
+    box-shadow var(--tr),
+    opacity var(--tr);
+}
+.tbtn-play-big:hover:enabled {
+  filter: brightness(1.1);
+}
+.tbtn-play-big.playing {
+  background: var(--ac-soft, var(--ac));
+  color: var(--ac);
+  box-shadow: inset 0 0 0 1px var(--ac);
+}
+.tbtn-play-big:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .tz-body {
   display: flex;
