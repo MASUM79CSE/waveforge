@@ -740,3 +740,13 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
   domain-parametric variants; delegation kept old anchors green);
   author curves at the DIALOG because effects are offline bounces —
   nothing new to persist.
+
+## 2026-09-25 (verification) — post-A7 Lighthouse re-run
+
+- 98/100/100/100 (gate ≥95/95/100/100 MET). FCP 1.6 s, LCP 1.9 s, br
+  transfer 99.3 KiB (A5: 96.5 KiB → +2.8 KiB for A6 kernels + A7 UI).
+- Perf dip 99→98 is FCP/TBT timing variance + the new bytes; no new
+  flags (unused-js 73 KiB = pre-existing FLAC decode path).
+- Artifact: docs/perf/lighthouse-a7.json. Recipe lesson re-confirmed:
+  plain-curl `/` 404s by design (non-nav); verify with nav headers
+  (Sec-Fetch-Dest: document) or just trust the LH run itself.
