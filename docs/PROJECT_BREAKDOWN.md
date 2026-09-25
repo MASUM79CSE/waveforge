@@ -208,3 +208,14 @@ dead `toastNotYet` code path, CI now runs the e2e suite (dedicated job
 **docs/GAP_ANALYSIS.md** (cloud M12 parked, CSP report-only,
 cross-browser partial, >400-line file debt, og:image post-domain).
 Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
+
+## Appendix — PRODUCTION DEPLOY verified (2026-09-26)
+
+Live at **https://waveforge-chi.vercel.app** (Vercel, user-deployed).
+Verified: HTTP 200, security headers correct (CSP report-only, nosniff,
+X-Frame-Options, Referrer-Policy), PWA manifest + SW 200, OG meta in
+HTML, live-browser smoke (welcome → sample → About: v1.0.0 + full
+developer credit), LH desktop 97/100/100/96, mobile 99. Known follow-up:
+the avatar CDN URL returns 404 in production → monogram fallback shows
+and best-practices loses 2 pts; replace with a committed/working image
+to restore 100.
