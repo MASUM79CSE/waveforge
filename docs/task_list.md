@@ -805,3 +805,36 @@ all-bypassed = identity, length-changing stages flow through),
 `exportChain` stable JSON. 10 gates (parse ×5, fold ×5) RED→green;
 full suite **676/676 unit (78 files), lint 0, tsc clean**. Next: C2 rack
 UI + apply (one history entry), C3 presets, C4 e2e.
+
+## 2026-09-25 (C-series) — FX Rack + presets SHIPPED (C1–C4)
+
+User: "do as your best" → post-E7b LH verified (96/99, TBT variance; gate
+met, `docs/perf/lighthouse-e7b.json`), then the chains project opened per
+`docs/fxchains-analysis.md` (RX Module Chains / Audacity Macros precedent;
+web DAWs stop at per-effect presets; AudioMass has neither).
+
+- [x] **C1** chain model (`src/fx/chain.ts`, `4d3d18e`): zod boundary
+      (`parseChain` — shape + cap 16 + registry-validated params, clamps/
+      defaults as the single source of truth), pure `foldChain` (bypass
+      skips bit-exactly, all-bypassed identity, length changes flow),
+      stable `exportChain` JSON. 10 gates.
+- [x] **C2** FX Rack (`d94727a`): `foldChainAsync` (graph stages offline
+      per stage); `applyChain` = ONE history entry for the whole chain
+      (region + SUMMED stage tails; lane target honored); whole-chain A/B
+      preview via the def-less PreviewPlan; `FxRackDialog` (expand/param
+      rows/reorder/bypass/remove, add from the registry); `fx.rack`
+      command first in the Effects menu.
+- [x] **C3** presets (`d94727a`): built-ins **Voice rescue**
+      (`fx.rnvoice → fx.deesser → fx.compressor` — E7b compounds),
+      Podcast polish, Master glue, Warm air (defaults-merged, validated);
+      per-effect quick presets in EffectDialog; user presets in idb
+      (`waveforge-presets` v1, drafts precedent) + chain JSON import/
+      export. rnvoice chains auto-ensure the model.
+- [x] **C4** e2e (`e90f016`): 40th (add/reorder/bypass/preview/apply once/
+      undo/redo, console-clean) + 41st (Voice rescue applies from the
+      preset select; undo). Gates: **683/683 unit (80 files), 41/41 e2e,
+      lint 0, tsc clean, build OK, LH 98/100/100/100**
+      (`docs/perf/lighthouse-c2.json`).
+
+Non-goals held: parallel/sidechain routing, per-entry automation curves
+(seam = paramCurves), preset cloud sync.

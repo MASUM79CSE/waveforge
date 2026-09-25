@@ -4,6 +4,15 @@
 decisions) · Registry: ADR 005 · Apply/history rules: bounce precedent ·
 Envelopes: A6/A7 (`spec.curve` contract).
 
+> **STATUS: SHIPPED (2026-09-25).** C1 `4d3d18e` · C2+C3 `d94727a` · C4
+> `e90f016`. Gates at ship: 683/683 unit (80 files), 41/41 e2e, lint 0,
+> tsc clean, build OK; Lighthouse **98/100/100/100**
+> (`docs/perf/lighthouse-c2.json`). 12 C1/C2 model gates + 5 preset/store
+> unit gates + 40th/41st e2e. Ship notes: tails SUM across stages (v1
+> deviation as planned in C2); mid-chain length changes flow through; the
+> rack preview renders offline (no live-graph path for chains); Voice
+> rescue auto-loads the RNNoise model on apply.
+
 ## C1 — chain model (pure, this phase)
 
 `src/fx/chain.ts` — UI-free, no app imports:
