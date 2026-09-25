@@ -727,3 +727,16 @@ migration); sample-domain; MIDI/timestretch/overlaps rejected for v1.
   verbatim (reverb2Wet) rather than re-running the static fn at mix 0/1
   and recombining. (3) keep new code out of files near the 400-line cap
   from the start (modulation split forced a refactor mid-phase).
+
+## 2026-09-25 (final) — A7 FX envelope authoring SHIPPED — automation project COMPLETE
+
+- `a5abbc2`+`5ca6655`: ∿ toggle + envelope canvas in the effect dialog;
+  curves via ctx.paramCurves into preview AND apply (baked); graph
+  preview schedules on the live graph; 38th e2e author→apply→undo→redo.
+- Gates: 657/657 unit (76 files), 38/38 e2e, lint 0, build 0.99 s.
+- COMPLETE: A1 kernel → A2 model/render → A3 playback → A4 track UI →
+  A5 drafts → A6a–A6d FX curves (graph + every kernel) → A7 authoring.
+- Lessons: generalize primitives BEFORE cloning them (A4 → A7 needed
+  domain-parametric variants; delegation kept old anchors green);
+  author curves at the DIALOG because effects are offline bounces —
+  nothing new to persist.

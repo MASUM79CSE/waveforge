@@ -276,3 +276,19 @@ Remaining follow-ups: per-kernel UI (FX envelope lane authoring
 paramCurves), and curves for any FUTURE kernels follow the A6c/A6d
 pattern + scope rule (audio-shaping sweepable; time-base/detector/
 structural static, anchored).
+
+## Status stamp (A7 SHIPPED, 2026-09-25) — FX ENVELOPE AUTHORING
+
+| Part | State | Evidence |
+| --- | --- | --- |
+| A7 dialog authoring | ✅ `a5abbc2`/`5ca6655` | domain-parametric primitives (A4 delegates), fxEnvelope draft state, ∿ toggle per numeric param, FxCurveEditor canvas (region-x, spec-domain-y, baseline, knots), curves ride ctx into preview+apply, graph preview schedules via scheduleFxAuto; 7 unit anchors + 38th e2e (author→preview→apply→undo→redo) |
+
+Gates at A7: **657/657 unit (76 files), 38/38 e2e, lint 0, build
+0.99 s**.
+
+THE AUTOMATION PROJECT IS COMPLETE: track envelopes (A1–A5), graph-kind
+FX ramps (A6a), kernel curves for EVERY kernel effect (A6b–A6d), and
+UI authoring (A7). Future work = new canvases only: any future kernel
+follows the A6c/A6d pattern + scope rule; future curve surfaces (e.g.
+draft-persisted LIVE FX chains, if ever built) reuse the same
+primitives and scheduler.
