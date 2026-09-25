@@ -83,6 +83,7 @@ export function EffectDialog() {
           <div class="fx-preset-row">
             <span class="fx-label">{t().fxPreset}</span>
             <select
+              aria-label={t().fxPreset}
               value=""
               onChange={(e) => {
                 const quick = quickPresets.find((p) => p.id === (e.target as HTMLSelectElement).value);
@@ -217,6 +218,7 @@ export function ParamRow({
       <input
         class="fx-num"
         type="number"
+        aria-label={label}
         min={spec.min}
         max={spec.max}
         step={spec.step}

@@ -220,6 +220,7 @@ export function FxRackDialog() {
         <div class="rack-presets" data-testid="rack-presets">
           <span class="fx-label">{t().rackPresets}</span>
           <select
+            aria-label={t().rackPresets}
             value={selected}
             onChange={(e) => setSelected((e.target as HTMLSelectElement).value)}
           >
@@ -251,6 +252,7 @@ export function FxRackDialog() {
           </button>
           <input
             type="text"
+            aria-label={t().rackPresetName}
             placeholder={t().rackPresetName}
             value={presetName}
             onInput={(e) => setPresetName((e.target as HTMLInputElement).value)}
@@ -309,17 +311,18 @@ export function FxRackDialog() {
                   />
                   {t().rackBypass}
                 </label>
-                <button class="rack-move" disabled={i === 0} onClick={() => move(i, -1)}>
+                <button class="rack-move" aria-label={t().rackMoveUp} disabled={i === 0} onClick={() => move(i, -1)}>
                   ↑
                 </button>
                 <button
                   class="rack-move"
+                  aria-label={t().rackMoveDown}
                   disabled={i === entries.length - 1}
                   onClick={() => move(i, 1)}
                 >
                   ↓
                 </button>
-                <button class="rack-remove" onClick={() => remove(i)}>
+                <button class="rack-remove" aria-label={t().rackRemove} onClick={() => remove(i)}>
                   ✕
                 </button>
               </div>
@@ -363,7 +366,7 @@ export function FxRackDialog() {
         })}
 
         <div class="rack-add">
-          <select id="rack-add-select">
+          <select id="rack-add-select" aria-label={t().rackAdd}>
             <option value="">{t().rackAdd}</option>
             {listEffects().map((def) => (
               <option key={def.id} value={def.id}>
