@@ -2,6 +2,7 @@ import { runCommand } from './commands';
 import {
   closeDoctor,
   closeEffectDialog,
+  closeExportDialog,
   closeRecordSettings,
   closeShortcuts,
   edit,
@@ -14,6 +15,7 @@ import {
   aboutOpen,
   doctorOpen,
   effectDialogId,
+  exportOpen,
   recordSettingsOpen,
   shortcutsOpen,
   urlOpen,
@@ -35,6 +37,7 @@ export function bindKeyboard(): void {
       cancelCountIn();
       if (effectDialogId.value) closeEffectDialog();
       else if (recordSettingsOpen.value) closeRecordSettings();
+      else if (exportOpen.value) closeExportDialog();
       else if (urlOpen.value) urlOpen.value = false;
       else if (doctorOpen.value) closeDoctor();
       else if (shortcutsOpen.value) closeShortcuts();

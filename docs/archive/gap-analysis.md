@@ -96,3 +96,5 @@ undo-depth hole with one test if missing). **Y3** — A1 Firefox/WebKit
 Playwright pass (report; fix what falls out, or document the supported-
 browser matrix honestly). **Y4** — A4 flake root-cause. C9–C14 wait on
 explicit product decisions.
+
+> Archived 2026-09-25: superseded by the shipped M0–M9/D/E/A/C/X/Y/Z/P/R series (see task_list.md). Kept for historical trace.

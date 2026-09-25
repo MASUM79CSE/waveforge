@@ -1193,3 +1193,21 @@ centered, credit line fits, hero scales. README Features updated to
 describe the studio record flow, the professional export chooser, and
 the interface organization (grouped menus, zone transport). Gates:
 **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (launch) — launch prep: README v2, screenshots, cleanup
+
+Deploy-ready pass per ECC workflow:
+- **README v2**: hero screenshot + 4-shot gallery (editor / effects menu /
+  export chooser / record armed / analysis report — captured from the real
+  app via Playwright at 1440×900 into docs/screenshots/), full Technology
+  & architecture section (worker-first diagram, stack table, architecture
+  narrative, source map), verified quality-gate numbers, deploy section
+  (Vercel + vercel.json), credits (Mir Md. Masum + MIT/AudioMass).
+- **Cleanup**: docs/gap-analysis.md → docs/archive/ (superseded by the
+  shipped series; historical trace kept); stray temp dirs removed
+  (test-results workdir, empty public/credits, workspace lh-server).
+  Active ECC tooling kept: scripts/hooks (referenced by .claude settings),
+  playwright.other.config.ts (Firefox/WebKit pass).
+- **Product fix en route**: Escape now closes the Export dialog (was
+  missing from the dialog chain — caught by the screenshot run).
+Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
