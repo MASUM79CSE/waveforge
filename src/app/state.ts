@@ -96,6 +96,7 @@ export interface RecStudioSettings {
   manualBpm: number; // 40–240
   clickVolume: number; // 0–1
   monitoring: boolean; // input monitor — feedback-safe default OFF
+  preRollSec: number; // R6: punch pre-roll playback (0.5–3 s)
 }
 export const recStudio = signal<RecStudioSettings>({
   countInBars: 1,
@@ -104,6 +105,7 @@ export const recStudio = signal<RecStudioSettings>({
   manualBpm: 120,
   clickVolume: 0.8,
   monitoring: false,
+  preRollSec: 1.5,
 });
 export const recordSettingsOpen = signal(false);
 export const exportOpen = signal(false);

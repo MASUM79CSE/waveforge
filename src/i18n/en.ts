@@ -183,6 +183,7 @@ export const en = {
   studioUseDetected: 'Use detected BPM',
   studioClickVolume: 'Click volume',
   studioMonitor: 'Input monitoring',
+  studioPreRoll: 'Punch pre-roll',
   takesTitle: 'Takes this session',
   takeDiscard: 'Discard last take',
   exportTitle: 'Export / Download',

@@ -17,7 +17,17 @@ import { t } from '../i18n';
 import { toastError, toastInfo } from './actions';
 import { getSharedContext } from '../io/decode';
 import { getDoc, engine, installDoc, performEdit } from './runtime';
-import { addProjectTrack, conformToProjectRate, ensureProject, registerLaneAsset } from './projectActions';
+import {
+  activeTrackTarget,
+  addProjectTrack,
+  commitTrackChannels,
+  conformToProjectRate,
+  ensureProject,
+  projectSeek,
+  projectStop,
+  projectTogglePlay,
+  registerLaneAsset,
+} from './projectActions';
 import { makeOverwritePaste } from '../engine/editOps';
 import { currentChannels } from './editActions';
 import { createTrack } from '../engine/project';
@@ -66,6 +76,7 @@ export function loadStudio(): S.RecStudioSettings {
       manualBpm: Math.min(240, Math.max(40, Number(p.manualBpm ?? 120))),
       clickVolume: Math.min(1, Math.max(0, Number(p.clickVolume ?? 0.8))),
       monitoring: Boolean(p.monitoring),
+      preRollSec: Math.min(3, Math.max(0.5, Number(p.preRollSec ?? 1.5))),
     };
   } catch {
     return S.recStudio.value;
@@ -219,8 +230,7 @@ export function cancelCountIn(): void {
 
 // ---- R4: punch in/out (docs/recording-plan.md) ----
 
-/** v1 pre-roll: 1.5 s of the existing audio before the punch-in point. */
-const PUNCH_PRE_ROLL_SEC = 1.5;
+/** Default punch pre-roll; user-configurable (R6) via studio settings. */
 let punchTimers: number[] = [];
 let countInTimers: number[] = [];
 let punchRunning = false;
@@ -246,7 +256,7 @@ export async function punchRecord(): Promise<void> {
     toastInfo(t().punchNeedsSelection);
     return;
   }
-  const rate = doc.sampleRate;
+  const rate = S.docInfo.value?.sampleRate ?? doc.sampleRate;
   const start = Math.max(0, Math.round(Math.min(sel.start, sel.end) * rate));
   const end = Math.min(doc.length, Math.round(Math.max(sel.start, sel.end) * rate));
   if (end - start < 2) {
@@ -263,10 +273,14 @@ export async function punchRecord(): Promise<void> {
     return;
   }
 
+  // R6: any running transport stops first (project playback OR doc engine)
+  if (S.projectOpen.value) projectStop();
+  else engine.stop();
+
   const bpm = tempoBpm();
   const beatSec = 60 / Math.min(240, Math.max(40, bpm));
   const bars = st.metronome ? st.countInBars : 0;
-  const plan = punchPlan({ start, end, rate, preRollSec: PUNCH_PRE_ROLL_SEC, countInBars: bars, bpm, beatsPerBar: 4 });
+  const plan = punchPlan({ start, end, rate, preRollSec: st.preRollSec, countInBars: bars, bpm, beatsPerBar: 4 });
   const preRollSec = (plan.punchInFrame - plan.playFromFrame) / rate;
   const punchSec = (plan.punchOutFrame - plan.punchInFrame) / rate;
   punchRunning = true;
@@ -295,17 +309,23 @@ export async function punchRecord(): Promise<void> {
 
   const ms = (sec: number): number => Math.max(0, sec * 1000);
 
-  // 1) pre-roll playback starts after the count-in
+  // 1) pre-roll playback starts after the count-in — the PROJECT mix when
+  // a project is open (hear the other lanes), else the doc engine
   punchTimers.push(window.setTimeout(() => {
     S.countInBeat.value = 0;
-    engine.seek(plan.playFromFrame / rate);
-    void engine.play();
+    if (S.projectOpen.value) {
+      projectSeek(plan.playFromFrame / rate);
+      projectTogglePlay();
+    } else {
+      engine.seek(plan.playFromFrame / rate);
+      void engine.play();
+    }
   }, ms(countInSec)));
 
   // 2) roll at the punch-in point
   punchTimers.push(window.setTimeout(() => {
-    engine.stop();
-    engine.seek(plan.punchOutFrame / rate);
+    if (S.projectOpen.value) projectStop();
+    else engine.stop();
     beginRecording();
   }, ms(countInSec + preRollSec)));
 
@@ -330,8 +350,24 @@ export async function punchRecord(): Promise<void> {
           take.sampleRate,
           rate,
         );
-        const outcome = makeOverwritePaste(currentChannels(), plan.punchInFrame, plan.punchOutFrame - plan.punchInFrame, conformed);
-        if (outcome) performEdit(outcome, t().opPunch);
+        // R6: route like safeTrackEdit — the ACTIVE LANE commits through the
+        // project history when a project is open, else the doc path
+        const lane = S.projectOpen.value ? activeTrackTarget() : null;
+        if (lane) {
+          const laneOutcome = makeOverwritePaste(
+            lane.channels,
+            plan.punchInFrame,
+            plan.punchOutFrame - plan.punchInFrame,
+            conformed,
+          );
+          if (!laneOutcome || !commitTrackChannels(lane.trackId, laneOutcome.channels, t().opPunch)) {
+            toastError(t().editFailed);
+            return;
+          }
+        } else {
+          const outcome = makeOverwritePaste(currentChannels(), plan.punchInFrame, plan.punchOutFrame - plan.punchInFrame, conformed);
+          if (outcome) performEdit(outcome, t().opPunch);
+        }
         addTake(S.takes.value, punchSec);
         toastInfo(t().punchDone);
       } catch (error: unknown) {

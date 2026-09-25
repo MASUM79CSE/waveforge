@@ -189,6 +189,24 @@ export function RecordSettingsDialog() {
           />
         </div>
         <div class="fx-row">
+          <label class="fx-label" for="record-preroll">
+            {t().studioPreRoll}
+          </label>
+          <select
+            id="record-preroll"
+            class="fx-num export-select"
+            data-testid="punch-preroll"
+            value={String(studio.preRollSec)}
+            onChange={(e) => updateStudio({ preRollSec: Number((e.target as HTMLSelectElement).value) })}
+          >
+            <option value="0.5">0.5 s</option>
+            <option value="1">1 s</option>
+            <option value="1.5">1.5 s</option>
+            <option value="2">2 s</option>
+            <option value="3">3 s</option>
+          </select>
+        </div>
+        <div class="fx-row">
           <label class="fx-label" for="record-monitor">
             {t().studioMonitor}
           </label>

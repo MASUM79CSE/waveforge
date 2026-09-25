@@ -1012,3 +1012,19 @@ labelled headers) with grouped item indent. Unit: menu consistency +2
 (g11 no-duplicate/complete grouping, g12 fold shape). E2e #52: headers
 visible, Dynamics group labelled, deep scrollable item fires. Gates:
 **716/716 unit (85 files), 52/52 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (R6) — punch in projects + configurable pre-roll SHIPPED
+
+Closed the flagged follow-up: with a project open, punch now (a) plays
+the pre-roll through the PROJECT transport (hear the mix, not engine.doc),
+(b) splices the ACTIVE LANE through activeTrackTarget ->
+makeOverwritePaste -> commitTrackChannels (one project-history entry —
+undo/redo verified in e2e), (c) stops any running transport first.
+Punch pre-roll became a persisted studio setting (0.5/1/1.5/2/3 s,
+clamped 0.5–3, selector in Record settings). New e2e #53 (project punch:
+lane activation -> select-all -> punch -> undo restores -> redo
+re-applies -> pre-roll persists across reload, console-clean).
+Lighthouse re-check: desktop **100/100/100/100**; mobile 87 perf = FCP
+under emulated slow-4G (TBT 70 ms, CLS 0, lean 376 K main chunk) —
+main-chunk splitting noted as a future optimization, not a regression.
+Gates: **716/716 unit (85 files), 53/53 e2e, lint 0, tsc clean, build OK.**

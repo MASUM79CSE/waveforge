@@ -1,5 +1,14 @@
 # R-series — studio recording (build plan)
 
+> **R6 SHIPPED (2026-09-25):** punch routed through the PROJECT stack —
+> pre-roll plays the project mix (projectSeek/projectTogglePlay), the
+> splice commits to the ACTIVE LANE via activeTrackTarget +
+> commitTrackChannels (one project-history entry); punch pre-roll is now
+> a persisted setting (0.5–3 s, default 1.5). e2e #53. Gates: 716/716
+> unit, 53/53 e2e, lint 0, tsc, build; LH desktop 100/100/100/100
+> (mobile 87 = first-paint under emulated slow-4G, TBT 70 ms, CLS 0 —
+> main-chunk splitting listed as future optimization).
+
 > **STATUS: SHIPPED (2026-09-25).** All phases R1–R5 landed in one green
 > wave: 714/714 unit, 51/51 e2e (#50 studio flow, #51 punch), lint 0,
 > tsc clean, build OK. Non-goal deviations: takes = informational strip +
