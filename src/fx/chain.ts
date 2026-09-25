@@ -1,5 +1,5 @@
 /**
- * C1 — FX chain model (docs/fxchains-plan.md): a serial chain of registry
+ * C1 — FX chain model: a serial chain of registry
  * effects with per-entry params + bypass. The boundary (import/share JSON)
  * is untrusted: zod enforces the shape, the registry enforces effect
  * existence and param ranges (validateParams clamps — the specs are the

@@ -1,5 +1,6 @@
 /**
- * Clip playback scheduling math (M9c — docs/clips-plan.md).
+ * Clip playback scheduling math (M9c
+).
  * Pure: expands one playback pass over a clip timeline into per-clip
  * start(when, offset, dur) args. ProjectPlayback consumes the result;
  * ProjectPlayback (class) owns the graph, this file owns the math.

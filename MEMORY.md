@@ -2,7 +2,7 @@
 
 > **Status:** Production · v1.0 · 2026-09-25
 > **Applies to:** `c0a1baa` and later
-> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · ADR 002 (EDL undo) · ADR 004 (immutability) · ADR 008 (persistence)
+> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md)   
 
 "Memory" in WaveForge spans four layers: **runtime audio memory**,
 **undo/history memory**, **session/selection state**, and **durable

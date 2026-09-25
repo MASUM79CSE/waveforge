@@ -1,5 +1,5 @@
 /**
- * R3 — session takes reducer (docs/recording-plan.md). Pure state over the
+ * R3 — session takes reducer. Pure state over the
  * recording session: each take is appended when its buffer lands; keep
  * marks the good ones; discardLast drops the most recent entry (the buffer
  * commit itself rides the existing undoable lane/doc edit).

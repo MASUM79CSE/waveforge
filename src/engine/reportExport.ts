@@ -1,5 +1,5 @@
 /**
- * P4 — report export (docs/analyze-plan.md addendum): the professional
+ * P4 — report export: the professional
  * report is deliverable. CSV is machine-readable (header row, dot decimals,
  * exactly 4 fields per row — locale-safe); the text form is a readable
  * summary for clipboard/email. Pure builders over AnalysisReport + its

@@ -1,5 +1,6 @@
 /**
- * Asset store + lane bridge + copy-on-write bounce (M9b — docs/clips-plan.md).
+ * Asset store + lane bridge + copy-on-write bounce (M9b
+).
  * Assets are immutable takes; clips reference them. Destructive ops bounce
  * the affected region into a NEW asset so sibling clips sharing the source
  * are never touched. Zero-copy lane bridge: an M8 lane's channels BECOME

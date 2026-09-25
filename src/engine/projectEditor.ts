@@ -1,6 +1,6 @@
 /**
  * AudioProjectEditor — multitrack editing shell (M8c; M9d1 clip flip —
- * docs/clips-plan.md). Owns the ProjectState (lanes hold clip lists over
+ * project model). Owns the ProjectState (lanes hold clip lists over
  * shared assets) and ONE project history: clip-arrangement edits ride as
  * {kind: 'setClips'} snapshots with the assets needed by either side
  * retained in the entry (bounce bytes charge here); structural ops

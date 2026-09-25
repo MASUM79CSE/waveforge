@@ -1,5 +1,6 @@
 /**
- * Clip arrangement actions (M9d2 — docs/clips-plan.md).
+ * Clip arrangement actions (M9d2
+).
  * Pure helpers (hit test, drag-mode classification, beat snap) +
  * editor-explicit arrange cores that ride the project history (ONE entry
  * per gesture) + the signal-facing commands the canvas and keyboard call.

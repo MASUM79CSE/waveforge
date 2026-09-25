@@ -1,5 +1,5 @@
 /**
- * A7 — FX envelope draft state (docs/automation-plan.md A7 addendum).
+ * A7 — FX envelope draft state.
  * Curves authored in the effect dialog for the CURRENT apply: keyed by the
  * effect's flat param keys, region-relative sample domain, spec-domain
  * values. They ride `EffectRunContext.paramCurves` into BOTH preview and

@@ -2,7 +2,7 @@
 
 > **Status:** Production · v1.0 · 2026-09-25
 > **Applies to:** `c0a1baa` and later
-> **Related:** [DESIGN.md](DESIGN.md) · [MEMORY.md](MEMORY.md) · [DATABASE.md](DATABASE.md) · [PROJECT_BREAKDOWN.md](PROJECT_BREAKDOWN.md) · [docs/adr/](docs/adr) · [docs/architecture.md](docs/architecture.md)
+> **Related:** [DESIGN.md](DESIGN.md) · [MEMORY.md](MEMORY.md) · [DATABASE.md](DATABASE.md) · [PROJECT_BREAKDOWN.md](PROJECT_BREAKDOWN.md)
 
 WaveForge is a **pure client-side web audio editor**. Every byte of audio,
 every DSP operation, and every encode/decode task executes inside the
@@ -21,7 +21,7 @@ architecture that makes that viable at production quality.
 | 3 | **EDL undo, not snapshots** — history stores edit operations with byte budgeting | ADR 002; ≥ 100 steps under a 250 MB budget |
 | 4 | **One command registry** — menus, shortcuts, and toolbar bind to the same command objects | unit-gated; drift is a test failure |
 | 5 | **Pure kernels, thin shells** — DSP and edit logic are pure functions; UI is a shell | RED-first kernel tests with analytic anchors |
-| 6 | **Accurate output** — effects verified against analytic/reference anchors, not eyeballing | `docs/effects-v2-plan.md` §8 anchors |
+| 6 | **Accurate output** — effects verified against analytic/reference anchors, not eyeballing | per-kernel anchor suites (RED→green) |
 | 7 | **Accessible by construction** — keyboard operability + axe-core WCAG 2.1 AA gate in e2e | permanent axe suite (zero violations) |
 | 8 | **Privacy is structural** — no network path exists for user audio | CSP `connect-src 'self' data: blob:` |
 
@@ -223,5 +223,5 @@ MongoDB Atlas behind Vercel serverless; the client persistence interface
 
 ---
 
-*Maintained per ECC workflow: every architectural change lands with an
-ADR or an update to this file in the same commit series.*
+*Maintained per ECC workflow: every architectural change updates this
+file in the same commit series.*

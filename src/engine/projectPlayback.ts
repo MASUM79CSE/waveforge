@@ -1,5 +1,5 @@
 /**
- * ProjectPlayback — multitrack transport (M8b, docs/multitrack-plan.md).
+ * ProjectPlayback — multitrack transport (M8b).
  * One AudioBufferSourceNode per track → splitter → L/R balance-law gains →
  * shared merger. Gain values come from the SAME pure kernels as the mixdown
  * (`trackEffectiveGain` + `panGains`), so what you hear during multitrack

@@ -1,5 +1,5 @@
 /**
- * C2 — FX chain apply + preview (docs/fxchains-plan.md): the chain fold on
+ * C2 — FX chain apply + preview: the chain fold on
  * top of the SAME apply plumbing as single effects — ONE history entry for
  * the whole chain (bounce precedent, standing refcount rule), region +
  * summed stage tails in, folded wet out. Kernel stages run their pure

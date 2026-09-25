@@ -1,5 +1,5 @@
 /**
- * A6d — swept modulation kernels (docs/automation-plan.md A6 addendum).
+ * A6d — swept modulation kernels.
  * The static kernels in modulation.ts keep their absolute-time LFOs; these
  * variants add per-sample AUDIO-SHAPING curves. Scope rule (A6c, anchored):
  * the LFO time-base (rateHz) and structural params (shape, stages) are NOT

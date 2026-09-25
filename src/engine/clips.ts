@@ -1,5 +1,6 @@
 /**
- * Clip/arrangement core (M9a — docs/clips-plan.md). Pure, deterministic:
+ * Clip/arrangement core (M9a
+). Pure, deterministic:
  * tracks hold sorted, non-overlapping clips that reference shared immutable
  * assets (copy-on-write at the app layer). Sample-domain positions match
  * the rest of the engine. Renders accumulate in fixed clip order with

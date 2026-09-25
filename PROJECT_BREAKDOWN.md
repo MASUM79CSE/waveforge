@@ -3,7 +3,7 @@
 > **Status:** Production · v1.0 · 2026-09-25
 > **Derived from:** full agent build history — 192 conventional commits,
 > `ddbe284` (scaffold) → `c0a1baa` (launch hygiene)
-> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [DESIGN.md](DESIGN.md) · [MEMORY.md](MEMORY.md) · [DATABASE.md](DATABASE.md) · [docs/task_list.md](docs/task_list.md)
+> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [DESIGN.md](DESIGN.md) · [MEMORY.md](MEMORY.md) · [DATABASE.md](DATABASE.md)
 
 ## 1. Headline metrics
 
@@ -63,7 +63,7 @@ vibrato, Catmull frac-delay, absolute-time LFOs) · E4 FFT convolver +
 seeded IR **Studio Reverb** (RT60 ±5 %) · E6 LR4 de-esser + STFT
 noise-print NR (WOLA reconstruction) · E5 **WSOLA** stretch/pitch ·
 **E7** NR v3 (IMCRA-lite + DD a priori SNR) · **E7b RNNoise "AI Voice
-Clarity"** (vendored wasm). ADR 009 + `docs/effects-v2-plan.md` §8.
+Clarity"** (vendored wasm).
 
 ### UX shortcuts (2)
 Standard `Ctrl+Z/Y/X/C/V/A` table alongside legacy shift-letters, single
@@ -74,7 +74,7 @@ D0 live-reference analysis → D1 tokens → D2 icon toolbar → D3 selection
 readout (+ `Q` clear) → D4 canvas skin + amplitude axis/channel rail →
 D5 zoom/vertical-zoom/beat row → D6 shortcuts overlay + welcome tips →
 D8 volume/pan strips → D9 light theme + accent system → D10 tooltips +
-dnd overlay. Screenshot evidence per step (`docs/design/`).
+dnd overlay. Screenshot evidence per shipped step.
 
 ### M8 — multitrack (9)
 Pure lane-mix kernels → project transport (mixdown-parity) → track-
@@ -113,7 +113,7 @@ targets, **CSV/clipboard export** — analysis suite closed.
 ### R-series — studio recording (3)
 Arm/roll, count-in click (BPM-aware), monitoring (feedback-safe OFF),
 takes, **punch in/out through the project stack** with configurable
-pre-roll. `docs/recording-analysis.md`.
+pre-roll.
 
 ### Launch polish (final ≈ 12)
 Effects menu → 9 labeled sections; label-clipping fixes; transport bar
@@ -178,4 +178,4 @@ LH 99/100/100/100 · axe 0 · tree clean.**
 ---
 
 *This file is the historical index of the build. New work appends a
-series section and stamps it in `docs/task_list.md` (ECC convention).*
+series section and stamps it in this file's timeline (ECC convention).*

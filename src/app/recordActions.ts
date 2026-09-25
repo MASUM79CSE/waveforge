@@ -228,7 +228,7 @@ export function cancelCountIn(): void {
   S.countInBeat.value = 0;
 }
 
-// ---- R4: punch in/out (docs/recording-plan.md) ----
+// ---- R4: punch in/out ----
 
 /** Default punch pre-roll; user-configurable (R6) via studio settings. */
 let punchTimers: number[] = [];

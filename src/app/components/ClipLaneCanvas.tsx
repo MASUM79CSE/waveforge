@@ -1,5 +1,6 @@
 /**
- * Clip-block lane canvas (M9d2 — docs/clips-plan.md): per-clip envelopes
+ * Clip-block lane canvas (M9d2
+): per-clip envelopes
  * from ASSET buckets (shared by every clip referencing the asset), block
  * tint/border/name/edge-handles, selection outline, and the pointer
  * gestures: click select, body-drag move, edge-drag trim (snap to beats

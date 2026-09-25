@@ -1,9 +1,8 @@
 /**
- * Multitrack project core (M8a — docs/multitrack-plan.md; M9d1 clip flip —
- * docs/clips-plan.md). Pure, deterministic kernels: lanes hold SORTED
- * NON-OVERLAPPING CLIPS referencing shared immutable assets (one shared
- * timeline, mixed by fixed-order Float64 accumulation — Audacity-class
- * model, see docs/multitrack-analysis.md §3 + docs/clips-analysis.md).
+ * Multitrack project core (M8a; M9d1 clip flip — project model).
+ * Pure, deterministic kernels: lanes hold SORTED NON-OVERLAPPING CLIPS
+ * referencing shared immutable assets (one shared timeline, mixed by
+ * fixed-order Float64 accumulation — Audacity-class model).
  * No engine/UI imports by design. `createTrack` wraps plain channels as a
  * single-clip lane over a fresh asset (zero-copy — the M9b bridge).
  */

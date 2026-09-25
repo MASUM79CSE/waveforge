@@ -21,7 +21,7 @@ import { Modal } from './Modal';
 import { t } from '../../i18n';
 
 /**
- * C2 — FX Rack (docs/fxchains-plan.md): ordered serial chain — add/remove/
+ * C2 — FX Rack: ordered serial chain — add/remove/
  * reorder/bypass, params inline via the shared ParamRow; C3 presets (built-
  * in recipes + named user presets in IndexedDB) and chain JSON import/
  * export (Audacity-macro precedent). Apply = ONE history entry.

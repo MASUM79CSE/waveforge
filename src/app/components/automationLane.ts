@@ -1,5 +1,6 @@
 /**
- * Per-lane automation gesture wiring (A4 — docs/automation-plan.md).
+ * Per-lane automation gesture wiring (A4
+).
  * Attached alongside the clip-gesture handlers; the envelope CLAIMS the
  * pointer only while `automationMode` is on (clip handlers self-check and
  * yield). One history entry per gesture: `before` is snapshotted at

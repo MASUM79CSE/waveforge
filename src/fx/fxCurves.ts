@@ -1,6 +1,5 @@
 /**
- * A6a — graph-kind FX param automation (docs/automation-plan.md A6
- * addendum). Pure scheduling over the AudioParams a graph builder exposed
+ * A6a — graph-kind FX param automation. Pure scheduling over the AudioParams a graph builder exposed
  * via `BuiltGraph.auto`: curve values are REGION-relative samples → seconds,
  * the target's `apply` law runs per knot (equal-power mix stays exact at
  * endpoints), and CONSTANT curves produce a single setValueAtTime at t=0 —

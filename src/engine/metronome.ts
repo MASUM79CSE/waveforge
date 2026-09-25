@@ -1,5 +1,5 @@
 /**
- * R2 — metronome click scheduling (docs/recording-plan.md). Pure: given
+ * R2 — metronome click scheduling. Pure: given
  * tempo/count-in/pre-roll, produce the click events (accent on downbeats).
  * `preRollSec` continues the grid BACKWARDS before zero so punch pre-roll
  * keeps the beat seamlessly instead of restarting it.

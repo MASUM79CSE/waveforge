@@ -29,7 +29,7 @@ interface LufsReply {
 interface ReportReply {
   type: 'report';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  report: any; // shape anchored by the P1 kernel tests (docs/analyze-plan.md)
+  report: any; // shape anchored by the P1 kernel tests
   profile: { reportMs: number };
 }
 type Reply = BpmReply | LufsReply | ReportReply | { type: 'error'; detail: string };

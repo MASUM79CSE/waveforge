@@ -1,5 +1,5 @@
 /**
- * R4 — punch in/out window math (docs/recording-plan.md). Pure: a
+ * R4 — punch in/out window math. Pure: a
  * selection + pre-roll + optional count-in become the playback window and
  * punch frames. Non-destructive by contract — the replaced material lives
  * in history (undo restores it).

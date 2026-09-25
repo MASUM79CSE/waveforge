@@ -1,5 +1,5 @@
 /**
- * C3 — user chain presets (docs/fxchains-plan.md). Tiny IndexedDB store —
+ * C3 — user chain presets. Tiny IndexedDB store —
  * database `waveforge-presets` v1, one record per named preset holding the
  * exported chain JSON (drafts precedent; `idb` v8 opens through the global
  * `indexedDB` — tests install fake-indexeddb as that global).

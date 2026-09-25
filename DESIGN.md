@@ -2,7 +2,7 @@
 
 > **Status:** Production · v1.0 · 2026-09-25
 > **Applies to:** `c0a1baa` and later
-> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/design/](docs/design) · [docs/design-parity-plan.md](docs/design-parity-plan.md)
+> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md)
 
 WaveForge's interface follows a **pro--tool visual language** — original
 and rebrandable, extended with the zone-cluster conventions of

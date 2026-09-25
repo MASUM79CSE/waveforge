@@ -1,5 +1,5 @@
 /**
- * P1 — professional analysis report (docs/analyze-plan.md): one pure scan
+ * P1 — professional analysis report: one pure scan
  * composing the existing BS.1770-4 loudness kernel, the true-peak estimator
  * and the radix-2 FFT into the metrics the 2026 delivery market expects —
  * streaming verdicts (LUFS/LRA/PLR/dBTP vs per-platform targets), stereo
@@ -22,7 +22,7 @@ export interface StreamTarget {
   tpCeiling: number;
 }
 
-/** 2026 delivery table (docs/analyze-analysis.md §1). */
+/** 2026 delivery table. */
 export const STREAM_TARGETS: readonly StreamTarget[] = [
   { id: 'spotify', label: 'Spotify', target: -14, tpCeiling: -1 },
   { id: 'youtube', label: 'YouTube', target: -14, tpCeiling: -1 },

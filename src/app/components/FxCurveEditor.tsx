@@ -1,6 +1,5 @@
 /**
- * A7 — envelope editor canvas for one effect param (docs/automation-plan.md
- * A7 addendum). x spans the region (0..fxRegionLen samples), y the param's
+ * A7 — envelope editor canvas for one effect param. x spans the region (0..fxRegionLen samples), y the param's
  * spec domain. Gestures reuse the generalized A4 primitives: click adds /
  * grabs a point, drag moves it, right-click deletes (clearing = curve off).
  * The dashed baseline is the static slider value the curve replaces.

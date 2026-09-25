@@ -87,7 +87,7 @@ function db(n: number | null | undefined): string {
   return n <= Number.NEGATIVE_INFINITY ? '−∞' : n >= Number.POSITIVE_INFINITY ? '+∞' : n.toFixed(1);
 }
 
-/** P2: the professional report — verdict table + audits (docs/analyze-plan.md). */
+/** P2: the professional report — verdict table + audits. */
 function ReportBlock(): JSX.Element | null {
   const report = S.analysisReport.value;
   if (!report) return null;

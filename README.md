@@ -161,8 +161,6 @@ Production documentation set (root):
   autosave/crash recovery, deferred MongoDB Atlas cloud design
 - [PROJECT_BREAKDOWN.md](PROJECT_BREAKDOWN.md) — the full build history:
   192 commits broken down phase by phase, with gates and metrics
-- [docs/](docs) — governance (PRD, task list), 10 ADRs, per-feature
-  analysis/plan/stamp records
 
 ## Development
 

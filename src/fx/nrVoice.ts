@@ -11,7 +11,7 @@
  * (0..1) is a per-sample dry/wet law AFTER the model — mix 0 is bit-exact
  * passthrough (the constant-curve guard pattern from the automation work).
  *
- * Worker deviation (docs/effects-nr-e7b-plan.md §2): main-thread by
+ * Worker deviation: main-thread by
  * default — per-frame cost is ~an order below the E7a WOLA engine that
  * already ships main-thread; a worker is a pure optimization behind the
  * same signature, deferred.

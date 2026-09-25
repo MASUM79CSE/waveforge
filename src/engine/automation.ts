@@ -1,5 +1,6 @@
 /**
- * Automation curves (A1 — docs/automation-plan.md). Pure: sorted
+ * Automation curves (A1
+). Pure: sorted
  * sample-domain breakpoints, piecewise LINEAR, immutable editing ops.
  * The mixdown consumes `mulTable`/`panWeights` (Float64, filled per
  * SEGMENT — never per-sample eval); playback ramps consume the same

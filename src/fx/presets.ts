@@ -1,5 +1,5 @@
 /**
- * C3 — presets (docs/fxchains-plan.md): curated built-in chain recipes
+ * C3 — presets: curated built-in chain recipes
  * (Voice rescue first — the E7b RNNoise engine compounding with the
  * downstream voice chain) plus per-effect quick presets for the generic
  * dialog. Pure data + getters; user presets live in the preset store

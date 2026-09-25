@@ -1,5 +1,6 @@
 /**
- * Automation envelope UI state + pure overlay math (A4 — docs/automation-plan.md).
+ * Automation envelope UI state + pure overlay math (A4
+).
  *
  * `A` toggles the mode; in mode each lane canvas draws its selected param's
  * breakpoint curve over the clips and CLAIMS the pointer (clip gestures are
@@ -288,7 +289,7 @@ export function drawAutomationOverlay(
   g.restore();
 }
 
-// --- X3: keyboard operability (docs/quality-plan.md) -----------------------
+// --- X3: keyboard operability -----------------------
 
 /**
  * X3: arrow-key nudge of one point — the movePoint kernel provides all the

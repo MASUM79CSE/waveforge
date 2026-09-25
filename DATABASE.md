@@ -2,7 +2,7 @@
 
 > **Status:** Production · v1.0 · 2026-09-25
 > **Applies to:** `c0a1baa` and later
-> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [MEMORY.md](MEMORY.md) · ADR 008 (persistence & PWA)
+> **Related:** [ARCHITECTURE.md](ARCHITECTURE.md) · [MEMORY.md](MEMORY.md) 
 
 WaveForge v1 is **pure client-side**: its "database" is origin-scoped
 **IndexedDB** plus `localStorage` for settings. A server database

@@ -86,7 +86,7 @@ export const peakHoldDb = signal(Number.NEGATIVE_INFINITY);
 export const clipLatched = signal(false);
 /** R2: beats remaining in the count-in (0 = no count-in running). */
 export const countInBeat = signal(0);
-/** R3: session takes (pure reducer state, docs/recording-plan.md). */
+/** R3: session takes (pure reducer state). */
 export const takes = signal<TakesState>(createTakes());
 /** R-series studio recording settings (persisted). */
 export interface RecStudioSettings {
@@ -181,7 +181,7 @@ export interface LufsResult {
 }
 export const bpmResult = signal<BpmResult | null>(null);
 export const lufsResult = signal<LufsResult | null>(null);
-/** P2: full professional analysis report (docs/analyze-plan.md). */
+/** P2: full professional analysis report. */
 export const analysisReport = signal<import('../engine/analysisReport').AnalysisReport | null>(
   null,
 );
