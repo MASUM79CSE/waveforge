@@ -22,7 +22,13 @@ async function loadSample(page: Page): Promise<void> {
 test('envelope editor: keyboard authoring (X3)', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    if (m.type() === 'error') consoleErrors.push(m.text());
+    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
+        // real deployments load it — ignore that one external line
+        if (
+          m.type() === 'error' &&
+          !m.location()?.url.includes('pbs.twimg.com')
+        )
+          consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await loadSample(page);

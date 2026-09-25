@@ -3,7 +3,13 @@ import { expect, test } from '@playwright/test';
 test('doctor: Help → Diagnostics runs capability self-tests and reports', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (m) => {
-    if (m.type() === 'error') consoleErrors.push(m.text());
+    // the developer-avatar CDN (pbs.twimg.com) is blocked in sandboxed CI;
+        // real deployments load it — ignore that one external line
+        if (
+          m.type() === 'error' &&
+          !m.location()?.url.includes('pbs.twimg.com')
+        )
+          consoleErrors.push(m.text());
   });
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
   await page.goto('/');

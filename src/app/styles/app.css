@@ -670,9 +670,86 @@
   text-align: left;
 }
 
+/* Welcome redesign: centered hero + developer credit card */
+.welcome {
+  text-align: center;
+  align-items: center;
+}
 .welcome-logo {
   align-self: center;
-  padding: 6px;
+  padding: 10px;
+}
+.welcome-logo svg {
+  width: 84px;
+  height: 84px;
+  filter: drop-shadow(0 0 18px var(--ac-glow));
+}
+.welcome .empty-actions {
+  justify-content: center;
+  width: 100%;
+}
+.welcome-dev {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bd);
+  text-align: left;
+}
+.dev-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--bd-h);
+  flex: none;
+}
+.dev-avatar-mono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--ac) 0%, #2b7fa8 100%);
+  color: var(--ac-ink, #fff);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+.dev-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.dev-name {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--fg-0);
+}
+.dev-role {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+}
+.dev-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 3px;
+  font-size: 11.5px;
+}
+.dev-links a {
+  color: var(--ac);
+  text-decoration: none;
+}
+.dev-links a:hover {
+  text-decoration: underline;
+}
+.dev-chip {
+  color: var(--fg-1);
 }
 
 .welcome-lead {

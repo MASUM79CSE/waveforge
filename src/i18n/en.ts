@@ -342,6 +342,9 @@ export const en = {
   welcomeTitle: `Welcome to ${Brand.name}`,
   welcomeLead:
     'A free, full-featured audio & waveform editor that runs 100% in your browser — no uploads, no accounts, no tracking.',
+  welcomeDevBy: 'Developed by',
+  welcomeDevRole: 'Developer',
+  devEmail: 'Email',
   welcomeTips:
     'Tip: most shortcuts use Shift + key (Shift+Z undo, Shift+C copy, Shift+X cut…). Standard combos (Ctrl+Z / Ctrl+Y) work too.',
   welcomePrivacy: 'Private by design: your audio is processed on your device and never leaves it.',

@@ -1154,3 +1154,19 @@ Suite hardening: playwright retries 1 (the observed full-suite flakes
 were infra load-timing, not product — the previously flaky multitrack
 suite now passes repeatedly). Gates: **720/720 unit (86 files),
 57/57 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (redesign) — Welcome page hero + developer credit SHIPPED
+
+User-directed welcome redesign: (1) logo is a LARGE glowing hero (84px,
+was 18); (2) Open file / Load sample buttons centered; (3) the
+inspired-by credit is removed from the DIALOG (MIT obligation preserved:
+About dialog + LICENSE keep it, per brand.ts); (4) professional
+developer card — avatar (user-provided CDN image with monogram "MM"
+fallback for offline/blocked-CDN), name Mir Md. Masum, DEVELOPER role,
+Email mailto:, Instagram link, Discord chip — separated by a hairline
+rule, keyboard-reachable links. e2e #58 (logo ≥64px, buttons centered
+within tolerance, no inspired-by text, card content + hrefs + focus).
+Note: the avatar 404 in sandboxed CI is expected (CDN blocked here);
+11 console-error collectors carry a documented pbs.twimg.com location
+exception — real deployments load the photo. Gates: **720/720 unit,
+58/58 e2e, lint 0, tsc clean, build OK.**
