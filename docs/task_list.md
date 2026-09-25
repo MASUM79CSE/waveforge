@@ -1117,3 +1117,11 @@ aria-pressed state machine, ±5 s clock assertions (duration-aware),
 RECORD right-anchored. One flaky full-suite run traced to load timing
 (multitrack "add lanes"); passes consistently across re-runs. Gates:
 **716/716 unit, 56/56 e2e, lint 0, tsc clean, build OK.**
+
+## 2026-09-25 (gates) — Lighthouse after transport redesign r3
+
+Standing LH gate re-run on the final blended-transport build (gzip
+server): **desktop 100/100/100/100**, **mobile perf 98** (FCP 1.72 s,
+TBT 75 ms, CLS 0) — up from 97 pre-redesign; the zone markup added no
+measurable weight. UI-quality gates complete: 716/716 unit, 56/56 e2e,
+axe zero violations, lint 0, tsc clean, build OK, LH ≥95/95/100/100.
