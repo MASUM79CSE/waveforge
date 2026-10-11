@@ -185,8 +185,10 @@ and shortcuts behave deterministically with stacked dialogs.
 ## 10. Security & privacy
 
 - **CSP** (Report-Only header via `vercel.json`): `default-src 'self'`;
-  `wasm-unsafe-eval` for libFLAC/RNNoise; `img-src` includes the avatar
-  CDN; no third-party script/style origins.
+  `script-src 'self' 'wasm-unsafe-eval'` (libFLAC/RNNoise WASM);
+  `img-src 'self' data: blob:` (the avatar is a local monogram — no
+  third-party origins at all; model-host allow-list lands with Smart RAG,
+  see docs/rag/DECISIONS.md).
 - **No telemetry, no uploads** — structural, not policy: the app makes
   no network requests for user data; URL import is user-initiated fetch.
 - Drafts live in origin-scoped IndexedDB; cleared client-side only.
