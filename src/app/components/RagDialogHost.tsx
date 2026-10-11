@@ -1,25 +1,22 @@
 /**
- * RagDialogHost (P1.5): renders nothing until a RAG dialog opens, then
- * lazy-imports the RAG dialog chunk. The host itself is tiny — the entry
- * chunk pays only for this file.
+ * RagDialogHost (P1.5/P1.9): renders nothing until a RAG surface opens,
+ * then dynamic-imports the RAG chunk. Deliberately avoids preact's
+ * lazy/Suspense — those would pull their implementation into the entry
+ * chunk for a single use (bundle gate). A plain armed import() does the
+ * same job at ~zero entry cost.
  */
 import { useEffect, useState } from 'preact/hooks';
-import { lazy } from 'preact/compat';
-import { Suspense } from 'preact/compat';
-import { modelConsentOpen, manageModelsOpen, ragPanelOpen } from '../state';
-
-const RagDialogs = lazy(() => import('./RagDialogs').then((m) => ({ default: m.RagDialogs })));
+import type { ComponentType } from 'preact';
+import { manageModelsOpen, modelConsentOpen, ragPanelOpen } from '../state';
 
 export function RagDialogHost() {
   const open = modelConsentOpen.value || manageModelsOpen.value || ragPanelOpen.value;
-  const [armed, setArmed] = useState(false);
+  const [Comp, setComp] = useState<ComponentType | null>(null);
   useEffect(() => {
-    if (open) setArmed(true);
+    if (open) {
+      void import('./RagDialogs').then((m) => setComp(() => m.RagDialogs));
+    }
   }, [open]);
-  if (!armed) return null;
-  return (
-    <Suspense fallback={null}>
-      <RagDialogs />
-    </Suspense>
-  );
+  if (!Comp) return null;
+  return <Comp />;
 }

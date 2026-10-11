@@ -12,7 +12,13 @@ import { en, type Catalog } from './en';
 type CatalogLoose = { [K in keyof Catalog]: Catalog[K] extends string ? string : Catalog[K] };
 
 const catalogs: Record<string, CatalogLoose> = { en, bn: { ...en, ...bn } };
+let currentLocale = 'en';
 let active: CatalogLoose = catalogs['en'] ?? en;
+
+/** Current locale tag — lets lazy chunks keep their own string tables. */
+export function locale(): string {
+  return currentLocale;
+}
 
 export function t(): Catalog {
   return active as Catalog;
@@ -22,6 +28,7 @@ export function tError(code: ErrorCode): string {
   return active.errors[code] ?? code;
 }
 
-export function setLocale(locale: string): void {
-  active = catalogs[locale] ?? en;
+export function setLocale(l: string): void {
+  currentLocale = l;
+  active = catalogs[l] ?? en;
 }

@@ -3,6 +3,7 @@ import * as AU from './automationUi';
 import * as A from './actions';
 import { kbdHints } from './shortcuts';
 import { isRagEnabled } from '../rag/flag';
+import { locale } from '../i18n';
 import { manageModelsOpen, ragPanelOpen } from './state';
 
 const HINTS = kbdHints();
@@ -200,7 +201,7 @@ export const commands: Command[] = [
   // Help
   {
     id: 'rag.togglePanel',
-    label: () => t().ragPanelTitle,
+    label: () => (locale() === 'bn' ? 'ট্রান্সক্রিপ্ট' : 'Transcript'),
     kbd: () => HINTS.ragPanel,
     run: () => {
       if (!isRagEnabled()) return;
@@ -209,7 +210,7 @@ export const commands: Command[] = [
   },
   {
     id: 'rag.manageModels',
-    label: () => t().ragManageTitle,
+    label: () => (locale() === 'bn' ? 'এআই মডেল ব্যবস্থাপনা' : 'Manage AI models'),
     run: () => {
       if (!isRagEnabled()) return;
       manageModelsOpen.value = true;

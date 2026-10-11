@@ -8,21 +8,4 @@ import type { Catalog } from './en';
 type Widen<T> = { [K in keyof T]: T[K] extends string ? string : T[K] };
 
 export const bn: Partial<Widen<Catalog>> = {
-  ragConsentTitle: 'এআই মডেল ডাউনলোড',
-  ragConsentLine: 'শুধু মডেল ফাইল ডাউনলোড হয়। আপনার অডিও ও লেখা কখনো এই ডিভাইস ছাড়ে না।',
-  ragConsentDownload: 'ডাউনলোড',
-  ragConsentNotNow: 'এখন নয়',
-  ragManageTitle: 'এআই মডেল ব্যবস্থাপনা',
-  menuGroupRag: 'ট্রান্সক্রিপশন',
-  ragPanelTitle: 'ট্রান্সক্রিপ্ট',
-  ragPanelNotSetup: 'ট্রান্সক্রিপশন এখনও সেট আপ করা হয়নি।',
-  ragPanelModelsRequired: 'স্পিচ মডেল প্রয়োজন। এগুলো সম্পূর্ণ এই ডিভাইসেই চলে।',
-  ragPanelDownloading: 'মডেল ডাউনলোড হচ্ছে…',
-  ragPanelReady: 'প্রস্তুত। ট্রান্সক্রিপশন এই ডিভাইসেই চলবে।',
-  ragNoModels: 'কোনো এআই মডেল ইনস্টল করা নেই।',
-  ragInstalled: 'ইনস্টল করা',
-  ragDelete: 'মুছুন',
-  ragClose: 'বন্ধ করুন',
-  ragSizeLabel: 'আকার',
-  ragLicenceLabel: 'লাইসেন্স',
 };
