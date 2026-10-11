@@ -43,6 +43,12 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
     port: 4173,
+    // P1.6 experiment: crossOriginIsolation for WASM threads. Shipped in
+    // vercel.json only if the full gate stays clean (see docs/rag/DECISIONS.md D5).
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+    },
   },
   build: {
     target: 'es2022',

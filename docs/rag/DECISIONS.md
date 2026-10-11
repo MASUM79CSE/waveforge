@@ -60,3 +60,27 @@ Conventions and integration points verified against the real code:
   (documented) to keep CI time reasonable.
 - **Consequence**: CI = typecheck, lint, unit+coverage, build, bundle check,
   e2e.
+
+## D4 — i18n Bangla strategy (P1.5, 2026-09-26)
+
+- **Decision**: `bn.ts` ships as a PARTIAL catalog merged over `en`
+  (`{ ...en, ...bn }` in `src/i18n/index.ts`); RAG keys are translated
+  now; the full catalog lands in P6.4.
+- **Consequence**: no key can ever render empty; typing widened via
+  `CatalogLoose`.
+
+## D5 — COOP/COEP shipped; model-host allow-list (P1.6, 2026-09-26)
+
+- **Decision**: ship `COOP: same-origin` + `COEP: credentialless`
+  (verified: crossOriginIsolated=true, 59/59+consent e2e under the
+  headers, SW registers, LH perf 97 / a11y 100 / BP 100 — mobile 99).
+  CSP stays Report-Only with `connect-src` extended by the model hosts:
+  huggingface.co + cd-lfs (transformers.js defaults, pinned in P2.5/P3.3)
+  and models.example (local/e2e mock host).
+- **Alternatives**: stay non-isolated (single-threaded inference —
+  3–8× slower ASR, rejected); COEP require-corp (breaks same-origin
+  subresources without CORP headers — credentialless is the right
+  profile for a zero-cross-origin app).
+- **Side fix**: added `public/robots.txt` — LH SEO regressed to 91
+  under the experiment because the SPA rewrite served HTML for
+  /robots.txt (pre-existing on prod too). Now 100 everywhere.
