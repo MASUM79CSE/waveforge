@@ -23,6 +23,7 @@ import {
   recordSettingsOpen,
 } from '../state';
 import { ExportDialog } from './ExportDialog';
+import { RagDialogHost } from './RagDialogHost';
 import { RecordSettingsDialog } from './RecordSettingsDialog';
 import { AnalysisPanel } from './AnalysisPanel';
 import { MetadataDialog } from './MetadataDialog';
@@ -67,6 +68,7 @@ export function App() {
       <FxRackDialog />
       {exportOpen.value && <ExportDialog />}
       {recordSettingsOpen.value && <RecordSettingsDialog />}
+      <RagDialogHost />
       {metadataOpen.value && <MetadataDialog />}
       {doctorOpen.value && <DoctorPanel />}
       <ShortcutsOverlay />

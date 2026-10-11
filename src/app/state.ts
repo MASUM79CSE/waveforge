@@ -51,6 +51,9 @@ export const loadingProgress = signal<number | null>(null);
 // dialogs
 export const welcomeOpen = signal(true);
 export const aboutOpen = signal(false);
+/** Smart RAG (P1.5): model consent + manage dialogs (UI lives in a lazy chunk). */
+export const modelConsentOpen = signal(false);
+export const manageModelsOpen = signal(false);
 export const doctorOpen = signal(false);
 export const shortcutsOpen = signal(false);
 /** E6a noise print held across the session; persisted in draft headers (M7). */

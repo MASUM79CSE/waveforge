@@ -1,3 +1,4 @@
+import { isRagEnabled } from './rag/flag';
 import { render } from 'preact';
 import './app/styles/tokens.css';
 import './app/styles/base.css';
@@ -41,3 +42,8 @@ function bootstrap(): void {
 }
 
 bootstrap();
+
+// Smart RAG dark-launch seam (P1.8 wires the full UI; the flag default is OFF)
+if (isRagEnabled()) {
+  void import('./rag/runtime').then((r) => r.installTestSeam());
+}
