@@ -15,7 +15,7 @@
 | P0.7 | Bundle-size guard | DONE | feat(rag) 3f0ac8f | 5/5 unit (RED-first); pass demo + fail demo (tolerance=10, exit 1) | pure fn + wildcard d.ts |
 | P0.8 | Feature flag `rag` | DONE | feat(rag) 1b2de24 | 11/11 unit; entry hash unchanged (byte-identical OFF build) | D1 |
 | P0.9 | Large-file ceiling | DONE | (BASELINE.md) | table: 20 min mono OK; 30 min mono crash; 60 min no-completion | ceiling ≈20 min mono on 1–2 GB |
-| P0.10 | Phase 0 gate | TODO | — | — | full gate + tag rag-phase-0-done |
+| P0.10 | Phase 0 gate | DONE | (tag) | typecheck OK; lint 0; **736/736** unit (88 files); 59/59 e2e; build OK; bundle +0; LH d98/100/100/100 m98 | mobile perf 98 = baseline−1 run-variance, gate ≥95 ✓ |
 | P1.1 | Capability detection | TODO | — | — | — |
 | P1.2 | Typed worker RPC harness | TODO | — | — | — |
 | P1.3 | Model manifest + storage | TODO | — | — | — |
