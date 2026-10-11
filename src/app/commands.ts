@@ -2,6 +2,8 @@ import { t } from '../i18n';
 import * as AU from './automationUi';
 import * as A from './actions';
 import { kbdHints } from './shortcuts';
+import { isRagEnabled } from '../rag/flag';
+import { manageModelsOpen, ragPanelOpen } from './state';
 
 const HINTS = kbdHints();
 import * as EA from './editActions';
@@ -196,6 +198,23 @@ export const commands: Command[] = [
   },
 
   // Help
+  {
+    id: 'rag.togglePanel',
+    label: () => t().ragPanelTitle,
+    kbd: () => HINTS.ragPanel,
+    run: () => {
+      if (!isRagEnabled()) return;
+      ragPanelOpen.value = !ragPanelOpen.value;
+    },
+  },
+  {
+    id: 'rag.manageModels',
+    label: () => t().ragManageTitle,
+    run: () => {
+      if (!isRagEnabled()) return;
+      manageModelsOpen.value = true;
+    },
+  },
   { id: 'help.welcome', label: () => t().helpWelcome, run: () => A.openWelcome() },
   // Clip arrangement (M9d2) — keyboard-first; canvas gestures commit here too
   {

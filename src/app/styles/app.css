@@ -1994,3 +1994,36 @@
   width: 100%;
   background: #3ddad0;
 }
+
+/* Transcript side panel (Smart RAG, P1.8) */
+.transcript-panel {
+  position: fixed;
+  top: 56px;
+  right: 12px;
+  width: 280px;
+  max-height: 60vh;
+  overflow: auto;
+  background: var(--bg-1, #16181d);
+  color: var(--fg-1, #e8eaed);
+  border: 1px solid color-mix(in srgb, var(--fg-1, #e8eaed) 18%, transparent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  z-index: 60;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.transcript-panel .panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.transcript-panel .icon-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+}

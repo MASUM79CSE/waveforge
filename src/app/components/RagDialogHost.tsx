@@ -6,12 +6,12 @@
 import { useEffect, useState } from 'preact/hooks';
 import { lazy } from 'preact/compat';
 import { Suspense } from 'preact/compat';
-import { modelConsentOpen, manageModelsOpen } from '../state';
+import { modelConsentOpen, manageModelsOpen, ragPanelOpen } from '../state';
 
 const RagDialogs = lazy(() => import('./RagDialogs').then((m) => ({ default: m.RagDialogs })));
 
 export function RagDialogHost() {
-  const open = modelConsentOpen.value || manageModelsOpen.value;
+  const open = modelConsentOpen.value || manageModelsOpen.value || ragPanelOpen.value;
   const [armed, setArmed] = useState(false);
   useEffect(() => {
     if (open) setArmed(true);

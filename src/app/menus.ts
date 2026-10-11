@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import { isRagEnabled } from '../rag/flag';
 
 /** Data-driven menu model → rendered by MenuBar. */
 export interface MenuDef {
@@ -112,6 +113,9 @@ export const menus: MenuDef[] = [
       { header: () => t().menuGroupZoom, items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', 'view.center'] },
       { header: () => t().menuGroupCursor, items: ['view.follow', 'view.zerocross', 'view.axis'] },
       { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent'] },
+      ...(isRagEnabled()
+        ? [{ header: () => t().menuGroupRag, items: ['rag.togglePanel', 'rag.manageModels'] }]
+        : []),
     ],
   },
   {

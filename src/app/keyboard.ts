@@ -14,6 +14,7 @@ import { cancelCountIn } from './recordActions';
 import {
   aboutOpen,
   manageModelsOpen,
+  ragPanelOpen,
   modelConsentOpen,
   doctorOpen,
   effectDialogId,
@@ -42,6 +43,7 @@ export function bindKeyboard(): void {
       else if (exportOpen.value) closeExportDialog();
       else if (modelConsentOpen.value) modelConsentOpen.value = false;
       else if (manageModelsOpen.value) manageModelsOpen.value = false;
+      else if (ragPanelOpen.value) ragPanelOpen.value = false;
       else if (urlOpen.value) urlOpen.value = false;
       else if (doctorOpen.value) closeDoctor();
       else if (shortcutsOpen.value) closeShortcuts();

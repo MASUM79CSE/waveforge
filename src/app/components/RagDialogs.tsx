@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 import { t } from '../../i18n';
+import { manageModelsOpen, ragPanelOpen } from '../state';
 import {
   consentedDownload,
   getStorage,
@@ -14,6 +15,45 @@ import {
   ragState,
 } from '../../rag/runtime';
 import { Modal } from './Modal';
+
+
+/**
+ * TranscriptPanel (P1.8) — the RAG side panel placeholder. Non-modal
+ * (role=complementary), keyboard-closable via the global Escape chain.
+ * State copy only; real transcript UI arrives in P2.
+ */
+function TranscriptPanel() {
+  const close = () => (ragPanelOpen.value = false);
+  const downloading = ragState.value === 'downloading';
+  const ready = ragState.value === 'ready';
+  let body;
+  if (downloading) {
+    body = <p>{t().ragPanelDownloading} {Math.round(ragProgress.value * 100)}%</p>;
+  } else if (ready) {
+    body = <p>{t().ragPanelReady}</p>;
+  } else {
+    body = (
+      <>
+        <p>{t().ragPanelNotSetup}</p>
+        <p class="welcome-tips">{t().ragPanelModelsRequired}</p>
+        <button type="button" class="btn" onClick={() => (manageModelsOpen.value = true)}>
+          {t().ragManageTitle}
+        </button>
+      </>
+    );
+  }
+  return (
+    <aside class="transcript-panel" role="complementary" aria-label={t().ragPanelTitle}>
+      <div class="panel-head">
+        <strong>{t().ragPanelTitle}</strong>
+        <button type="button" class="icon-btn" aria-label={t().close} onClick={close}>
+          ✕
+        </button>
+      </div>
+      {body}
+    </aside>
+  );
+}
 
 function ConsentDialog() {
   const entry = ragPendingModel.value;
@@ -99,6 +139,7 @@ function ManageDialog() {
 export function RagDialogs() {
   return (
     <>
+      {ragPanelOpen.value && <TranscriptPanel />}
       {ragConsentOpen.value && <ConsentDialog />}
       {ragManageOpen.value && <ManageDialog />}
     </>

@@ -29,6 +29,7 @@ export type ShortcutCommand =
   | 'clip.split'
   | 'clip.delete'
   | 'clip.duplicate'
+  | 'rag.togglePanel'
   | 'automation.toggle'
   | 'record.toggle'
   | 'record.punch'
@@ -78,6 +79,8 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
         return 'file.open';
       case 'd':
         return 'clip.duplicate';
+      case 'f':
+        return event.shift ? 'rag.togglePanel' : null;
       default:
         return null;
     }
@@ -120,6 +123,7 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
 
 export interface KbdHints {
   open: string;
+  ragPanel: string;
   duplicateClip?: string;
   automation?: string;
   undo: string;
@@ -139,6 +143,7 @@ export function kbdHints(mac = isMacLike()): KbdHints {
   if (mac) {
     return {
       open: '⌘O',
+      ragPanel: '⌘⇧F',
       duplicateClip: '⌘D',
       automation: 'A',
       undo: '⌘Z',
@@ -152,6 +157,7 @@ export function kbdHints(mac = isMacLike()): KbdHints {
   }
   return {
     open: 'Ctrl+O',
+    ragPanel: 'Ctrl+Shift+F',
     duplicateClip: 'Ctrl+D',
     automation: 'A',
     undo: 'Ctrl+Z',
