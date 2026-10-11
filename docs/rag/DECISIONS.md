@@ -84,3 +84,24 @@ Conventions and integration points verified against the real code:
 - **Side fix**: added `public/robots.txt` — LH SEO regressed to 91
   under the experiment because the SPA rewrite served HTML for
   /robots.txt (pre-existing on prod too). Now 100 everywhere.
+
+## D6 — Entry-bundle diet: lazy RAG strings + armed import() (P1.9)
+
+After P1.5-P1.8 the bundle gate failed: entry +3,734 B gz (limit +2,048
+over the 120,554 B phase-0 baseline). Two fixes, measured:
+
+1. **RAG copy lives in the lazy chunk, not the shared catalogs.** All 17
+   rag* strings moved from `src/i18n/{en,bn}.ts` into a local
+   `RAG_STRINGS` table in `RagDialogs.tsx` (`rt(key)`, `locale()` getter
+   added to `src/i18n/index.ts`). The entry keeps only the 3 literals the
+   flag-gated menu/command chrome needs. Rationale: the RAG UI is fully
+   lazy, so the entry must never pay for its copy. en-fallback semantics
+   preserved; full bn catalog remains P6.4.
+2. **No preact lazy/Suspense in the entry.** RagDialogHost was their only
+   consumer; replaced by an armed `import('./RagDialogs').then(setComp)`.
+   Same armed-host behaviour, none of the implementation cost.
+
+Result: **+674 B gz** (entry 121,228 vs 120,554 baseline; tolerance
++2,048). Verified: `runtime.ts` remains a separate lazy chunk; entry
+contains no model-host strings. No public API renamed (`t()` untouched;
+`locale()` is additive).
