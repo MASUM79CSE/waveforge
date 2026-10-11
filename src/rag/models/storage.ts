@@ -60,6 +60,8 @@ export interface ModelStorage {
   installedVersion(modelId: string): Promise<string | null>;
   put(modelId: string, version: string, path: string, data: ArrayBuffer): Promise<void>;
   open(modelId: string, path: string): Promise<ArrayBuffer | null>;
+  /** Deletes a single file of the installed version (e.g. a `.partial`). */
+  deleteFile(modelId: string, path: string): Promise<boolean>;
   delete(modelId: string): Promise<boolean>;
   listInstalled(): Promise<Array<{ id: string; version: string; bytes: number; installedAt: number }>>;
   usage(): Promise<number>;
@@ -126,6 +128,23 @@ export function createModelStorage(caches: CachesLike, cacheName = CACHE_NAME): 
       if (!entry) return null;
       const resp = await c.match(fileKey(modelId, entry.version, path));
       return resp ? resp.arrayBuffer() : null;
+    },
+
+    async deleteFile(modelId, path) {
+      const c = await cache();
+      const index = await readIndex(c);
+      const entry = index[modelId];
+      if (!entry) return false;
+      const removed = await c.delete(fileKey(modelId, entry.version, path));
+      const before = entry.files.length;
+      entry.files = entry.files.filter((f) => f.path !== path);
+      if (entry.files.length === 0) {
+        delete index[modelId];
+      }
+      if (removed || entry.files.length !== before) {
+        await writeIndex(c, index);
+      }
+      return removed;
     },
 
     async delete(modelId) {
