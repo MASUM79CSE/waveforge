@@ -5,7 +5,6 @@
 // Usage: node scripts/rag/ceiling.mjs <appUrl> <wav> <expectedSeconds>
 
 import { chromium } from '@playwright/test';
-import { readFileSync } from 'node:fs';
 
 const [appUrl, wavPath, expectSecArg] = process.argv.slice(2);
 if (!appUrl || !wavPath) {
