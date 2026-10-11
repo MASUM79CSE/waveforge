@@ -20,6 +20,10 @@
 | P1.2 | Typed worker RPC harness | DONE | feat(rag) d0027ac | 16/16 unit; micro-gate OK | direction-aware endpoint; restart-once then dead |
 | P1.3 | Model manifest + storage | DONE | feat(rag) f5dfc1e | 14/14 unit; micro-gate OK | fresh-Response fake semantics; registry empty-valid |
 | P1.4 | Resumable verified downloader | DONE | feat(rag) 6f308c7 | 12/12 unit; micro-gate OK | partials version-scoped; sha256 before commit |
+| P1.5 | Consent + manage UI (en+bn, keyboard, axe, lazy chunk) | DONE | `a66b8ec` — ragConsent.spec mock-host flow, axe 0 violations, exactly 1 outbound request; lazy RagDialogs chunk; bn partial + CatalogLoose merge |
+| P1.6 | COOP/COEP + CSP allow-list + robots.txt | DONE | `754e585` — crossOriginIsolated=true, e2e 59 passed under headers, LH desktop 97/100/100/100, mobile perf 99; D4/D5 |
+| P1.7 | Egress guard + journey proof | DONE | `0c37c53` — helpers/egress.ts; load→edit→export = 0 outbound requests, 0 bodies; self-test proves example.com caught |
+| P1.8 | Transcript panel shell + commands/menu/shortcut | DONE | this commit — ragPanel.spec 3/3, vitest 794/794, Ctrl+Shift+F, flag-OFF menus byte-identical |
 | P1.5 | Consent dialog + settings | TODO | — | — | — |
 | P1.6 | Headers: CSP allow-list + COOP/COEP exp. | TODO | — | — | — |
 | P1.7 | Network-egress guard test | TODO | — | — | — |
