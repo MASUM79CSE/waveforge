@@ -10,11 +10,11 @@
 | P0.2 | Create ledger + decision log | DONE | (this) | files created; full task table P0.1–P6.9 | this file |
 | P0.3 | Clean install + baseline gates | DONE | (this) | typecheck OK; lint 0; 720/720 unit (86 files); 59/59 e2e; build OK; main JS 120,084 B gz; LH d98/100/100/100 m99 | see BASELINE.md |
 | P0.4 | Verify audit A1–A9 | DONE | (this) | 9 rows with file/line evidence in BASELINE.md §Audit | A7 partially pre-fixed (CI e2e job exists since f662e19) |
-| P0.5 | Low-risk hygiene fixes | TODO | — | — | A5, A2, A4, A6, A9 |
-| P0.6 | CI upgrade | TODO | — | — | bundle check step; e2e job already exists |
-| P0.7 | Bundle-size guard | TODO | — | — | scripts/check-bundle-size.mjs + baseline json |
-| P0.8 | Feature flag `rag` | TODO | — | — | src/rag/flag.ts + tests |
-| P0.9 | Large-file ceiling | TODO | — | — | 10/30/60-min WAV loads in Chromium |
+| P0.5 | Low-risk hygiene fixes | DONE | docs+chore commits | A5 unit 11/11; A9 typecheck OK; A6 .npmrc; build within budget | 5 fixes, separate commits |
+| P0.6 | CI upgrade | DONE | chore(ci) | YAML valid; check:bundle after build; e2e job pre-existing (f662e19) | LH stays local (D3) |
+| P0.7 | Bundle-size guard | DONE | feat(rag) 3f0ac8f | 5/5 unit (RED-first); pass demo + fail demo (tolerance=10, exit 1) | pure fn + wildcard d.ts |
+| P0.8 | Feature flag `rag` | DONE | feat(rag) 1b2de24 | 11/11 unit; entry hash unchanged (byte-identical OFF build) | D1 |
+| P0.9 | Large-file ceiling | DONE | (BASELINE.md) | table: 20 min mono OK; 30 min mono crash; 60 min no-completion | ceiling ≈20 min mono on 1–2 GB |
 | P0.10 | Phase 0 gate | TODO | — | — | full gate + tag rag-phase-0-done |
 | P1.1 | Capability detection | TODO | — | — | — |
 | P1.2 | Typed worker RPC harness | TODO | — | — | — |

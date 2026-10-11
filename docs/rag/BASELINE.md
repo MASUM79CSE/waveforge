@@ -35,4 +35,30 @@ Pre-existing failures: none.
 
 ## Large-file ceiling (P0.9)
 
-_Pending — filled by P0.9._
+Measured with `scripts/rag/ceiling.mjs` (headless Chromium,
+`--enable-precise-memory-info`), fixtures from `scripts/rag/gen-long-wav.mjs`
+(streaming writer). Sandbox RAM ≈ 1–2 GB.
+
+| Fixture | WAV size | Load time | JS heap | Long tasks >50 ms | Result |
+|---|---|---|---|---|---|
+| 10 min · mono · 44.1 kHz | 53 MB | 601 ms | 115 MB | 1 | OK |
+| 10 min · stereo · 48 kHz | 115 MB | 3 260 ms | 216 MB | 4 | OK |
+| 20 min · mono · 44.1 kHz | 106 MB | 1 282 ms | 216 MB | 2 | OK |
+| 30 min · mono · 44.1 kHz | 159 MB | — | — | — | **TAB CRASH** during load |
+| 60 min · mono · 44.1 kHz | 318 MB | — | — | — | **NO COMPLETION** within the 5-min in-app window; sustained memory thrash (host tooling starved) |
+| 60 min · stereo · 48 kHz | 691 MB | not attempted | — | — | ≈1.38 GB decoded — ~4× beyond the measured crash boundary |
+
+**Reading:** crash correlates with the A8 structure — whole-file decode
+(`src/io/decode.ts`) momentarily holds file buffer + decoded Float32 +
+immutable document copies (≈ 5× the file size) — on ~1 GB-class devices the
+wall sits between 20 min mono and 30 min mono (≈ 300 MB decoded payload).
+
+**Recommendation for Smart RAG v1:**
+1. Never re-decode and never duplicate audio: read 16 kHz windows **from
+   the existing document/asset** (`subarray` + window-sized copies).
+2. Support-by-profile: offer full-asset transcription up to the measured
+   ceiling; beyond it, process per-asset ranges with checkpointing and an
+   honest UI notice (P2.7 interlock).
+3. Chunked/streaming decode of long files is an engine-level upgrade
+   (out of RAG scope; file under A8 follow-up).
+4. CI never generates these fixtures (RAM); the harness is opt-in.
