@@ -42,11 +42,14 @@ Conventions and integration points verified against the real code:
 - **Consequence**: zero behavior change when OFF; dark-launch possible;
   P1.8 UI gates every RAG surface on it.
 
-## D2 — Baseline bundle budget (P0.7, 2026-09-26)
+## D2 — Baseline bundle budget (P0.7, 2026-09-26; amended at P0.8)
 
-- **Decision**: main-entry gzip baseline = 120,084 bytes (measured on
-  `feat/smart-rag` @ main-equivalent tree); tolerance 2048 B; enforced by
-  `scripts/check-bundle-size.mjs` + CI.
+- **Decision**: main-entry gzip baseline = 120,554 bytes, measured with
+  the SAME compressor as the guard (node zlib gzipSync — the CLI `gzip`
+  reads ~470 B smaller, which caused a false +470 delta). Entry content
+  hash is unchanged after the flag (`index-ajTvOWzM.js`), proving the
+  flag-OFF build is byte-identical to baseline. Tolerance 2048 B;
+  enforced by `scripts/check-bundle-size.mjs` + CI.
 - **Consequence**: every phase must keep the entry chunk within baseline+2 KB.
 
 ## D3 — CI already runs e2e (P0.4/A7 context, 2026-09-26)
