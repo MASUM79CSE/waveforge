@@ -1,0 +1,59 @@
+# WaveForge Smart RAG — Decision Log (ADR-lite)
+
+One entry per decision: date, decision, alternatives, consequence.
+
+## Orientation (P0.1)
+
+Conventions and integration points verified against the real code:
+
+- **Command registry**: `src/app/commands.ts` (registry + drift unit tests:
+  menus/shortcuts/toolbar parity must stay in sync — `tests/unit/app/`).
+- **Single edit gateway**: `src/engine/editOps.ts` + `AudioEditor`
+  (`src/engine/AudioEditor.ts`); every user action = one history entry
+  (EDL, byte-budgeted 250 MB — `src/engine/history.ts`).
+- **Workers**: `src/workers/{mp3Export,analysis,peaks}`; conventions =
+  transferable buffers, cancelable jobs, progress messages. Worker RPC
+  conventions to mirror live in `src/workers/*.worker.ts` + `src/io/`.
+- **Persistence**: `src/storage/` (`db.ts` opens IndexedDB `waveforge`;
+  `draftRepository.ts` = WFD3 payloads; `presetStore.ts` FX presets).
+  DB version constant lives in `src/storage/db.ts` — additive migrations.
+- **i18n**: `src/i18n/en.ts` (single flat dict + `t()`); Bangla to be added
+  as a sibling `bn.ts` per master prompt §8.
+- **Dialogs/keyboard**: `src/app/components/Dialogs.tsx` + `Modal`;
+  Escape chain + focus trap in `src/app/keyboard.ts` (fixed dialog order).
+- **Transport/seek**: `src/app/actions.ts` (`transport`), engine clock in
+  `src/engine/AudioEngine.ts`; selection state in `src/app/state.ts`.
+- **Waveform overlay API**: `src/engine/WaveRenderer.ts` + `waveDraw.ts`
+  (selection rect, beat grid, automation overlays — extend, don't fork).
+- **Zod at boundaries** (`src/fx/chain.ts`, export formats); **pure kernels
+  RED-first** with analytic anchors (`tests/unit/fx*` style).
+- **A11y**: axe-core zero-violations e2e gate (`tests/e2e/a11y.spec.ts`).
+- **Build**: Vite 8; PWA precache via `vite.config.ts` globPatterns — model
+  files must NEVER match the precache glob.
+- **Node**: v20.20.2 in this environment (`engines.node >=20`).
+
+## D1 — Feature flag `rag` (P0.8, 2026-09-26)
+
+- **Decision**: `isRagEnabled()` = env `VITE_RAG=1` OR `?rag=1` OR
+  `localStorage['wf.rag']='1'`; all storage/URL access try/catch-guarded;
+  injected accessors for testability. Default OFF.
+- **Alternatives**: build-time-only flag (no runtime toggle — worse DX);
+  always-on lazy module (no dark ship — rejected).
+- **Consequence**: zero behavior change when OFF; dark-launch possible;
+  P1.8 UI gates every RAG surface on it.
+
+## D2 — Baseline bundle budget (P0.7, 2026-09-26)
+
+- **Decision**: main-entry gzip baseline = 120,084 bytes (measured on
+  `feat/smart-rag` @ main-equivalent tree); tolerance 2048 B; enforced by
+  `scripts/check-bundle-size.mjs` + CI.
+- **Consequence**: every phase must keep the entry chunk within baseline+2 KB.
+
+## D3 — CI already runs e2e (P0.4/A7 context, 2026-09-26)
+
+- **Decision**: A7 is partially pre-addressed — commit `f662e19` added an
+  e2e job (Playwright install → build → suite → artifact). P0.6 adds only
+  the bundle-size check; Lighthouse stays a per-change local gate
+  (documented) to keep CI time reasonable.
+- **Consequence**: CI = typecheck, lint, unit+coverage, build, bundle check,
+  e2e.
