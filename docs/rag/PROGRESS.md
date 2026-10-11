@@ -16,10 +16,10 @@
 | P0.8 | Feature flag `rag` | DONE | feat(rag) 1b2de24 | 11/11 unit; entry hash unchanged (byte-identical OFF build) | D1 |
 | P0.9 | Large-file ceiling | DONE | (BASELINE.md) | table: 20 min mono OK; 30 min mono crash; 60 min no-completion | ceiling ≈20 min mono on 1–2 GB |
 | P0.10 | Phase 0 gate | DONE | (tag) | typecheck OK; lint 0; **736/736** unit (88 files); 59/59 e2e; build OK; bundle +0; LH d98/100/100/100 m98 | mobile perf 98 = baseline−1 run-variance, gate ≥95 ✓ |
-| P1.1 | Capability detection | TODO | — | — | — |
-| P1.2 | Typed worker RPC harness | TODO | — | — | — |
-| P1.3 | Model manifest + storage | TODO | — | — | — |
-| P1.4 | Resumable verified downloader | TODO | — | — | — |
+| P1.1 | Capability detection | DONE | feat(rag) 70c9b33 | 16/16 unit; micro-gate OK | injectable RagEnv; thresholds documented |
+| P1.2 | Typed worker RPC harness | DONE | feat(rag) d0027ac | 16/16 unit; micro-gate OK | direction-aware endpoint; restart-once then dead |
+| P1.3 | Model manifest + storage | DONE | feat(rag) f5dfc1e | 14/14 unit; micro-gate OK | fresh-Response fake semantics; registry empty-valid |
+| P1.4 | Resumable verified downloader | DONE | feat(rag) 6f308c7 | 12/12 unit; micro-gate OK | partials version-scoped; sha256 before commit |
 | P1.5 | Consent dialog + settings | TODO | — | — | — |
 | P1.6 | Headers: CSP allow-list + COOP/COEP exp. | TODO | — | — | — |
 | P1.7 | Network-egress guard test | TODO | — | — | — |
