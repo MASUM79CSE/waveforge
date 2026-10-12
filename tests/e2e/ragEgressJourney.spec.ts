@@ -34,6 +34,12 @@ test('ragEgressJourney: consent → transcribe → export = allow-listed egress 
   await welcome.getByRole('button', { name: /load sample/i }).click();
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
+  // the seam arrives via a flag-gated dynamic import — wait, don't race it
+  await page.waitForFunction(
+    () => (window as unknown as { __wfRagTest?: unknown }).__wfRagTest !== undefined,
+    undefined,
+    { timeout: 10_000 },
+  );
   // consent → download (the journey's single outbound request)
   await page.evaluate(({ sha, bodyLen }) => {
     const seam = (

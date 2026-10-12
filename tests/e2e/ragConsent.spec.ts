@@ -40,6 +40,12 @@ test('rag: consent → download → manage → delete (mock host, axe clean)', a
   await page.keyboard.press('Escape');
 
   // register the test model through the flag-gated seam
+  // the seam arrives via a flag-gated dynamic import — wait, don't race it
+  await page.waitForFunction(
+    () => (window as unknown as { __wfRagTest?: unknown }).__wfRagTest !== undefined,
+    undefined,
+    { timeout: 10_000 },
+  );
   await page.evaluate(({ sha, bodyLen }) => {
     const seam = (
       window as unknown as {

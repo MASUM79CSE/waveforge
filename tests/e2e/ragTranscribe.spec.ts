@@ -41,6 +41,12 @@ test('ragTranscribe: install → panel → transcribe (fake) → segments + seek
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
   // register + install the test model (consent flow)
+  // the seam arrives via a flag-gated dynamic import — wait, don't race it
+  await page.waitForFunction(
+    () => (window as unknown as { __wfRagTest?: unknown }).__wfRagTest !== undefined,
+    undefined,
+    { timeout: 10_000 },
+  );
   await page.evaluate(({ sha, bodyLen }) => {
     const seam = (
       window as unknown as {
