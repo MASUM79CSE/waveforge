@@ -80,3 +80,70 @@
 | P6.7 | Documentation | TODO | — | — | — |
 | P6.8 | Rollout recommendation | TODO | — | — | — |
 | P6.9 | Release gate + final report | TODO | — | — | — |
+
+## Phase 2 execution plan — acceptance criteria (planning pass 2026-10-12)
+
+Scope: audio → text fully on-device. Pipeline: decode → mono mixdown → 16 kHz
+resample (P2.1) → windowed feed into an ASR worker (P2.2) → Whisper via
+transformers.js behind a DI seam (P2.5) → window stitching (P2.6) → transcript
+store (P2.3) → timeline mapping (P2.4) → panel UI (P2.8) → SRT/VTT/TXT (P2.9),
+orchestrated by the job controller (P2.7). Standing constraints apply: CI never
+downloads real models (deterministic fake pipeline; real-model checks are
+opt-in scripts under `scripts/rag/`), transcripts never leave the device,
+entry bundle ≤ +2 KB gz, transcripts are untrusted data (text nodes only),
+new UI keyboard-operable + axe-clean + en/bn strings in the lazy RAG table.
+
+- **P2.1 resampler kernel** (`src/rag/audio/resample.ts`, pure, zero browser APIs):
+  `mixToMono`, streaming windowed-sinc `Resampler` (Kaiser window, direct taps),
+  one-shot `resampleTo16k`, `WHISPER_RATE=16000`.
+  Accept: 440 Hz sine 48k→16k frequency within 1 Hz (zero-crossing count);
+  in-band amplitude ripple ≤ 0.5 dB; ≥11 kHz tones attenuated ≥ 50 dB and
+  aliased ultrasonic spur ≥ 50 dB down (thresholds = measured − 10 dB margin,
+  documented); streaming with prime-sized pushes **bitwise-identical** to
+  one-shot; 44.1k→16k and upsample 8k→16k lengths ±1; N-channel mixdown;
+  no NaN for finite input; ≥ 12 tests; module imported only by rag code.
+- **P2.2 audio feeder**: worker-side decode-PCM → mix → resample → 30 s windows
+  + 1 s overlap, in order. Accept: progress monotonic 0..1 (ragProgress);
+  AbortSignal settles between blocks; PCM moves as transferables (no clone
+  on the main thread); unit tests extend `tests/rag/helpers`.
+- **P2.3 transcript model + IDB store**: zod schema {id = modelId+version+doc
+  fingerprint, language, segments[{start,end,text}], createdAt, stale flag};
+  own versioned IDB store (separate from model files); typed errors incl.
+  QUOTA; fingerprint = fnv1a(duration|channels|length|first/last samples) —
+  documented as a *staleness hint*, not integrity. Tests on the fake-IDB
+  pattern from P1.3.
+- **P2.4 timeline mapper (pure)**: model-time → document-time given the
+  transcribed source's placement (clip offset); monotonic, clamped, pure;
+  property tests (offset round-trip). Documented limitation: rate-1.0 clips
+  only for now.
+- **P2.5 ASR worker (Whisper/transformers.js)**: **spike first** — (a) pipeline
+  model cache from P1.3 IDB storage (fallback: runtime blob/SW serving — never
+  precache); (b) ort-wasm assets vendored into lazy dist assets — NO new
+  egress host (no jsdelivr); then DI-seamed pipeline (fake in tests),
+  q8-wasm default, WebGPU only when profile=high, timestamps for segments.
+  DECISIONS **D7**: dependency justification (size, Apache-2.0, lazy-only).
+  Opt-in `scripts/rag/whisper-real.mjs` for real-model validation (not CI).
+- **P2.6 window stitching (pure)**: merge overlapping window segment lists →
+  global segments; boundary-duplicate tolerance ≤ 200 ms; deterministic;
+  golden + property tests.
+- **P2.7 transcription job controller**: feeder→worker→stitcher→store→mapper
+  with signals, typed errors, cancel = cancel + re-run (no partial resume —
+  documented); extends the P1.5 runtime state machine (add `transcribing`,
+  rename nothing).
+- **P2.8 transcript panel UI**: fills the P1.8 shell — segment list (times +
+  text as text nodes only), click-to-seek, active-segment highlight, copy,
+  Transcribe action reusing consent flow; axe 0 violations; keyboard operable;
+  bn strings in the lazy `RAG_STRINGS` table; e2e via `__wfRagTest` + mock host.
+- **P2.9 export SRT/VTT/TXT**: pure serializers (exact timecode formats, plain
+  text, no markup injection); `rag.exportTranscript` command in the flag-gated
+  menu group; golden tests; existing download path.
+- **P2.10 e2e + docs**: journey spec — consent → mock download → transcribe
+  fixture → panel → export, egress guard attached (0 violations, 0 bodies);
+  docs updated (README section pointer).
+- **P2.11 phase gate**: full vitest (794 + P2 additions), full playwright,
+  LH desktop+mobile, bundle ≤ +2 KB gz, lazy audit (transformers/ort only in
+  worker chunks), tag `rag-phase-2-done`, PHASE-2 REPORT, push, STOP.
+
+Risks tracked: transformers.js custom-cache integration (spike in P2.5);
+ort-wasm footprint (lazy assets only); long-file memory (streaming windows —
+never materialize the full 16 kHz PCM twice); WebGPU variance (wasm default).
