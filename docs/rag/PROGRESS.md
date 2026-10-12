@@ -77,9 +77,9 @@
 | P6.4 | i18n completeness | DONE | feat commit fd7973a — full bn catalog (419 keys) + parity unit test |
 | P6.5 | Privacy audit | DONE | docs/rag/PRIVACY-AUDIT.md — full egress+storage ledger, cites ragEgressJourney + guard e2e |
 | P6.6 | Perf / bundle / Lighthouse | DONE | baseline 128,447 gz + D12 amendment; LH desktop 100×4 · mobile 98/100/100/100 (vite preview 4179, real output); lazy audit: transformers only in asr/embed/llm worker chunks |
-| P6.7 | Documentation | TODO | — | — | — |
-| P6.8 | Rollout recommendation | TODO | — | — | — |
-| P6.9 | Release gate + final report | TODO | — | — | — |
+| P6.7 | Documentation | DONE | feat e885f23 — README v2 section + stack/docs tables, cross-links verified (0 broken), P3.3 count corrected |
+| P6.8 | Rollout recommendation | DONE | RELEASE-REPORT §6 — staged enablement, empty-by-policy registry + measure flow, flag-OFF rollback |
+| P6.9 | Release gate + final report | DONE | 1110/1110 unit · 75/75 e2e (both projects) · tsc/eslint 0 · bundle = baseline 128,447 gz · LH desktop 100×4 / mobile 98+100×3 · tag rag-phase-6-done |
 
 ## Phase 2 execution plan — acceptance criteria (planning pass 2026-10-12)
 
