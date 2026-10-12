@@ -75,7 +75,7 @@
 | P6.2 | Failure-mode matrix | DONE | docs/rag/FAILURE-MODES.md — 18 typed failures, each citing a passing test (path fix applied) |
 | P6.3 | Accessibility sweep | DONE | 22 axe (wcag2a+aa) assertions across 6 rag e2e specs (consent, manage, panel, search, ask, edits) — green in the P6.9 gate run |
 | P6.4 | i18n completeness | DONE | feat commit fd7973a — full bn catalog (419 keys) + parity unit test |
-| P6.5 | Privacy audit | TODO | — | — | — |
+| P6.5 | Privacy audit | DONE | docs/rag/PRIVACY-AUDIT.md — full egress+storage ledger, cites ragEgressJourney + guard e2e |
 | P6.6 | Perf / bundle / Lighthouse | TODO | — | — | — |
 | P6.7 | Documentation | TODO | — | — | — |
 | P6.8 | Rollout recommendation | TODO | — | — | — |
