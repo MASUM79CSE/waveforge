@@ -139,3 +139,14 @@ UX demands literal semantics. Hybrid/RRF remains the engine default
 (`SearchIndex.query`) and is measured in the P3.8 eval; semantic UI
 ranking returns with the real embedder once a floor is calibrated
 (P4). Auto-index on first search (on-device, idempotent) unchanged.
+
+## D10 — local LLM reuses @huggingface/transformers (no new dependency)
+
+The opt-in Ask LLM runs `text-generation` via the ALREADY-SHIPPED
+@huggingface/transformers (same worker pattern as D8 embeddings, same
+P2.5 storage custom cache, same vendored ORT, q4 dtype) instead of
+adding @mlc-ai/web-llm (≈ heavy dep, separate runtime, new egress
+surface). Zero new dependencies, one offline contract, CI uses the
+deterministic fake LLM client; real-model quality checks stay opt-in
+scripts (P6). Ungrounded generations fall back to the extractive
+provider, so the grounding guarantee never depends on the model.
