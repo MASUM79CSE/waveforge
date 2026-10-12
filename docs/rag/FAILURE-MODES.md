@@ -8,7 +8,7 @@ all of these on every push (deterministic fakes; no ML).
 | --- | --- | --- | --- | --- |
 | 1 | ASR model not installed | `MODEL_NOT_INSTALLED` | Consent dialog offered; never a fetch | `tests/rag/asr/*` (asr.init seam); e2e `ragTranscribe` consent flow |
 | 2 | ASR cache entry corrupt / hash mismatch | typed cache-miss failure | Re-download offered; no playback of bad bytes | `tests/rag/asr/asrCache` hash checks |
-| 3 | Download aborted mid-flight | typed abort | Partial bytes never stored as installed | `tests/rag/models/downloader` abort tests |
+| 3 | Download aborted mid-flight | typed abort | Partial bytes never stored as installed | `tests/rag/downloader.test.ts` abort tests |
 | 4 | Transcription cancelled | `ABORTED` | State resets; re-run is clean | `tests/rag/transcripts/controller` (cancel = cancel + re-run) |
 | 5 | Transcription worker failure | `TRANSCRIBE_FAILED` | Toast + state reset; app usable | `tests/rag/transcripts/controller` error tests |
 | 6 | No audio document open | `NO_AUDIO` | Panel CTA explains requirement | `tests/rag/transcripts/controller` |
