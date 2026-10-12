@@ -26,12 +26,6 @@
 | P1.8 | Transcript panel shell + commands/menu/shortcut | DONE | this commit — ragPanel.spec 3/3, vitest 794/794, Ctrl+Shift+F, flag-OFF menus byte-identical |
 | P1.9 | Entry-bundle gate (≤2 KB gz growth) | DONE | `7d3e263` — first measure +3,734 (FAIL) → lazy RAG string table + armed import() (D6) → **+674 B** (entry 121,228 vs 120,554); runtime + RagDialogs verified separate lazy chunks; vitest 794/794 |
 | P1.10 | Full phase gate + tag | DONE | vitest 794/794; playwright 64/64 fake-media + 1/1 preview; LH desktop 100/100/100/100, mobile 98/100/100/100; bundle +674; tag `rag-phase-1-done` |
-| P1.5 | Consent dialog + settings | TODO | — | — | — |
-| P1.6 | Headers: CSP allow-list + COOP/COEP exp. | TODO | — | — | — |
-| P1.7 | Network-egress guard test | TODO | — | — | — |
-| P1.8 | UI shell behind the flag | TODO | — | — | — |
-| P1.9 | Lazy chunk + bundle verification | TODO | — | — | — |
-| P1.10 | Phase 1 gate | TODO | — | — | — |
 | P2.1 | Pure-TS resampler kernel | DONE | feat commit — 16 tests; 1 Hz freq anchor, ≤0.5 dB ripple, ≥50 dB stopband/alias, prime-split bitwise-identical; vitest 810/810 |
 | P2.2 | Audio feeder (16 kHz windows) | DONE | feat commit — pump 13 tests + RPC 5 tests; 30 s/1 s windows, transferables both directions (RPC_TRANSFER, D-protocol note), ABORTED settles; vitest 828/828 |
 | P2.3 | Transcript model + IDB store + migration | DONE | feat commit — 19 tests (schema/fingerprint/storage/migration v1→v2); fnv1a hint documented; quota→RagQuotaError; vitest 847/847 |
