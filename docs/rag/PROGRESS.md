@@ -37,7 +37,7 @@
 | P2.3 | Transcript model + IDB store + migration | DONE | feat commit — 19 tests (schema/fingerprint/storage/migration v1→v2); fnv1a hint documented; quota→RagQuotaError; vitest 847/847 |
 | P2.4 | Timeline mapper (pure) | DONE | feat commit — 8 tests: round-trip, 200-seg monotonicity, clamped-tail visibility; rate-1.0 limitation documented in-module |
 | P2.5 | ASR worker (Whisper/transformers.js) | TODO | — | — | — |
-| P2.6 | Window stitching (pure) | TODO | — | — | — |
+| P2.6 | Window stitching (pure) | DONE | feat commit — 10 tests (golden/property), 200 ms inclusive tolerance, sanitation of untrusted ASR times |
 | P2.7 | Transcription job controller | TODO | — | — | — |
 | P2.8 | Transcript panel UI | TODO | — | — | — |
 | P2.9 | Export SRT / VTT / TXT | TODO | — | — | — |
