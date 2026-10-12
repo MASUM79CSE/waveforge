@@ -105,7 +105,18 @@ function driveWorker(
   makeRequest: () => Record<string, unknown>,
 ): Promise<ExportResult> {
   return new Promise((resolve, reject) => {
+    // WF-001: the cancel watcher is cancellable itself — cleanup() stops
+    // it on every terminal path, so no timer (and no retained job closure)
+    // outlives the export and no `cancel` is ever posted after settlement.
+    let watchTimer: ReturnType<typeof setTimeout> | undefined;
+    let watchStopped = false;
+    const stopWatcher = (): void => {
+      watchStopped = true;
+      if (watchTimer !== undefined) clearTimeout(watchTimer);
+      watchTimer = undefined;
+    };
     const cleanup = (): void => {
+      stopWatcher();
       worker.onmessage = null;
       worker.onerror = null;
       worker.terminate();
@@ -135,13 +146,14 @@ function driveWorker(
       reject(new Error(event.message || 'worker failure'));
     };
     worker.postMessage(makeRequest());
-    // watch the cancel signal
+    // watch the cancel signal (stopped by cleanup() on every terminal path)
     const watch = (): void => {
+      if (watchStopped) return;
       if (job.signal?.cancelled) {
         worker.postMessage({ cmd: 'cancel', id });
         return;
       }
-      setTimeout(watch, 120);
+      watchTimer = setTimeout(watch, 120);
     };
     watch();
   });
