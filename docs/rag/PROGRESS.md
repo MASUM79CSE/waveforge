@@ -64,7 +64,7 @@
 | P4.10 | Phase 4 gate | DONE | 1047/1047 unit · 72/72 e2e · bundle 122,351/122,602 gz · tsc+eslint 0 · tag rag-phase-4-done · PHASE-4-REPORT.md |
 | P5.1 | EditPlan schema | DONE | feat commit — 9 tests (golden shapes, rejects, frozen limits) |
 | P5.2 | Deterministic planners | TODO | — | — | — |
-| P5.3 | Range normalization | TODO | — | — | — |
+| P5.3 | Range normalization | DONE | feat commit — 10 tests (clamp, collapse, caps, snap order, bad-doc) |
 | P5.4 | Preview + audition UI | TODO | — | — | — |
 | P5.5 | Executor through performEdit | TODO | — | — | — |
 | P5.6 | Markers / chapters | TODO | — | — | — |
