@@ -2119,6 +2119,29 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Transcript panel Smart edits + chapters (P5.4/P5.6) */
+.transcript-panel .section-title {
+  display: block;
+  font-size: 13px;
+  margin: 4px 0 6px;
+}
+.transcript-panel .edit-confirm {
+  border-top: 1px solid color-mix(in srgb, var(--fg-1, #e8eaed) 15%, transparent);
+  padding: 6px 0;
+}
+.transcript-panel .edit-desc {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.transcript-panel .chapter-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  max-height: 20vh;
+  overflow: auto;
+}
+
 /* Transcript panel segments (P2.8) */
 .transcript-panel .segment-list {
   list-style: none;

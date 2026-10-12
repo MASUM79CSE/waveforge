@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 import { locale } from '../../i18n';
-import { cursorPos, manageModelsOpen, ragPanelOpen } from '../state';
+import { cursorPos, manageModelsOpen, ragPanelOpen, selection } from '../state';
 import { engine } from '../../app/runtime';
 import {
   consentedDownload,
@@ -28,6 +28,9 @@ import {
   ragAskUseLlm,
   type AskTurn,
 } from '../../rag/runtime';
+import { planFromChunk, planFromSelection, planFromUtterance } from '../../rag/edits/planners';
+import type { EditPlan } from '../../rag/edits/plan';
+import { chaptersFromTranscript } from '../../rag/edits/chapters';
 
 
 /**
@@ -72,6 +75,21 @@ const RAG_STRINGS = {
     ragAskChatNote: 'I can only answer questions about this transcript.',
     ragAskFromModel: 'local model',
     ragAskOptIn: 'Use local AI model (downloads once, stays on this device)',
+    ragEditsTitle: 'Smart edits',
+    ragEditsDescribe: 'Describe an edit',
+    ragEditsPropose: 'Propose',
+    ragEditsPreview: 'Preview',
+    ragEditsApply: 'Apply',
+    ragEditsCancel: 'Cancel',
+    ragEditsDeleteSel: 'Delete selection',
+    ragEditsSilenceSel: 'Silence selection',
+    ragEditsQuieter: 'Quieter',
+    ragEditsLouder: 'Louder',
+    ragEditsUnsafe: 'That edit is not safe on this document.',
+    ragEditsFailed: 'The edit could not be applied.',
+    ragEditsDeleteUtterance: 'Delete utterance',
+    ragEditsSilenceUtterance: 'Silence utterance',
+    ragChaptersTitle: 'Chapters',
   },
   bn: {
     ragConsentTitle: 'এআই মডেল ডাউনলোড',
@@ -109,6 +127,21 @@ const RAG_STRINGS = {
     ragAskChatNote: 'আমি শুধু এই ট্রান্সক্রিপ্ট নিয়ে উত্তর দিতে পারি।',
     ragAskFromModel: 'লোকাল মডেল',
     ragAskOptIn: 'লোকাল এআই মডেল ব্যবহার করুন (একবার ডাউনলোড, ডিভাইসেই থাকে)',
+    ragEditsTitle: 'স্মার্ট এডিট',
+    ragEditsDescribe: 'এডিট লিখে বলুন',
+    ragEditsPropose: 'প্রস্তাব',
+    ragEditsPreview: 'প্রিভিউ',
+    ragEditsApply: 'প্রয়োগ',
+    ragEditsCancel: 'বাতিল',
+    ragEditsDeleteSel: 'নির্বাচন মুছুন',
+    ragEditsSilenceSel: 'নির্বাচন নীরব করুন',
+    ragEditsQuieter: 'কম জোরে',
+    ragEditsLouder: 'বেশি জোরে',
+    ragEditsUnsafe: 'এই ডকুমেন্টে এই এডিট নিরাপদ নয়।',
+    ragEditsFailed: 'এডিট প্রয়োগ করা যায়নি।',
+    ragEditsDeleteUtterance: 'উক্তি মুছুন',
+    ragEditsSilenceUtterance: 'উক্তি নীরব করুন',
+    ragChaptersTitle: 'অধ্যায়',
   },
 } as const;
 
@@ -133,6 +166,21 @@ function fmtTime(sec: number): string {
   return `${m}:${s.toFixed(1).padStart(4, '0')}`;
 }
 
+/** Selection in seconds from app state (or null). */
+function selRangeSec(): { startSec: number; endSec: number } | null {
+  const sel = selection.value;
+  if (!sel || sel.end - sel.start < 0.01) return null;
+  return { startSec: Math.max(0, Math.min(sel.start, sel.end)), endSec: Math.max(sel.start, sel.end) };
+}
+
+/** Span of the most recent answer's last citation (or null). */
+function lastCitationSec(): { startSec: number; endSec: number } | null {
+  const turn = ragAskHistory.value.find((t) => t.citations.length > 0);
+  if (!turn) return null;
+  const c = turn.citations[turn.citations.length - 1]!;
+  return { startSec: c.startSec, endSec: c.endSec };
+}
+
 function TranscriptPanel() {
   const close = () => (ragPanelOpen.value = false);
   const state = ragState.value;
@@ -144,12 +192,37 @@ function TranscriptPanel() {
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [askInput, setAskInput] = useState('');
+  const [editInput, setEditInput] = useState('');
+  const [proposal, setProposal] = useState<{ plan: EditPlan; verb: string } | null>(null);
   const history = ragAskHistory.value;
+  const chapters = transcript ? chaptersFromTranscript(transcript) : [];
   const askBusy = ragAskBusy.value;
   const cur = cursorPos.value;
 
   // P4.8 — Ask submit: full on-device pipeline; answers render as TEXT
   // NODES; citation buttons seek. Never throws past the UI boundary.
+  // P5.4/P5.7 — Smart edits: NL proposal (explicit confirm), quick
+  // selection ops, per-answer utterance ops. Plans are deterministic;
+  // execution goes through applyPlan = ONE performEdit.
+  const proposeEdit = (text: string) => {
+    const resolve =
+      selRangeSec() ??
+      lastCitationSec() ??
+      { startSec: 0, endSec: transcript ? transcript.segments[transcript.segments.length - 1]?.end ?? 0 : 0 };
+    const res = planFromUtterance(text, resolve);
+    setProposal(res.plan ? { plan: res.plan, verb: res.verb ?? '' } : null);
+    if (!res.plan) setError(null);
+  };
+  const applyProposal = (plan: EditPlan) => {
+    void import('../../app/ragEditActions')
+      .then((m) => m.applyPlan(plan))
+      .then((res) => {
+        if (!res.ok) setError(res.reason === 'unsafe' ? rt('ragEditsUnsafe') : rt('ragEditsFailed'));
+        else setProposal(null);
+      })
+      .catch(() => setError(rt('ragEditsFailed')));
+  };
+
   const onAsk = () => {
     const q = askInput.trim();
     if (q.length === 0 || askBusy) return;
@@ -318,10 +391,139 @@ function TranscriptPanel() {
                       {fmtTime(c.startSec)}
                     </button>
                   ))}
+                  {(() => {
+                    const c = turn.citations[turn.citations.length - 1]!;
+                    const del = planFromChunk({ startSec: c.startSec, endSec: c.endSec, chunkId: c.chunkId }, 'delete');
+                    const sil = planFromChunk({ startSec: c.startSec, endSec: c.endSec, chunkId: c.chunkId }, 'silence');
+                    return (
+                      <>
+                        {del && (
+                          <button type="button" class="btn ask-cite" aria-label={`${rt('ragEditsDeleteUtterance')} ${fmtTime(c.startSec)}`} onClick={() => applyProposal(del)}>
+                            ✂
+                          </button>
+                        )}
+                        {sil && (
+                          <button type="button" class="btn ask-cite" aria-label={`${rt('ragEditsSilenceUtterance')} ${fmtTime(c.startSec)}`} onClick={() => applyProposal(sil)}>
+                            ∅
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
             </div>
           ))}
+        </div>
+        <div class="smart-edits">
+          <strong class="section-title">{rt('ragEditsTitle')}</strong>
+          <div class="ask-row">
+            <input
+              type="text"
+              class="ask-input"
+              aria-label={rt('ragEditsDescribe')}
+              placeholder={rt('ragEditsDescribe')}
+              value={editInput}
+              onInput={(e) => setEditInput((e.target as HTMLInputElement).value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && editInput.trim().length > 0) proposeEdit(editInput.trim());
+              }}
+            />
+            <button
+              type="button"
+              class="btn ask-btn"
+              disabled={editInput.trim().length === 0}
+              onClick={() => proposeEdit(editInput.trim())}
+            >
+              {rt('ragEditsPropose')}
+            </button>
+          </div>
+          {proposal && (
+            <div class="edit-confirm">
+              <p class="edit-desc">
+                {proposal.verb} {proposal.plan.kind === 'insertSilence'
+                  ? `${proposal.plan.durSec.toFixed(1)}s @ ${fmtTime(proposal.plan.atSec)}`
+                  : `${fmtTime(proposal.plan.startSec)} – ${fmtTime(proposal.plan.endSec)}`}
+              </p>
+              <div class="ask-citations">
+                <button type="button" class="btn ask-cite" onClick={() => void import('../../app/ragEditActions').then((m) => { if (m.previewPlan(proposal.plan)) setProposal(proposal); })}>
+                  {rt('ragEditsPreview')}
+                </button>
+                <button type="button" class="btn ask-cite" onClick={() => applyProposal(proposal.plan)}>
+                  {rt('ragEditsApply')}
+                </button>
+                <button type="button" class="btn ask-cite" onClick={() => setProposal(null)}>
+                  {rt('ragEditsCancel')}
+                </button>
+              </div>
+            </div>
+          )}
+          <div class="ask-citations">
+            <button
+              type="button"
+              class="btn ask-cite"
+              disabled={!selRangeSec()}
+              onClick={() => {
+                const sel = selRangeSec();
+                if (sel) applyProposal(planFromSelection(sel, 'delete')!);
+              }}
+            >
+              {rt('ragEditsDeleteSel')}
+            </button>
+            <button
+              type="button"
+              class="btn ask-cite"
+              disabled={!selRangeSec()}
+              onClick={() => {
+                const sel = selRangeSec();
+                if (sel) applyProposal(planFromSelection(sel, 'silence')!);
+              }}
+            >
+              {rt('ragEditsSilenceSel')}
+            </button>
+            <button
+              type="button"
+              class="btn ask-cite"
+              disabled={!selRangeSec()}
+              onClick={() => {
+                const sel = selRangeSec();
+                if (sel) applyProposal(planFromSelection(sel, 'gain', 0.5)!);
+              }}
+            >
+              {rt('ragEditsQuieter')}
+            </button>
+            <button
+              type="button"
+              class="btn ask-cite"
+              disabled={!selRangeSec()}
+              onClick={() => {
+                const sel = selRangeSec();
+                if (sel) applyProposal(planFromSelection(sel, 'gain', 1.8)!);
+              }}
+            >
+              {rt('ragEditsLouder')}
+            </button>
+          </div>
+          {chapters.length > 0 && (
+            <div class="chapters">
+              <strong class="section-title">{rt('ragChaptersTitle')}</strong>
+              <ul class="chapter-list">
+                {chapters.map((c) => (
+                  <li key={c.index}>
+                    <button
+                      type="button"
+                      class="segment"
+                      aria-label={`${c.title} (${fmtTime(c.atSec)})`}
+                      onClick={() => engine.seek(c.atSec)}
+                    >
+                      <span class="seg-time">{fmtTime(c.atSec)}</span>
+                      <span class="seg-text">{c.title}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <ul class="segment-list">
           {transcript.segments.map((s) => (

@@ -225,6 +225,28 @@ export const commands: Command[] = [
     run: () => void exportTranscriptAction('txt'),
   },
   {
+    id: 'rag.smartDeleteSelection',
+    label: () => (locale() === 'bn' ? 'নির্বাচন মুছুন (স্মার্ট)' : 'Delete selection (smart)'),
+    run: () => {
+      if (!isRagEnabled()) return;
+      void import('./ragEditActions').then((m) => {
+        const sel = m.currentSelectionSec();
+        if (sel) m.applyPlan({ kind: 'deleteRange', startSec: sel.startSec, endSec: sel.endSec, source: 'selection', labelKey: 'delete' });
+      });
+    },
+  },
+  {
+    id: 'rag.smartSilenceSelection',
+    label: () => (locale() === 'bn' ? 'নির্বাচন নীরব করুন (স্মার্ট)' : 'Silence selection (smart)'),
+    run: () => {
+      if (!isRagEnabled()) return;
+      void import('./ragEditActions').then((m) => {
+        const sel = m.currentSelectionSec();
+        if (sel) m.applyPlan({ kind: 'silenceRange', startSec: sel.startSec, endSec: sel.endSec, source: 'selection', labelKey: 'silence' });
+      });
+    },
+  },
+  {
     id: 'rag.manageModels',
     label: () => (locale() === 'bn' ? 'এআই মডেল ব্যবস্থাপনা' : 'Manage AI models'),
     run: () => {

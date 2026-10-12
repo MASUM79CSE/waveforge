@@ -115,7 +115,7 @@ export const menus: MenuDef[] = [
       { header: () => t().menuGroupCursor, items: ['view.follow', 'view.zerocross', 'view.axis'] },
       { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent'] },
       ...(isRagEnabled()
-        ? [{ header: () => (locale() === 'bn' ? 'ট্রান্সক্রিপশন' : 'Transcription'), items: ['rag.togglePanel', 'rag.manageModels', 'rag.exportSrt', 'rag.exportVtt', 'rag.exportTxt'] }]
+        ? [{ header: () => (locale() === 'bn' ? 'ট্রান্সক্রিপশন' : 'Transcription'), items: ['rag.togglePanel', 'rag.manageModels', 'rag.smartDeleteSelection', 'rag.smartSilenceSelection', 'rag.exportSrt', 'rag.exportVtt', 'rag.exportTxt'] }]
         : []),
     ],
   },
