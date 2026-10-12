@@ -41,7 +41,7 @@
 | P2.7 | Transcription job controller | DONE | feat commit — 10 controller tests; typed errors, idempotency, cancel+rerun; runtime wiring + fake-ASR seam; chunk proof: ort/transformers only in asr.worker; bundle +1,164 ≤ +2,048; vitest 887/887 |
 | P2.8 | Transcript panel UI | DONE | feat commit — ragTranscribe.spec 2/2 (axe 0, text-nodes-only, seek+active, copy); +5 keys en/bn; RAG e2e 7/7; entry +1,171 ≤ +2,048; vitest 887/887 |
 | P2.9 | Export SRT / VTT / TXT | DONE | feat commit — 9 serializer tests (golden/edge/injection-safe); 3 flag-gated commands; e2e download leg (exact filename + SRT body); vitest 896/896; bundle +1,792 |
-| P2.10 | Phase 2 e2e + docs | TODO | — | — | — |
+| P2.10 | Phase 2 e2e + docs | DONE | feat commit — ragEgressJourney 1/1 (0 violations / 0 bodies / exactly 1 allow-listed outbound); README features + docs table; vitest 896/896 |
 | P2.11 | Phase 2 gate | TODO | — | — | — |
 | P3.1 | Tokenizer + BM25 | TODO | — | — | — |
 | P3.2 | Chunker | TODO | — | — | — |
