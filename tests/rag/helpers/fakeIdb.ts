@@ -10,6 +10,7 @@ import type {
   IDBObjectStoreLike,
   IDBRequestLike,
 } from '../../../src/rag/transcripts/idb';
+import type { IndexFactoryLike } from '../../../src/rag/retrieval/indexStore';
 
 interface FakeRow {
   value: Record<string, unknown>;
@@ -41,16 +42,17 @@ function mkRequest(): FakeRequest {
   return req as FakeRequest;
 }
 
+/** Wide store shape — satisfies both the transcript and index interfaces. */
 function mkStore(db: FakeIDB, name: string): IDBObjectStoreLike {
   const rows = db.stores.get(name) ?? new Map<string, FakeRow>();
   db.stores.set(name, rows);
-  return {
-    get(key) {
+  const store = {
+    get(key: string) {
       const r = db.request();
       r._set(rows.get(key)?.value);
       return r;
     },
-    put(value) {
+    put(value: Record<string, unknown>) {
       const r = db.request();
       if (db.quotaFail) {
         r._fail(Object.assign(new Error('quota'), { name: 'QuotaExceededError' }));
@@ -62,7 +64,7 @@ function mkStore(db: FakeIDB, name: string): IDBObjectStoreLike {
       }
       return r;
     },
-    delete(key) {
+    delete(key: string) {
       const r = db.request();
       rows.delete(key);
       r._set(undefined);
@@ -78,6 +80,7 @@ function mkStore(db: FakeIDB, name: string): IDBObjectStoreLike {
       return undefined;
     },
   };
+  return store;
 }
 
 export class FakeIDB {
@@ -98,6 +101,11 @@ export class FakeIDB {
 
   storeHandle(name: string): IDBObjectStoreLike {
     return mkStore(this, name);
+  }
+
+  /** Same factory, typed for the P3.4 index-store interfaces. */
+  indexFactory(): IndexFactoryLike {
+    return this.factory as unknown as IndexFactoryLike;
   }
 
   readonly factory = {
