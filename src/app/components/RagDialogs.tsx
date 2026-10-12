@@ -21,6 +21,7 @@ import {
   ragState,
 } from '../../rag/runtime';
 import { Modal } from './Modal';
+import type { SearchHit } from '../../rag/retrieval/search';
 
 
 /**
@@ -52,6 +53,11 @@ const RAG_STRINGS = {
     ragPanelNoTranscript: 'Run transcription to see the transcript here.',
     ragPanelCopy: 'Copy transcript',
     ragPanelCopied: 'Copied',
+    ragSearchLabel: 'Search in transcript',
+    ragSearchPlaceholder: 'Type to search',
+    ragSearchEmpty: 'No matches in this transcript.',
+    ragSearchIndexing: 'Preparing search on this device',
+    ragSearchFailed: 'Search is unavailable for this transcript.',
   },
   bn: {
     ragConsentTitle: 'এআই মডেল ডাউনলোড',
@@ -76,6 +82,11 @@ const RAG_STRINGS = {
     ragPanelNoTranscript: 'ট্রান্সক্রিপ্ট দেখতে ট্রান্সক্রিপশন চালান।',
     ragPanelCopy: 'ট্রান্সক্রিপ্ট কপি',
     ragPanelCopied: 'কপি হয়েছে',
+    ragSearchLabel: 'ট্রান্সক্রিপ্টে খুঁজুন',
+    ragSearchPlaceholder: 'লিখে খুঁজুন',
+    ragSearchEmpty: 'এই ট্রান্সক্রিপ্টে কোনো মিল নেই।',
+    ragSearchIndexing: 'এই ডিভাইসেই সার্চ প্রস্তুত হচ্ছে',
+    ragSearchFailed: 'এই ট্রান্সক্রিপ্টে সার্চ করা যাচ্ছে না।',
   },
 } as const;
 
@@ -107,12 +118,41 @@ function TranscriptPanel() {
   const models = ragModelChoices();
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [query, setQuery] = useState('');
+  const [hits, setHits] = useState<SearchHit[]>([]);
+  const [searching, setSearching] = useState(false);
   const cur = cursorPos.value;
 
   useEffect(() => {
     const m = models[0];
     if (m) void loadStoredTranscript(m.id);
   }, []);
+
+  // P3.7 — hybrid transcript search: debounce, auto-index on first use
+  // (all on-device), render snippets as TEXT NODES, seek on click/Enter.
+  useEffect(() => {
+    if (!transcript || query.trim().length === 0) {
+      setHits([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      setSearching(true);
+      void import('../../rag/runtime')
+        .then(async (rtMod) => {
+          // lexical mode: find-in-transcript semantics — a nonsense
+          // query shows "no matches" instead of embedding-noise hits
+          let res = await rtMod.searchTranscript(query, { topK: 5, mode: 'lexical' });
+          if (res.length === 0 && !rtMod.ragIndexBusy.value) {
+            await rtMod.indexTranscript();
+            res = await rtMod.searchTranscript(query, { topK: 5, mode: 'lexical' });
+          }
+          setHits(res);
+        })
+        .catch(() => setHits([]))
+        .finally(() => setSearching(false));
+    }, 200);
+    return () => clearTimeout(t);
+  }, [query, transcript]);
 
   const onTranscribe = () => {
     const m = models[0];
@@ -156,6 +196,36 @@ function TranscriptPanel() {
   } else if (transcript && transcript.segments.length > 0) {
     body = (
       <>
+        <div class="transcript-search">
+          <input
+            type="search"
+            class="search-input"
+            aria-label={rt('ragSearchLabel')}
+            placeholder={rt('ragSearchPlaceholder')}
+            value={query}
+            onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
+          />
+          <div role="status" aria-live="polite" class="search-status">
+            {searching ? rt('ragSearchIndexing') : query.trim() && hits.length === 0 && !searching ? rt('ragSearchEmpty') : ''}
+          </div>
+          {hits.length > 0 && (
+            <ul class="segment-list search-results">
+              {hits.map((h) => (
+                <li key={h.chunk.id}>
+                  <button
+                    type="button"
+                    class="segment"
+                    aria-label={`${fmtTime(h.chunk.startSec)}`}
+                    onClick={() => engine.seek(h.chunk.startSec)}
+                  >
+                    <span class="seg-time">{fmtTime(h.chunk.startSec)}</span>
+                    <span class="seg-text">{h.chunk.text}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <ul class="segment-list">
           {transcript.segments.map((s) => (
             <li key={`${s.start}`}>

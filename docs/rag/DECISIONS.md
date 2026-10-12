@@ -127,3 +127,15 @@ CI. It is NOT semantic; real-model retrieval quality is validated opt-in
 **Worker isolation:** `embed.worker.ts` is the only chunk pulling
 transformers for embeddings; the entry bundle is untouched (gate-checked in
 P3.9). Result vectors ride the RPC transfer list (zero-copy).
+
+## D9 — transcript-panel search runs in lexical mode (P3.7)
+
+The panel search box uses `mode: 'lexical'` (BM25 only), not hybrid.
+Rationale: RRF always produces a full ranking — with no calibrated
+score floor it cannot say "no matches", and with the deterministic
+fake embedder hash noise (cosine up to ~0.25 for disjoint texts)
+becomes visible ranking noise for nonsense queries. Find-in-transcript
+UX demands literal semantics. Hybrid/RRF remains the engine default
+(`SearchIndex.query`) and is measured in the P3.8 eval; semantic UI
+ranking returns with the real embedder once a floor is calibrated
+(P4). Auto-index on first search (on-device, idempotent) unchanged.

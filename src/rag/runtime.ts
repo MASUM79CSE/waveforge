@@ -246,3 +246,53 @@ export async function indexTranscript(
     ragIndexBusy.value = false;
   }
 }
+
+/**
+ * P3.7 — hybrid search over the CURRENT transcript's index. Returns []
+ * when there is no transcript or no index yet (the panel builds the
+ * index on first search via `indexTranscript`). The query embedder
+ * always matches the model that produced the stored vectors.
+ */
+export async function searchTranscript(
+  query: string,
+  opts: { topK?: number; mode?: 'hybrid' | 'lexical' | 'vector' } = {},
+): Promise<Array<{ chunk: import('./retrieval/indexStore').StoredChunk; score: number }>> {
+  const record = ragTranscript.value;
+  if (!record || query.trim().length === 0) return [];
+  const mode = opts.mode ?? 'hybrid';
+  const rows = (await getIndexStore())
+    .loadAll()
+    .then((all) => all.filter((r) => r.transcriptId === record.id));
+  const all = await rows;
+  if (all.length === 0) return [];
+  const fake = fakeMode();
+  const modelId = all[0]!.modelId;
+  const { SearchIndex } = await import('./retrieval/search');
+  // Lexical mode needs no query vector at all.
+  if (mode === 'lexical') {
+    const idx = new SearchIndex({ embedQuery: () => new Float32Array(0) });
+    idx.load(all);
+    return idx.query(query, { topK: opts.topK ?? 5, mode });
+  }
+  // Embed the query ONCE up front (async is fine here); the SearchIndex
+  // takes a sync embedder, so it gets a closure over the fixed vector.
+  let qvec: Float32Array;
+  if (fake || modelId === 'fake-embed') {
+    const { embedTexts } = await import('./retrieval/embedFake');
+    qvec = embedTexts([query])[0]!;
+  } else {
+    const { createEmbedClient, createEmbedWorker } = await import('./retrieval/embedClient');
+    const client = createEmbedClient(() => createEmbedWorker() as never);
+    try {
+      const version = (await getStorage().installedVersion(modelId)) ?? '0';
+      await client.init({ modelId, version, device: 'wasm' });
+      const res = await client.embed([query]);
+      qvec = res.vectors[0]!;
+    } finally {
+      client.close();
+    }
+  }
+  const idx = new SearchIndex({ embedQuery: () => qvec });
+  idx.load(all);
+  return idx.query(query, { topK: opts.topK ?? 5, mode });
+}
