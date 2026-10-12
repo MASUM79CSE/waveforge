@@ -2049,11 +2049,74 @@
 .transcript-panel .search-status {
   min-height: 1em;
   font-size: 12px;
-  color: color-mix(in srgb, var(--fg-1, #e8eaed) 85%, transparent);
+  color: color-mix(in srgb, var(--fg-1, #e8eaed) 88%, transparent);
   margin: 4px 0;
 }
 .transcript-panel .search-results {
   max-height: 20vh;
+}
+
+/* Transcript panel Ask (P4.8) — inherits text-node discipline */
+.transcript-panel .transcript-ask {
+  margin-bottom: 8px;
+}
+.transcript-panel .ask-row {
+  display: flex;
+  gap: 6px;
+}
+.transcript-panel .ask-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--fg-1, #e8eaed) 25%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg-1, #e8eaed) 6%, transparent);
+  color: inherit;
+  font: inherit;
+  padding: 6px 8px;
+}
+.transcript-panel .ask-input:focus-visible {
+  outline: 2px solid var(--accent, #3ddad0);
+  outline-offset: 1px;
+}
+.transcript-panel .ask-optin {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  margin: 6px 0;
+  color: color-mix(in srgb, var(--fg-1, #e8eaed) 88%, transparent);
+}
+.transcript-panel .ask-status {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--fg-1, #e8eaed) 88%, transparent);
+  margin: 4px 0;
+}
+.transcript-panel .ask-turn {
+  border-top: 1px solid color-mix(in srgb, var(--fg-1, #e8eaed) 15%, transparent);
+  padding: 6px 0;
+}
+.transcript-panel .ask-q {
+  margin: 0 0 2px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.transcript-panel .ask-a {
+  margin: 0 0 4px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.transcript-panel .ask-provider {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--fg-1, #e8eaed) 88%, transparent);
+}
+.transcript-panel .ask-citations {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.transcript-panel .ask-cite {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Transcript panel segments (P2.8) */

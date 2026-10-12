@@ -22,6 +22,12 @@ import {
 } from '../../rag/runtime';
 import { Modal } from './Modal';
 import type { SearchHit } from '../../rag/retrieval/search';
+import {
+  ragAskBusy,
+  ragAskHistory,
+  ragAskUseLlm,
+  type AskTurn,
+} from '../../rag/runtime';
 
 
 /**
@@ -58,6 +64,14 @@ const RAG_STRINGS = {
     ragSearchEmpty: 'No matches in this transcript.',
     ragSearchIndexing: 'Preparing search on this device',
     ragSearchFailed: 'Search is unavailable for this transcript.',
+    ragAskLabel: 'Ask about this transcript',
+    ragAskPlaceholder: 'Ask a question',
+    ragAskButton: 'Ask',
+    ragAskBusy: 'Working on this device…',
+    ragAskNotInTranscript: 'Not in this transcript.',
+    ragAskChatNote: 'I can only answer questions about this transcript.',
+    ragAskFromModel: 'local model',
+    ragAskOptIn: 'Use local AI model (downloads once, stays on this device)',
   },
   bn: {
     ragConsentTitle: 'এআই মডেল ডাউনলোড',
@@ -87,6 +101,14 @@ const RAG_STRINGS = {
     ragSearchEmpty: 'এই ট্রান্সক্রিপ্টে কোনো মিল নেই।',
     ragSearchIndexing: 'এই ডিভাইসেই সার্চ প্রস্তুত হচ্ছে',
     ragSearchFailed: 'এই ট্রান্সক্রিপ্টে সার্চ করা যাচ্ছে না।',
+    ragAskLabel: 'এই ট্রান্সক্রিপ্ট নিয়ে জিজ্ঞাসা করুন',
+    ragAskPlaceholder: 'প্রশ্ন লিখুন',
+    ragAskButton: 'জিজ্ঞাসা',
+    ragAskBusy: 'এই ডিভাইসেই কাজ চলছে…',
+    ragAskNotInTranscript: 'এই ট্রান্সক্রিপ্টে নেই।',
+    ragAskChatNote: 'আমি শুধু এই ট্রান্সক্রিপ্ট নিয়ে উত্তর দিতে পারি।',
+    ragAskFromModel: 'লোকাল মডেল',
+    ragAskOptIn: 'লোকাল এআই মডেল ব্যবহার করুন (একবার ডাউনলোড, ডিভাইসেই থাকে)',
   },
 } as const;
 
@@ -121,7 +143,21 @@ function TranscriptPanel() {
   const [query, setQuery] = useState('');
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [searching, setSearching] = useState(false);
+  const [askInput, setAskInput] = useState('');
+  const history = ragAskHistory.value;
+  const askBusy = ragAskBusy.value;
   const cur = cursorPos.value;
+
+  // P4.8 — Ask submit: full on-device pipeline; answers render as TEXT
+  // NODES; citation buttons seek. Never throws past the UI boundary.
+  const onAsk = () => {
+    const q = askInput.trim();
+    if (q.length === 0 || askBusy) return;
+    setAskInput('');
+    void import('../../rag/runtime')
+      .then((rtMod) => rtMod.askTranscript(q))
+      .catch(() => undefined);
+  };
 
   useEffect(() => {
     const m = models[0];
@@ -225,6 +261,67 @@ function TranscriptPanel() {
               ))}
             </ul>
           )}
+        </div>
+        <div class="transcript-ask">
+          <div class="ask-row">
+            <input
+              type="text"
+              class="ask-input"
+              aria-label={rt('ragAskLabel')}
+              placeholder={rt('ragAskPlaceholder')}
+              value={askInput}
+              onInput={(e) => setAskInput((e.target as HTMLInputElement).value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') onAsk();
+              }}
+            />
+            <button type="button" class="btn ask-btn" onClick={onAsk} disabled={askBusy || askInput.trim().length === 0}>
+              {rt('ragAskButton')}
+            </button>
+          </div>
+          <label class="ask-optin">
+            <input
+              type="checkbox"
+              checked={ragAskUseLlm.value}
+              onChange={(e) => (ragAskUseLlm.value = (e.target as HTMLInputElement).checked)}
+            />
+            {rt('ragAskOptIn')}
+          </label>
+          {askBusy && (
+            <div role="status" aria-live="polite" class="ask-status">
+              {rt('ragAskBusy')}
+            </div>
+          )}
+          {history.map((turn: AskTurn) => (
+            <div class="ask-turn" key={turn.id}>
+              <p class="ask-q">{turn.query}</p>
+              {turn.note === 'chat' ? (
+                <p class="ask-a" role="status">{rt('ragAskChatNote')}</p>
+              ) : turn.status === 'answer' ? (
+                <p class="ask-a">
+                  {turn.text}{' '}
+                  <span class="ask-provider">({turn.provider === 'local-llm' ? rt('ragAskFromModel') : 'extractive'})</span>
+                </p>
+              ) : (
+                <p class="ask-a" role="status">{rt('ragAskNotInTranscript')}</p>
+              )}
+              {turn.citations.length > 0 && (
+                <div class="ask-citations">
+                  {turn.citations.map((c, i) => (
+                    <button
+                      type="button"
+                      class="btn ask-cite"
+                      key={`${turn.id}-${i}`}
+                      aria-label={`${fmtTime(c.startSec)}`}
+                      onClick={() => engine.seek(c.startSec)}
+                    >
+                      {fmtTime(c.startSec)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
         <ul class="segment-list">
           {transcript.segments.map((s) => (

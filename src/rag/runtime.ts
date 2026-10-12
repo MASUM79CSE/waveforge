@@ -146,6 +146,23 @@ export function installTestSeam(): void {
     useFakeAsr: () => {
       fakeAsr = true;
     },
+    /** P4.5 — force Ask onto the deterministic fake LLM client (CI). */
+    useFakeLlm: () => {
+      fakeLlm = true;
+    },
+    /** P4.7 e2e — inject an untrusted (hostile) transcript directly. */
+    seedTranscript: (segments: Array<{ start: number; end: number; text: string }>) => {
+      ragTranscript.value = {
+        id: 'seed@1/hostile',
+        modelId: 'test-model',
+        modelVersion: '1.0.0',
+        fingerprint: 'hostile',
+        language: 'en',
+        segments,
+        createdAt: 1,
+        stale: false,
+      };
+    },
     transcribe: (modelId: string) => startTranscription(modelId),
   };
 }
@@ -153,6 +170,7 @@ export function installTestSeam(): void {
 // ── P2.7: transcription job controller wiring ────────────────────────
 
 let fakeAsr = false;
+let fakeLlm = false;
 let transcriptStore: import('./transcripts/store').TranscriptStorage | null = null;
 
 /** Transcribe the current document with an installed model (P2.7). */
@@ -295,4 +313,129 @@ export async function searchTranscript(
   const idx = new SearchIndex({ embedQuery: () => qvec });
   idx.load(all);
   return idx.query(query, { topK: opts.topK ?? 5, mode });
+}
+
+// ── P4.8: Ask (question answering over the transcript) ───────────────
+
+/** One rendered Ask exchange (capped history — new signal, no renames). */
+export interface AskTurn {
+  id: number;
+  query: string;
+  status: 'answer' | 'insufficient';
+  text: string;
+  citations: Array<{ chunkId: string; startSec: number; endSec: number; quote: string }>;
+  provider: 'extractive' | 'local-llm' | 'none';
+  /** 'chat' = smalltalk routed away from the transcript answerer. */
+  note?: 'chat';
+}
+
+export const ragAskHistory = signal<AskTurn[]>([]);
+/** Opt-in for the local LLM provider — OFF by default (P4.5). */
+export const ragAskUseLlm = signal(false);
+export const ragAskBusy = signal(false);
+
+let askSeq = 0;
+
+/**
+ * P4.8 — full ask pipeline: intent → rewrite → (auto-index) → hybrid
+ * retrieval → sufficiency → provider (extractive default; fake/real
+ * LLM only when opted in) → grounding gate (inside the provider).
+ * Everything stays on-device.
+ */
+export async function askTranscript(
+  rawQuery: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<AskTurn> {
+  const query = rawQuery.trim();
+  if (query.length === 0 || ragAskBusy.value) {
+    throw new Error('ask: empty query or busy');
+  }
+  const { routeIntent } = await import('./ask/intent');
+  const routed = routeIntent(query);
+  const base: AskTurn = {
+    id: ++askSeq,
+    query,
+    status: 'insufficient',
+    text: '',
+    citations: [],
+    provider: 'none',
+  };
+  if (routed.intent === 'chat') {
+    const turn: AskTurn = { ...base, note: 'chat' };
+    ragAskHistory.value = [turn, ...ragAskHistory.value].slice(0, 5);
+    return turn;
+  }
+  ragAskBusy.value = true;
+  try {
+    const record = ragTranscript.value;
+    if (!record) return base;
+    const { rewriteQuery } = await import('./ask/rewrite');
+    const rewritten = rewriteQuery(query, ragAskHistory.value.map((t) => ({ query: t.query })));
+
+    // ensure an index exists (auto-build on first ask, like search)
+    const store = await getIndexStore();
+    let rows = (await store.loadAll()).filter((r) => r.transcriptId === record.id);
+    if (rows.length === 0 && !ragIndexBusy.value) {
+      await indexTranscript({ signal: opts.signal });
+      rows = (await store.loadAll()).filter((r) => r.transcriptId === record.id);
+    }
+    if (rows.length === 0) return base;
+
+    const { assessSufficiency } = await import('./ask/sufficiency');
+    const hits = await searchTranscript(rewritten.query, { topK: 5, mode: 'hybrid' });
+    const suff = assessSufficiency({ hits: hits.length, bestScore: hits[0]?.score ?? 0 });
+    const evidence = hits.map((h) => ({
+      id: h.chunk.id,
+      text: h.chunk.text,
+      startSec: h.chunk.startSec,
+      endSec: h.chunk.endSec,
+    }));
+    const ctx = { evidence, confidence: suff.confidence, signal: opts.signal };
+
+    // provider selection: extractive default; LLM only when opted in
+    const llmEntry = llmModelChoice();
+    const llmVersion = await getStorage().installedVersion(llmEntry.id);
+    const wantLlm = ragAskUseLlm.value && (fakeLlm || llmVersion !== null);
+    const { createExtractiveProvider } = await import('./ask/extractive');
+    let provider: import('./ask/provider').AskProvider = createExtractiveProvider();
+    if (wantLlm) {
+      const { createLlmProvider } = await import('./ask/llmProvider');
+      const { createLlmClient, createFakeLlmClient, createLlmWorker } = await import('./ask/llmClient');
+      provider = createLlmProvider({
+        client: fakeLlm
+          ? createFakeLlmClient()
+          : createLlmClient(() => createLlmWorker() as never),
+        modelId: llmEntry.id,
+        version: fakeLlm ? '1.0.0' : (llmVersion ?? '0'),
+      });
+    }
+    const answer = await provider.answer({ query: rewritten.query }, ctx);
+    const turn: AskTurn = {
+      id: ++askSeq,
+      query,
+      status: answer.status,
+      text: answer.status === 'answer' ? answer.text : '',
+      citations: answer.citations.map((c) => ({ ...c })),
+      provider: answer.provider,
+    };
+    ragAskHistory.value = [turn, ...ragAskHistory.value].slice(0, 5);
+    return turn;
+  } finally {
+    ragAskBusy.value = false;
+  }
+}
+
+/** The opted-in LLM entry (registry or seam); falls back to a stub id. */
+function llmModelChoice(): import('./models/manifest').ModelEntry {
+  return (
+    ragModelChoices().find((m) => m.kind === 'llm') ?? {
+      id: 'waveforge-llm-small',
+      kind: 'llm',
+      version: '0',
+      files: [],
+      licence: 'n/a',
+      sourceUrl: 'https://example.invalid/llm',
+      minProfile: 'standard',
+    }
+  );
 }
