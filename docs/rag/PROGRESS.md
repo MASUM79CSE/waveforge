@@ -46,7 +46,7 @@
 | P3.1 | Tokenizer + BM25 | DONE | feat commit — 16 tests (golden score, saturation, length norm, Bengali tokens); Lucene IDF; vitest pending full run |
 | P3.2 | Chunker | DONE | feat commit — 9 tests (golden/budget/overlap/never-split/coverage/termination) |
 | P3.3 | Embedding worker (+ fake) | DONE | feat commit — 14 tests; D8 (no new dep; fake for CI); offline contract shared with P2.5; chunk audit at gate |
-| P3.4 | Index store + migration | TODO | — | — | — |
+| P3.4 | Index store + migration | DONE | feat commit — 8 tests (bitwise vectors, replace/delete, quota, v1 chain); rag suites 218/218 |
 | P3.5 | Hybrid search + RRF | TODO | — | — | — |
 | P3.6 | Index job controller | TODO | — | — | — |
 | P3.7 | Search UI | TODO | — | — | — |
