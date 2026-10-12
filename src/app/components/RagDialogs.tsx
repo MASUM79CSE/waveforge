@@ -446,7 +446,7 @@ function TranscriptPanel() {
                   : `${fmtTime(proposal.plan.startSec)} – ${fmtTime(proposal.plan.endSec)}`}
               </p>
               <div class="ask-citations">
-                <button type="button" class="btn ask-cite" onClick={() => void import('../../app/ragEditActions').then((m) => { if (m.previewPlan(proposal.plan)) setProposal(proposal); })}>
+                <button type="button" class="btn ask-cite" onClick={() => void import('../../app/ragEditActions').then((m) => m.previewPlan(proposal.plan))}>
                   {rt('ragEditsPreview')}
                 </button>
                 <button type="button" class="btn ask-cite" onClick={() => applyProposal(proposal.plan)}>

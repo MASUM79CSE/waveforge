@@ -7,8 +7,6 @@
  */
 import { findZeroCross, type EditOutcome } from '../engine/editOps';
 import type { EditPlan } from '../rag/edits/plan';
-import { normalizePlan } from '../rag/edits/normalize';
-import { planToOutcome } from '../rag/edits/planToOutcome';
 import { engine, getDoc, performEdit } from './runtime';
 import * as S from './state';
 
@@ -35,14 +33,17 @@ export interface ApplyResult {
 
 /**
  * Validate + normalize + execute a plan through performEdit exactly
- * once. All caps/bounds enforced by normalizePlan (P5.3).
+ * once. All caps/bounds enforced by normalizePlan (P5.3). The rag/edits
+ * kernels load dynamically (bundle gate: never in the entry chunk).
  */
-export function applyPlan(raw: EditPlan): ApplyResult {
+export async function applyPlan(raw: EditPlan): Promise<ApplyResult> {
   const doc = getDoc();
   if (!doc || doc.length === 0) return { ok: false, reason: 'no-doc' };
+  const { normalizePlan } = await import('../rag/edits/normalize');
   const normalized = normalizePlan(raw, { durationSec: doc.duration, sampleRate: doc.sampleRate });
   if (!normalized.ok) return { ok: false, reason: 'unsafe' };
   const plan = normalized.plan;
+  const { planToOutcome } = await import('../rag/edits/planToOutcome');
   const channels: Float32Array[] = [];
   for (let ch = 0; ch < doc.channels; ch++) channels.push(doc.channelData(ch));
   const outcome = planToOutcome(plan, channels, doc.sampleRate, doc.length);
@@ -59,9 +60,10 @@ export function applyPlan(raw: EditPlan): ApplyResult {
  * its end (deterministic timer). Returns false when there is nothing
  * to preview. Preview NEVER mutates the document.
  */
-export function previewPlan(raw: EditPlan): boolean {
+export async function previewPlan(raw: EditPlan): Promise<boolean> {
   const doc = getDoc();
   if (!doc || doc.length === 0) return false;
+  const { normalizePlan } = await import('../rag/edits/normalize');
   const normalized = normalizePlan(raw, { durationSec: doc.duration, sampleRate: doc.sampleRate });
   if (!normalized.ok) return false;
   const plan = normalized.plan;
@@ -94,7 +96,7 @@ export function docSnap(sec: number): number {
 }
 
 /** Full safe apply used by UI/commands: plan → snap → apply. */
-export function applyPlanSafe(raw: EditPlan): ApplyResult {
+export function applyPlanSafe(raw: EditPlan): Promise<ApplyResult> {
   return applyPlan(raw);
 }
 
