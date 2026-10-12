@@ -140,7 +140,6 @@ describe('P4.4 extractive provider', () => {
       { query: 'remove steady hiss with the learned noise print' },
       ctx(chunks),
     );
-    console.log('DEBUG', JSON.stringify(res).slice(0, 400));
     expect(res.status).toBe('answer');
     expect(res.text.toLowerCase()).toContain('noise');
   });
