@@ -65,10 +65,10 @@
 | P5.1 | EditPlan schema | DONE | feat commit — 9 tests (golden shapes, rejects, frozen limits) |
 | P5.2 | Deterministic planners | DONE | feat commit — 14 tests (golden en/bn, numeric ranges, insert, null-degradation) |
 | P5.3 | Range normalization | DONE | feat commit — 10 tests (clamp, collapse, caps, snap order, bad-doc) |
-| P5.4 | Preview + audition UI | TODO | — | — | — |
+| P5.4 | Preview + audition UI | DONE | feat commit — e2e ragEdits 2/2 (apply→undo→redo exact-length, hostile inert, chapters seek, axe 0) |
 | P5.5 | Executor through performEdit | DONE | feat commit — 8 kernel tests (outcome shape, undo/redo round-trip, null guards); ONE-undo in e2e |
 | P5.6 | Markers / chapters | DONE | feat commit — 8 tests (gap split, sanitize, overlap guard, determinism) |
-| P5.7 | Command integration + NL box | TODO | — | — | — |
+| P5.7 | Command integration + NL box | DONE | feat commit — rag.smart* commands (flag-gated menu group) + NL box with confirm row |
 | P5.8 | Safety review | TODO | — | — | — |
 | P5.9 | Phase 5 gate | TODO | — | — | — |
 | P6.1 | Scale test (1 h end-to-end) | TODO | — | — | — |
