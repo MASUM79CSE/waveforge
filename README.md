@@ -89,10 +89,18 @@ no tracking**. Your audio never leaves your machine.
 - IndexedDB drafts + autosave ring with crash recovery; noise prints and
   automation persist across save/reload
 - Light & dark themes; full keyboard operability; WCAG 2.1 AA (axe-gated)
-- **Smart RAG (beta, opt-in `?rag=1` flag)** — on-device speech
-  transcription (Whisper): consented model downloads only, audio and
-  transcripts never leave the device, SRT/VTT/TXT export. See
-  [`docs/rag/`](docs/rag/).
+- **Smart RAG (beta, opt-in `?rag=1` flag)** — on-device AI over your
+  recordings, all local: consented model downloads only (SHA-256-pinned,
+  documented hosts), audio/transcripts/embeddings never leave the
+  device. Whisper transcription with click-to-seek segments; transcript
+  search (BM25 + embeddings, RRF fusion); **Ask** — grounded answers
+  quoted from the transcript with seekable citations (extractive by
+  default, optional local LLM behind the same consent flow, injection-
+  red-teamed); **Smart edits** — natural-language edit plans (delete/
+  silence/gain/insert) executed through the normal undo stack as one
+  step; transcript-derived chapters; SRT/VTT/TXT export; full Bangla UI.
+  See [`docs/rag/`](docs/rag/) (phase reports, privacy audit,
+  failure-mode matrix, release report).
 
 ## 🧱 Tech Stack
 
@@ -105,6 +113,7 @@ no tracking**. Your audio never leaves your machine.
 | DSP | Pure TypeScript kernels + FFT partitioned convolver |
 | Codecs | lamejs (MP3, worker), libFLAC (WASM worker), native WAV writer |
 | AI denoise | [RNNoise](https://github.com/xiph/rnnoise) — vendored WASM build (`src/vendor/rnnoise/`) |
+| On-device AI | [@huggingface/transformers](https://github.com/huggingface/transformers.js) (ASR / embeddings / optional local LLM — worker chunks only, consented local models) |
 | Persistence | IndexedDB (drafts/autosave/assets/presets) + `localStorage` settings |
 | Testing | [Vitest](https://vitest.dev) (unit), [Playwright](https://playwright.dev) (e2e + axe-core) |
 | Quality | ESLint, Prettier, Lighthouse CI gates |
@@ -253,7 +262,7 @@ HTTPS, or `localhost` for local development.
 | [`docs/DATABASE.md`](docs/DATABASE.md) | IndexedDB schema & WFD versioning, autosave/crash recovery; deferred cloud (MongoDB Atlas) design |
 | [`docs/PROJECT_BREAKDOWN.md`](docs/PROJECT_BREAKDOWN.md) | Full build history phase by phase, quality-gate evolution, release checklist |
 | [`docs/THIRD_PARTY_NOTICES.md`](docs/THIRD_PARTY_NOTICES.md) | Bundled third-party code and licenses |
-| [`docs/rag/`](docs/rag/) | Smart RAG: progress ledger, decisions (incl. dependency/privacy), baseline, phase reports |
+| [`docs/rag/`](docs/rag/) | Smart RAG: progress ledger, decisions (incl. dependency/privacy), baseline, failure-mode matrix, privacy audit, phase + release reports |
 
 ## 📄 License
 
