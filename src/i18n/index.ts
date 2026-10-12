@@ -21,6 +21,26 @@ export function locale(): string {
   return currentLocale;
 }
 
+/**
+ * Pure locale picker (unit-tested): Bangla when the browser language is
+ * bn*, English otherwise (null/absent → en). P6.4 release: bn ships as
+ * a FULL catalog, so it is activatable at boot.
+ */
+export function resolveLocale(navigatorLanguage: string | null | undefined): 'bn' | 'en' {
+  return typeof navigatorLanguage === 'string' && navigatorLanguage.toLowerCase().startsWith('bn')
+    ? 'bn'
+    : 'en';
+}
+
+/** Boot-time activation (impure wrapper) — called once from main.tsx. */
+export function initLocale(): void {
+  try {
+    setLocale(resolveLocale(window.navigator?.language ?? null));
+  } catch {
+    setLocale('en');
+  }
+}
+
 export function t(): Catalog {
   return active as Catalog;
 }

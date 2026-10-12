@@ -5,6 +5,7 @@ import './app/styles/base.css';
 import './app/styles/app.css';
 import { Brand } from './brand';
 import { logger } from './core/logger-instance';
+import { initLocale } from './i18n';
 import { bindKeyboard } from './app/keyboard';
 import { bindTooltips } from './app/tooltips';
 import { App } from './app/components/App';
@@ -13,6 +14,7 @@ import { probeAutosave } from './app/draftActions';
 import * as S from './app/state';
 
 function bootstrap(): void {
+  initLocale(); // bn browser → full Bangla UI (P6.4); else English
   bindKeyboard();
   bindTooltips();
   // crash recovery probe + PWA update prompt (M6) — both best-effort

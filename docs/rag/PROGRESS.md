@@ -81,6 +81,7 @@
 | P6.8 | Rollout recommendation | DONE | RELEASE-REPORT §6 — staged enablement, empty-by-policy registry + measure flow, flag-OFF rollback |
 | P6.9 | Release gate + final report | DONE | 1110/1110 unit · 75/75 e2e (both projects) · tsc/eslint 0 · bundle = baseline 128,447 gz · LH desktop 100×4 / mobile 98+100×3 · tag rag-phase-6-done |
 | P6.10 (post-release) | Rollout opt-in/out toggle | DONE | feat 72a3f8c — View → Smart transcript features (beta), always visible; e2e ragToggle + re-specified ragPanel flag-OFF invariant; 76/76 e2e · 1110/1110 unit · bundle 128,557 gz ≤ limit |
+| P6.11 (post-release) | Bangla boot activation | DONE | feat — initLocale: navigator.language bn* → full bn UI at boot (the P6.4 catalog was unreachable without it); e2e localeBoot (bn boot → বাংলা menus+toggle, en unchanged); 78/78 e2e · 1110/1110 unit · bundle 128,648 gz ≤ limit |
 
 ## Phase 2 execution plan — acceptance criteria (planning pass 2026-10-12)
 
