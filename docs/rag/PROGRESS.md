@@ -323,3 +323,33 @@ normalize (P5.3) lands right after the schema, before planners.
 - **P5.9 phase gate**: full vitest, full playwright, bundle ≤ +2 KB gz
   vs CURRENT baseline, tsc/eslint clean, tag `rag-phase-5-done`,
   PHASE-5 REPORT, push, STOP.
+
+## Phase 6 execution plan — acceptance criteria (planning pass 2026-10-12)
+
+Scope: hardening, opt-in real-model quality harness, release docs, and
+the RELEASE REPORT. No new features. The release invariant set: flag
+OFF ⇒ behaviorally identical app; zero egress beyond the allow-listed
+model hosts after consent; CI never downloads ML models; every shipped
+third-party dependency attributed; bundle gate re-baselined at the
+release entry size (D12) so the limit stays +2 KB per future phase.
+
+- **P6.1 Hardening audit sweep**: THIRD_PARTY_NOTICES reflects the real
+  dependency set (lamejs/libFLAC shipped rows, @huggingface/transformers
+  + zod added); audiomass FORBIDDEN guard re-verified (grep + e2e);
+  egress journey green; flag-off identity spot checks; no new hosts.
+- **P6.2 Opt-in real-model scripts** (`scripts/rag/`): `quality-embed.mjs`
+  (real MiniLM over the P3.8 golden corpus → hit@k/MRR report),
+  `quality-asr.mjs` (real Whisper smoke over a generated WAV),
+  `measure-model.mjs` (byte size + SHA-256 for a registry entry).
+  NEVER imported by src/ or tests/; header-documented maintainer tools.
+- **P6.3 Bundle rebaseline + release wiring**: baseline := release entry
+  size (D12 recorded); verify lazy audit (transformers only in workers).
+- **P6.4 Docs pass**: README Smart RAG section updated to v2 reality
+  (hybrid search, Ask, smart edits — house style); docs/rag cross-links
+  verified; PROGRESS row corrections (P3.3 "14 tests" → 9).
+- **P6.5 Full release gate**: full vitest, full playwright (both
+  projects), Lighthouse desktop+mobile, bundle ≤ rebased limit, tsc +
+  eslint clean.
+- **P6.6 RELEASE REPORT** (`docs/rag/RELEASE-REPORT.md`): phase-by-phase
+  evidence table, invariants ledger, known limitations, opt-in tooling
+  guide; tag `rag-phase-6-done`; push; STOP.
