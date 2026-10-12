@@ -32,7 +32,7 @@
 | P1.8 | UI shell behind the flag | TODO | — | — | — |
 | P1.9 | Lazy chunk + bundle verification | TODO | — | — | — |
 | P1.10 | Phase 1 gate | TODO | — | — | — |
-| P2.1 | Pure-TS resampler kernel | TODO | — | — | — |
+| P2.1 | Pure-TS resampler kernel | DONE | feat commit — 16 tests; 1 Hz freq anchor, ≤0.5 dB ripple, ≥50 dB stopband/alias, prime-split bitwise-identical; vitest 810/810 |
 | P2.2 | Audio feeder (16 kHz windows) | TODO | — | — | — |
 | P2.3 | Transcript model + IDB store + migration | TODO | — | — | — |
 | P2.4 | Timeline mapper (pure) | TODO | — | — | — |
