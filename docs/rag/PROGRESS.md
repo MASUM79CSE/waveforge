@@ -66,7 +66,7 @@
 | P5.2 | Deterministic planners | DONE | feat commit — 14 tests (golden en/bn, numeric ranges, insert, null-degradation) |
 | P5.3 | Range normalization | DONE | feat commit — 10 tests (clamp, collapse, caps, snap order, bad-doc) |
 | P5.4 | Preview + audition UI | TODO | — | — | — |
-| P5.5 | Executor through performEdit | TODO | — | — | — |
+| P5.5 | Executor through performEdit | DONE | feat commit — 8 kernel tests (outcome shape, undo/redo round-trip, null guards); ONE-undo in e2e |
 | P5.6 | Markers / chapters | TODO | — | — | — |
 | P5.7 | Command integration + NL box | TODO | — | — | — |
 | P5.8 | Safety review | TODO | — | — | — |
