@@ -116,3 +116,12 @@ bundle rebaseline accounting). Phase reports: `PHASE-1` … `PHASE-5-REPORT.md`
 plus this file.
 
 **Status: Smart RAG v2 RELEASED at tag `rag-phase-6-done`.**
+
+## 9. Post-release verification (2026-10-12, later run)
+
+The full gate was re-run from a clean tree at `8b69076` (the released
+commit) as a post-release sanity pass. **Every number reproduced
+exactly**: unit **1110/1110** (126 files) · e2e **75/75** (both
+projects) · tsc 0 · eslint 0/0 · bundle **128,447 B gz = baseline ✓**.
+No drift, no flake — the release claims above are independently
+reconfirmed on the same day.
