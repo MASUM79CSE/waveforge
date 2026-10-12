@@ -2027,3 +2027,64 @@
   padding: 4px;
   cursor: pointer;
 }
+
+/* Transcript panel segments (P2.8) */
+.transcript-panel .segment-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  max-height: 40vh;
+  overflow: auto;
+}
+.transcript-panel .segment {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: inherit;
+  padding: 4px 6px;
+  cursor: pointer;
+  font: inherit;
+}
+.transcript-panel .segment:hover,
+.transcript-panel .segment:focus-visible {
+  background: color-mix(in srgb, var(--fg-1, #e8eaed) 10%, transparent);
+}
+.transcript-panel .segment.active {
+  /* subtle tint: brighter mixes push the bg up and fail contrast */
+  background: color-mix(in srgb, var(--accent, #3ddad0) 14%, transparent);
+}
+.transcript-panel .segment.active .seg-time {
+  color: var(--fg-1, #e8eaed);
+}
+.transcript-panel .seg-time {
+  /* ≥ 4.5:1 on the dark bg — dimmer mixes fail axe color-contrast */
+  color: color-mix(in srgb, var(--fg-1, #e8eaed) 85%, transparent);
+  font-variant-numeric: tabular-nums;
+  min-width: 44px;
+}
+.transcript-panel .seg-text {
+  overflow-wrap: anywhere;
+}
+.transcript-panel .panel-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fg-1, #e8eaed) 15%, transparent);
+  margin-top: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.transcript-panel .panel-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: calc(var(--pct, 0) * 1%);
+  background: var(--accent, #3ddad0);
+}
+.transcript-panel .panel-error {
+  color: #ff6b6b;
+  font-size: 12px;
+}

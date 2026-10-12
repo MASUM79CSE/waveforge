@@ -13,6 +13,8 @@ import { createModelStorage, type ModelStorage } from './models/storage';
 export const ragState = signal<'idle' | 'downloading' | 'transcribing' | 'ready'>('idle');
 export const ragProgress = signal(0);
 export const ragPendingModel = signal<ModelEntry | null>(null);
+/** Latest transcript for the CURRENT document (null = none/stale). */
+export const ragTranscript = signal<import('./transcripts/model').TranscriptRecord | null>(null);
 // Dialog open flags live in src/app/state.ts (shared with the host + keyboard chain).
 export const ragConsentOpen = modelConsentOpen;
 export const ragManageOpen = manageModelsOpen;
@@ -37,6 +39,47 @@ export async function requestModel(modelId: string): Promise<void> {
 }
 
 const pendingTestModels: ModelEntry[] = [];
+
+/** Models the panel can offer: registry + seam-registered test models. */
+export function ragModelChoices(): ModelEntry[] {
+  return [...MODEL_REGISTRY, ...pendingTestModels];
+}
+
+/** Current document as the controller's audio source (copies per call). */
+function getAudioSource(): { sampleRate: number; durationSec: number; channels: Float32Array[] } | null {
+  const doc = getDoc();
+  if (!doc) return null;
+  const channels: Float32Array[] = [];
+  for (let c = 0; c < doc.channels; c++) channels.push(doc.channelData(c));
+  return { sampleRate: doc.sampleRate, durationSec: doc.duration, channels };
+}
+
+/**
+ * Load the stored transcript for `modelId` + the CURRENT audio into
+ * `ragTranscript` (fingerprint lookup — stale docs find nothing). The
+ * panel calls this on open; startTranscription supersedes it.
+ */
+export async function loadStoredTranscript(modelId: string): Promise<void> {
+  const audio = getAudioSource();
+  if (!audio) {
+    ragTranscript.value = null;
+    return;
+  }
+  const version = await getStorage().installedVersion(modelId);
+  if (!version) {
+    ragTranscript.value = null;
+    return;
+  }
+  const { defaultFingerprint } = await import('./transcripts/controller');
+  const { createTranscriptStorage } = await import('./transcripts/store');
+  const { openTranscriptDB } = await import('./transcripts/idb');
+  if (!transcriptStore) transcriptStore = createTranscriptStorage(await openTranscriptDB(indexedDB as never));
+  ragTranscript.value = await transcriptStore.findForFingerprint(
+    modelId,
+    version,
+    defaultFingerprint(audio),
+  );
+}
 
 /** Download the pending model after consent (consent dialog calls this). */
 export async function consentedDownload(): Promise<void> {
@@ -120,13 +163,7 @@ export async function startTranscription(
     const deps: TranscribeDeps = {
       storage: getStorage(),
       transcripts: transcriptStore,
-      getAudio: () => {
-        const doc = getDoc();
-        if (!doc) return null;
-        const channels: Float32Array[] = [];
-        for (let c = 0; c < doc.channels; c++) channels.push(doc.channelData(c));
-        return { sampleRate: doc.sampleRate, durationSec: doc.duration, channels };
-      },
+      getAudio: getAudioSource,
       clock: () => Date.now(),
       makeFeeder: () => (fakeAsr ? createFeederPumpClient() : createFeederClient(() => createFeederWorker() as never)),
       makeAsr: () => (fakeAsr ? createFakeAsrClient() : createAsrClient(() => createAsrWorker() as never)),
@@ -139,6 +176,7 @@ export async function startTranscription(
         ragProgress.value = p;
       },
     });
+    ragTranscript.value = record;
     ragState.value = 'ready';
     return record;
   } catch (err) {
