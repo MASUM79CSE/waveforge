@@ -248,12 +248,13 @@ function TranscriptPanel() {
       setSearching(true);
       void import('../../rag/runtime')
         .then(async (rtMod) => {
-          // lexical mode: find-in-transcript semantics — a nonsense
-          // query shows "no matches" instead of embedding-noise hits
-          let res = await rtMod.searchTranscript(query, { topK: 5, mode: 'lexical' });
+          // semantic search with the calibrated no-match floor when the
+          // rows carry the real model; fake-embedder rows (CI) keep
+          // find-in-transcript lexical semantics (D9)
+          let res = await rtMod.searchTranscript(query, { topK: 5, semantic: true });
           if (res.length === 0 && !rtMod.ragIndexBusy.value) {
             await rtMod.indexTranscript();
-            res = await rtMod.searchTranscript(query, { topK: 5, mode: 'lexical' });
+            res = await rtMod.searchTranscript(query, { topK: 5, semantic: true });
           }
           setHits(res);
         })

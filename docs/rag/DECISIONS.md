@@ -128,17 +128,29 @@ CI. It is NOT semantic; real-model retrieval quality is validated opt-in
 transformers for embeddings; the entry bundle is untouched (gate-checked in
 P3.9). Result vectors ride the RPC transfer list (zero-copy).
 
-## D9 — transcript-panel search runs in lexical mode (P3.7)
+## D9 — panel search upgrades to real-embedding semantic mode (P6.12)
 
-The panel search box uses `mode: 'lexical'` (BM25 only), not hybrid.
-Rationale: RRF always produces a full ranking — with no calibrated
-score floor it cannot say "no matches", and with the deterministic
-fake embedder hash noise (cosine up to ~0.25 for disjoint texts)
-becomes visible ranking noise for nonsense queries. Find-in-transcript
-UX demands literal semantics. Hybrid/RRF remains the engine default
-(`SearchIndex.query`) and is measured in the P3.8 eval; semantic UI
-ranking returns with the real embedder once a floor is calibrated
-(P4). Auto-index on first search (on-device, idempotent) unchanged.
+Originally (P3.7) the panel searched lexical-only: no calibrated floor
+existed, and the fake embedder's hash noise made vector ranking
+nonsense-prone. With the real MiniLM calibrated (P6.12, below), the
+panel now calls `searchTranscript(query, { topK: 5, semantic: true })`.
+
+Semantics of the flag (`src/rag/runtime.ts`):
+- **Real-model rows** (`modelId !== 'fake-embed'`): pure vector ranking,
+  scores below `SEMANTIC_FLOOR = 0.15` filtered before top-K — the
+  engine can now return "no meaningful matches" for off-topic queries.
+- **Fake-embedder rows** (tests/fakes, no consent yet): falls back to
+  hybrid (RRF) exactly as before — the floor is meaningless for hash
+  embeddings, and panel behaviour in fake-media runs is unchanged
+  (asserted by the ragSearch e2e).
+
+The option is per-call; the default (`semantic` unset) keeps every
+existing caller on hybrid. Calibration (2026-10-12, real MiniLM q8,
+P3.8 golden corpus): gold-chunk cosine 0.208–0.454 vs out-of-corpus
+best cosine −0.006–0.093 — floor 0.15 sits mid-gap with margin on both
+sides; in-corpus separation is handled by ranking, not the floor.
+Reproduce via `npx vite-node scripts/rag/quality-embed.mjs` (logs the
+per-query score distributions used to pick the floor).
 
 ## D10 — local LLM reuses @huggingface/transformers (no new dependency)
 

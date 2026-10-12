@@ -16,11 +16,11 @@ const args = process.argv.slice(2);
 const modelId = (args.find((a) => a.startsWith('--model=')) ?? '--model=Xenova/all-MiniLM-L6-v2')
   .replace('--model=', '');
 
-const { pipeline, env } = await import('@huggingface/transformers');
-const { chunkTranscript } = await import('../src/rag/retrieval/chunk.ts');
-const { Bm25Index } = await import('../src/rag/retrieval/bm25.ts');
-const { cosine } = await import('../src/rag/retrieval/embedFake.ts');
-const { CORPUS_SEGMENTS, GOLDEN_QUERIES, MARKERS } = await import('../src/rag/eval/corpus.ts');
+import { pipeline } from '@huggingface/transformers';
+import { chunkTranscript } from '../../src/rag/retrieval/chunk';
+import { Bm25Index } from '../../src/rag/retrieval/bm25';
+import { cosine } from '../../src/rag/retrieval/embedFake';
+import { CORPUS_SEGMENTS, GOLDEN_QUERIES, MARKERS } from '../../src/rag/eval/corpus';
 
 const TID = 'eval@1/corpus';
 

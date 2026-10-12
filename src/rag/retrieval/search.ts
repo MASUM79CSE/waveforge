@@ -12,6 +12,16 @@ import type { StoredChunk } from './indexStore';
 
 export const RRF_K = 60;
 
+/**
+ * Semantic no-match floor (D9 completion). Calibrated 2026-10-12 on the
+ * P3.8 golden corpus with the REAL encoder (Xenova/all-MiniLM-L6-v2,
+ * q8): relevant chunks scored 0.208–0.454 cosine while out-of-corpus
+ * queries never exceeded 0.093 — the floor separates them with margin
+ * on both sides. Applies ONLY to cosine (vector-mode) scores with the
+ * real model; fake-embedder scores are hash-based and never floored.
+ */
+export const SEMANTIC_FLOOR = 0.15;
+
 export type SearchMode = 'hybrid' | 'lexical' | 'vector';
 
 export interface SearchHit {
@@ -44,6 +54,8 @@ export interface SearchDeps {
 export interface QueryOptions {
   topK?: number;
   mode?: SearchMode;
+  /** Drop vector-mode hits below this cosine (semantic no-match gate). */
+  floor?: number;
 }
 
 const CANDIDATE_POOL = 50; // per-ranking candidates before fusion
@@ -83,6 +95,7 @@ export class SearchIndex {
       const qv = this.deps.embedQuery(text);
       const vecHits = [...this.byId.values()]
         .map((chunk) => ({ id: chunk.id, score: cosine(qv, chunk.vector) }))
+        .filter((h) => (opts.floor === undefined ? true : h.score >= opts.floor))
         .sort(byScoreThenId)
         .slice(0, CANDIDATE_POOL);
       rankings.push(vecHits);

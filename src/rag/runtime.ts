@@ -275,11 +275,15 @@ export async function indexTranscript(
  */
 export async function searchTranscript(
   query: string,
-  opts: { topK?: number; mode?: 'hybrid' | 'lexical' | 'vector' } = {},
+  opts: {
+    topK?: number;
+    mode?: 'hybrid' | 'lexical' | 'vector';
+    /** Real-model semantic search with the calibrated no-match floor. */
+    semantic?: boolean;
+  } = {},
 ): Promise<Array<{ chunk: import('./retrieval/indexStore').StoredChunk; score: number }>> {
   const record = ragTranscript.value;
   if (!record || query.trim().length === 0) return [];
-  const mode = opts.mode ?? 'hybrid';
   const rows = (await getIndexStore())
     .loadAll()
     .then((all) => all.filter((r) => r.transcriptId === record.id));
@@ -287,7 +291,12 @@ export async function searchTranscript(
   if (all.length === 0) return [];
   const fake = fakeMode();
   const modelId = all[0]!.modelId;
-  const { SearchIndex } = await import('./retrieval/search');
+  // semantic search only with the real encoder's rows (fake rows keep
+  // the caller's mode — their hash-cosine has no calibrated floor)
+  const semantic = opts.semantic === true && modelId !== 'fake-embed';
+  const mode = semantic ? 'vector' : (opts.mode ?? 'hybrid');
+  const { SearchIndex, SEMANTIC_FLOOR } = await import('./retrieval/search');
+  const queryFloor = semantic ? SEMANTIC_FLOOR : undefined;
   // Lexical mode needs no query vector at all.
   if (mode === 'lexical') {
     const idx = new SearchIndex({ embedQuery: () => new Float32Array(0) });
@@ -314,7 +323,7 @@ export async function searchTranscript(
   }
   const idx = new SearchIndex({ embedQuery: () => qvec });
   idx.load(all);
-  return idx.query(query, { topK: opts.topK ?? 5, mode });
+  return idx.query(query, { topK: opts.topK ?? 5, mode, floor: queryFloor });
 }
 
 // ── P4.8: Ask (question answering over the transcript) ───────────────

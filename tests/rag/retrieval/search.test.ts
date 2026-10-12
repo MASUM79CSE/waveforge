@@ -133,6 +133,46 @@ describe('P3.5 SearchIndex', () => {
     expect(h1).toEqual(h2);
   });
 
+  it('vector-mode floor drops low-cosine hits (D9 semantic no-match gate)', () => {
+    // synthetic geometry: 'near' aligns with the query, 'far' is
+    // orthogonal (cosine() is a raw dot — vectors must be pre-normalized)
+    const norm = (v: number[]) => {
+      const n = Math.hypot(...v);
+      return v.map((x) => x / n);
+    };
+    const mk = (id: string, v: number[]) =>
+      chunk(id, 'some transcript text', {
+        vector: Float32Array.from(norm(v)) as StoredChunk['vector'],
+      });
+    const idx = new SearchIndex({
+      embedQuery: (t) =>
+        Float32Array.from(
+          norm(t === 'aligned' ? [1, 0.1, 0] : t === 'sideways' ? [0, 1, 0] : [0, 0, 1]),
+        ),
+    });
+    idx.load([mk('near', [1, 0.1, 0]), mk('far', [0, 1, 0]), mk('mid', [1, 1, 0])]);
+    // aligned query, floor 0.15: 'far' (cos ≈ 0) dropped, others kept
+    const hits = idx.query('aligned', { mode: 'vector', floor: 0.15, topK: 5 });
+    expect(hits.map((h) => h.chunk.id)).toEqual(['near', 'mid']);
+    // high floor keeps only the truly aligned hit
+    expect(idx.query('aligned', { mode: 'vector', floor: 0.9, topK: 5 }).map((h) => h.chunk.id)).toEqual(['near']);
+    // 'sideways' (identical to far, 0.707 to mid, 0.0995 to near): the
+    // floor drops only the near-orthogonal 'near'…
+    expect(idx.query('sideways', { mode: 'vector', floor: 0.15, topK: 5 }).map((h) => h.chunk.id)).toEqual(['far', 'mid']);
+    // …but 'unrelated' (orthogonal to EVERYTHING) → no matches at all
+    expect(idx.query('unrelated', { mode: 'vector', floor: 0.15, topK: 5 })).toEqual([]);
+    // hybrid + floor: an emptied vector ranking leaves bm25 standing
+    const hy = idx.query('some transcript', { mode: 'hybrid', floor: 0.9, topK: 5 });
+    expect(hy.length).toBeGreaterThan(0);
+    // floor absent → unchanged behavior
+    expect(idx.query('aligned', { mode: 'vector', topK: 5 }).length).toBe(3);
+  });
+
+  it('SEMANTIC_FLOOR is frozen at the calibrated value', async () => {
+    const { SEMANTIC_FLOOR } = await import('../../../src/rag/retrieval/search');
+    expect(SEMANTIC_FLOOR).toBe(0.15);
+  });
+
   it('topK truncates the fused list', () => {
     const idx = new SearchIndex({ embedQuery });
     idx.load(corpus);

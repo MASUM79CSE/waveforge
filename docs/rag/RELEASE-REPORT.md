@@ -95,11 +95,13 @@ named passing test — see `docs/rag/FAILURE-MODES.md`.
    and verification need no code change.
 4. **Rollback** = turn the flag OFF (or revert the tag); no data migration
    exists or is needed — stores are additive and v1 ignores them.
-5. **Known limitations** (documented, not blockers): panel search is lexical
-   by design (D9 — semantic ranking returns when a score floor is calibrated
-   against the real embedder); the LLM registry entry ships via the seam
-   until measured (D10/D12 notes); RAG string tables are lazy per module
-   (en/bn parity enforced by test).
+5. **Known limitations** (documented, not blockers): panel search scores
+   are MiniLM cosines against `SEMANTIC_FLOOR = 0.15` (calibrated on the
+   golden corpus — see D9/P6.12); queries in languages the embedder
+   handles weakly may rank lower, and fake-embedder installs fall back
+   to hybrid without a floor (by design); the LLM registry entry ships
+   via the seam until measured (D10/D12 notes); RAG string tables are
+   lazy per module (en/bn parity enforced by test).
 
 ## 7. Opt-in maintainer tooling (never CI)
 
