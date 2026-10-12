@@ -57,7 +57,7 @@
 | P4.3 | Evidence sufficiency + calibration | DONE | feat commit — 8 tests (anchors, monotonic, threshold flip, tripwire) |
 | P4.4 | Provider interface + extractive default | TODO | — | — | — |
 | P4.5 | Local LLM provider (opt-in) | TODO | — | — | — |
-| P4.6 | Grounding contract | TODO | — | — | — |
+| P4.6 | Grounding contract | DONE | feat commit — 10 tests (exact-substring, adversarial, downgrade; done early: providers depend on it) |
 | P4.7 | Prompt-injection defenses | TODO | — | — | — |
 | P4.8 | Ask UI | TODO | — | — | — |
 | P4.9 | Phase 4 evals | TODO | — | — | — |
