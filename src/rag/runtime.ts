@@ -164,6 +164,8 @@ export function installTestSeam(): void {
       };
     },
     transcribe: (modelId: string) => startTranscription(modelId),
+    /** P5.5 e2e — current document sample length (ONE-undo assertions). */
+    docLength: (): number => getDoc()?.length ?? 0,
   };
 }
 
