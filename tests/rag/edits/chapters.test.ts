@@ -61,7 +61,7 @@ describe('P5.6 chapters from transcript', () => {
       transcript([
         [0, 5, 'long segment'],
         [1, 2, 'overlapping'], // ends BEFORE prevEnd 5 → no split
-        [6, 7, 'after gap'],
+        [8, 9, 'after gap'], // 3 s after prevEnd 5 → split
       ]),
     );
     expect(chapters.map((c) => c.title)).toEqual(['long segment', 'after gap']);
