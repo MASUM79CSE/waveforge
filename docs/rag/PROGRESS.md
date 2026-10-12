@@ -45,7 +45,7 @@
 | P2.11 | Phase 2 gate | DONE | vitest 896/896; playwright 67/67 (0 flaky) + 1/1 preview; LH 100×4 desktop, 98/100/100/100 mobile; bundle +1,792 ≤ +2,048; chunk audit clean; tag `rag-phase-2-done` |
 | P3.1 | Tokenizer + BM25 | DONE | feat commit — 16 tests (golden score, saturation, length norm, Bengali tokens); Lucene IDF; vitest pending full run |
 | P3.2 | Chunker | DONE | feat commit — 9 tests (golden/budget/overlap/never-split/coverage/termination) |
-| P3.3 | Embedding worker (+ fake) | TODO | — | — | — |
+| P3.3 | Embedding worker (+ fake) | DONE | feat commit — 14 tests; D8 (no new dep; fake for CI); offline contract shared with P2.5; chunk audit at gate |
 | P3.4 | Index store + migration | TODO | — | — | — |
 | P3.5 | Hybrid search + RRF | TODO | — | — | — |
 | P3.6 | Index job controller | TODO | — | — | — |
