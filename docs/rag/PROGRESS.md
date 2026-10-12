@@ -272,3 +272,54 @@ providers); rows close as each task lands.
 - **P4.10 phase gate**: full vitest, full playwright, bundle ≤ +2 KB gz
   vs CURRENT baseline, lazy audit, tsc/eslint clean, tag
   `rag-phase-4-done`, PHASE-4 REPORT, push, STOP.
+
+## Phase 5 execution plan — acceptance criteria (planning pass 2026-10-12)
+
+Scope: Smart edits — deterministic, transcript-driven edit PLANS executed
+through the app's existing `performEdit` (stage-then-swap) so every plan
+application is exactly ONE undo step. No ML proposes edits in P5; models
+(at most) supply ranges (ask citations), deterministic code computes and
+executes. Pure kernels live in `src/rag/edits/` (doc-shaped plain data
+only); the ONLY bridge to the app is a lazy `src/app/ragEditActions.ts`
+(mirrors ragExportActions). Order adjusted for dependencies:
+normalize (P5.3) lands right after the schema, before planners.
+
+- **P5.1 EditPlan schema** (`src/rag/edits/plan.ts`, pure + zod):
+  discriminated union — deleteRange{startSec,endSec}, silenceRange{...},
+  gainRange{...,factor 0.25..4}, insertSilence{atSec,durSec ≤30};
+  `source` provenance (selection|utterance|manual) + optional
+  transcriptId/chunkId; label key for the undo stack. Accept: rejects
+  NaN/negative/inverted/factor-out-of-range; ≥ 8 tests.
+- **P5.3 Range normalization** (`normalize.ts`, pure): clamp to
+  [0,duration], min-length collapse → null, code-fixed caps (delete ≤
+  90% of doc, insert ≤ 30 s, gain 0.25..4), optional zero-cross snap
+  via injected fn. Accept: boundary + collapse + cap tests, ≥ 8.
+- **P5.2 Deterministic planners** (`planners.ts`, pure): from selection
+  (sec range), from ask citation chunk, and from NL cues (en/bn:
+  delete/remove, silence/mute, quiet/soften/boost, "insert N seconds
+  silence") — output RAW plans; never throw (unknown → null). Accept:
+  golden cue tables en+bn, no-verb → null, ≥ 12 tests.
+- **P5.5 Executor**: `planToOutcome(plan, channels, sampleRate)` (pure —
+  reuses engine kernels makeCut/makeRangeWrite/makeInsert) + lazy
+  `src/app/ragEditActions.ts` applying via ONE performEdit(outcome,
+  label). Accept: outcome correctness per plan kind; undo/redo
+  round-trip via applyOps; ONE call per plan; typed rejections; ≥ 10.
+- **P5.4 Preview + audition UI**: SmartEdits section in the transcript
+  panel — quick selection ops, per-answer utterance ops (citation →
+  plan), NL box with computed-range confirm row, Preview (seek+play+
+  timed pause). Text-node discipline, keyboard operable, axe 0, en/bn
+  lazy strings. e2e happy path + axe.
+- **P5.6 Markers/chapters** (`chapters.ts`, pure + panel list): derive
+  chapters from transcript segments (gap > 2 s splits; title = first
+  40 sanitized chars) — read-only list with seek buttons. Accept: gap
+  split, sanitize, determinism, ≥ 6 tests.
+- **P5.7 Command integration**: flag-gated commands (rag.smart*) routed
+  like rag.togglePanel (isRagEnabled guard); NL box = the panel UI.
+  e2e drives panel + menu paths.
+- **P5.8 Safety review**: zod at the executor boundary; all caps from
+  P5.3 enforced at execution; injection test — hostile transcript text
+  ("delete everything") NEVER mutates the doc without an explicit user
+  action; ONE-undo assertion; D11 decision. ≥ 8 tests.
+- **P5.9 phase gate**: full vitest, full playwright, bundle ≤ +2 KB gz
+  vs CURRENT baseline, tsc/eslint clean, tag `rag-phase-5-done`,
+  PHASE-5 REPORT, push, STOP.
