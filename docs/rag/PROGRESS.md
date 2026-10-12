@@ -324,32 +324,49 @@ normalize (P5.3) lands right after the schema, before planners.
   vs CURRENT baseline, tsc/eslint clean, tag `rag-phase-5-done`,
   PHASE-5 REPORT, push, STOP.
 
-## Phase 6 execution plan — acceptance criteria (planning pass 2026-10-12)
+## Phase 6 execution plan — acceptance criteria (planning pass 2026-10-12, rev. 2)
 
-Scope: hardening, opt-in real-model quality harness, release docs, and
-the RELEASE REPORT. No new features. The release invariant set: flag
-OFF ⇒ behaviorally identical app; zero egress beyond the allow-listed
-model hosts after consent; CI never downloads ML models; every shipped
-third-party dependency attributed; bundle gate re-baselined at the
-release entry size (D12) so the limit stays +2 KB per future phase.
+Scope: hardening + release. The canonical rows are the ORIGINAL table
+(P6.1 scale test … P6.9 release gate); this plan binds each row to its
+acceptance evidence. The first planning pass was renumbered to match
+the table (this rev. 2 replaces it; no rows were dropped).
 
-- **P6.1 Hardening audit sweep**: THIRD_PARTY_NOTICES reflects the real
-  dependency set (lamejs/libFLAC shipped rows, @huggingface/transformers
-  + zod added); audiomass FORBIDDEN guard re-verified (grep + e2e);
-  egress journey green; flag-off identity spot checks; no new hosts.
-- **P6.2 Opt-in real-model scripts** (`scripts/rag/`): `quality-embed.mjs`
-  (real MiniLM over the P3.8 golden corpus → hit@k/MRR report),
-  `quality-asr.mjs` (real Whisper smoke over a generated WAV),
-  `measure-model.mjs` (byte size + SHA-256 for a registry entry).
-  NEVER imported by src/ or tests/; header-documented maintainer tools.
-- **P6.3 Bundle rebaseline + release wiring**: baseline := release entry
-  size (D12 recorded); verify lazy audit (transformers only in workers).
-- **P6.4 Docs pass**: README Smart RAG section updated to v2 reality
-  (hybrid search, Ask, smart edits — house style); docs/rag cross-links
-  verified; PROGRESS row corrections (P3.3 "14 tests" → 9).
-- **P6.5 Full release gate**: full vitest, full playwright (both
-  projects), Lighthouse desktop+mobile, bundle ≤ rebased limit, tsc +
-  eslint clean.
-- **P6.6 RELEASE REPORT** (`docs/rag/RELEASE-REPORT.md`): phase-by-phase
-  evidence table, invariants ledger, known limitations, opt-in tooling
-  guide; tag `rag-phase-6-done`; push; STOP.
+- **P6.1 scale test (1 h end-to-end)**: deterministic scale harness —
+  synthetic 1-hour document through the real production path (peaks,
+  lane buckets, undo/redo) with FIXED perf budgets; the 1-hour ASR/
+  embedding cost itself stays opt-in (real models, maintainer machine)
+  and ships as scripts/rag/quality-*.mjs. Accept: budget asserts green
+  in vitest (existing M8g/M9-style harness extended to 1 h doc sizes);
+  no entry-bundle impact.
+- **P6.2 failure-mode matrix**: documented matrix (docs/rag/) mapping
+  each failure (quota exceeded, model missing/corrupt, IDB unavailable,
+  download abort, mid-transcribe abort, index job abort, empty/failed
+  ask) to its typed error + user-visible behavior, each backed by a
+  named test. Accept: every row cites a passing test id.
+- **P6.3 accessibility sweep**: axe (wcag2a+aa) asserted green across
+  EVERY rag UI state via the existing e2e suite (welcome, consent,
+  manage, panel+segments, search, ask, smart edits); i18n-locale render
+  of the panel included. Accept: sweep summary table in the release
+  report; no new violations.
+- **P6.4 i18n completeness**: unit test asserting the lazy RAG string
+  tables have IDENTICAL key sets en↔bn (plus no empty values). Accept:
+  test green; any missing key fixed, not waived.
+- **P6.5 privacy audit**: documented audit — egress inventory (only
+  consent-gated downloader + model hosts from the registry), storage
+  inventory (caches + IDB names/keys), the untrusted-text discipline,
+  and the FORBIDDEN-footprint guard. Accept: audit section in the
+  release report citing the e2e evidence (ragEgressJourney, welcome
+  guard).
+- **P6.6 perf / bundle / Lighthouse**: rebaseline the bundle gate to
+  the release entry size (D12 — limit stays baseline+2048); full
+  Lighthouse desktop + mobile via vite preview; lazy audit (transformers
+  only in worker chunks). Accept: real numbers pasted in the gate row.
+- **P6.7 documentation**: README Smart RAG section matches v2 reality
+  (search + Ask + smart edits, privacy model, opt-in tooling); docs/rag
+  cross-links verified; PROGRESS row corrections (P3.3 "14 tests" → 9).
+- **P6.8 rollout recommendation**: section in the release report — flag
+  default, staged-enablement order, rollback (flag OFF), and what ships
+  empty-but-valid (model registry).
+- **P6.9 release gate + final report**: full vitest, full playwright
+  (both projects), tsc + eslint clean, bundle ≤ rebased limit, tag
+  `rag-phase-6-done`, docs/rag/RELEASE-REPORT.md, push, STOP.
