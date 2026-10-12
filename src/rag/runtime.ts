@@ -5,11 +5,12 @@
  */
 import { signal } from '@preact/signals';
 import { manageModelsOpen, modelConsentOpen } from '../app/state';
+import { getDoc } from '../app/runtime';
 import type { ModelEntry } from './models/manifest';
 import { MODEL_REGISTRY } from './models/manifest';
 import { createModelStorage, type ModelStorage } from './models/storage';
 
-export const ragState = signal<'idle' | 'downloading' | 'ready'>('idle');
+export const ragState = signal<'idle' | 'downloading' | 'transcribing' | 'ready'>('idle');
 export const ragProgress = signal(0);
 export const ragPendingModel = signal<ModelEntry | null>(null);
 // Dialog open flags live in src/app/state.ts (shared with the host + keyboard chain).
@@ -77,5 +78,71 @@ export function installTestSeam(): void {
       ragManageOpen.value = true;
     },
     state: ragState,
+    startTranscription,
+    /** Force the P2.7 controller onto in-memory fake ASR clients (CI). */
+    useFakeAsr: () => {
+      fakeAsr = true;
+    },
+    transcribe: (modelId: string) => startTranscription(modelId),
   };
+}
+
+// ── P2.7: transcription job controller wiring ────────────────────────
+
+let fakeAsr = false;
+let transcriptStore: import('./transcripts/store').TranscriptStorage | null = null;
+
+/** Transcribe the current document with an installed model (P2.7). */
+export async function startTranscription(
+  modelId: string,
+  opts: { signal?: AbortSignal; device?: 'wasm' | 'webgpu' } = {},
+): Promise<import('./transcripts/model').TranscriptRecord> {
+  if (ragState.value === 'downloading' || ragState.value === 'transcribing') {
+    const { TranscribeError } = await import('./transcripts/controller');
+    throw new TranscribeError('TRANSCRIBE_FAILED', 'a RAG job is already running');
+  }
+  ragState.value = 'transcribing';
+  ragProgress.value = 0;
+  try {
+    const mod = await import('./transcripts/controller');
+    const { createTranscribeController } = mod;
+    type TranscribeDeps = import('./transcripts/controller').TranscribeDeps;
+    const { createTranscriptStorage } = await import('./transcripts/store');
+    const { openTranscriptDB } = await import('./transcripts/idb');
+    const { createFeederClient, createFeederWorker } = await import('./audio/feederClient');
+    const { createAsrClient, createAsrWorker } = await import('./asr/asrClient');
+    const { createFeederPumpClient } = await import('./audio/feederTestClient');
+    const { createFakeAsrClient } = await import('./asr/fakeAsr');
+
+    if (!transcriptStore) {
+      transcriptStore = createTranscriptStorage(await openTranscriptDB(indexedDB as never));
+    }
+    const deps: TranscribeDeps = {
+      storage: getStorage(),
+      transcripts: transcriptStore,
+      getAudio: () => {
+        const doc = getDoc();
+        if (!doc) return null;
+        const channels: Float32Array[] = [];
+        for (let c = 0; c < doc.channels; c++) channels.push(doc.channelData(c));
+        return { sampleRate: doc.sampleRate, durationSec: doc.duration, channels };
+      },
+      clock: () => Date.now(),
+      makeFeeder: () => (fakeAsr ? createFeederPumpClient() : createFeederClient(() => createFeederWorker() as never)),
+      makeAsr: () => (fakeAsr ? createFakeAsrClient() : createAsrClient(() => createAsrWorker() as never)),
+    };
+    const controller = createTranscribeController(deps);
+    const record = await controller.run(modelId, {
+      signal: opts.signal,
+      device: opts.device,
+      onProgress: (p) => {
+        ragProgress.value = p;
+      },
+    });
+    ragState.value = 'ready';
+    return record;
+  } catch (err) {
+    ragState.value = 'idle';
+    throw err;
+  }
 }

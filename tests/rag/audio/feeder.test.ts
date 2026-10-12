@@ -46,7 +46,7 @@ describe('P2.2 feeder pump — window geometry (identity 16 kHz)', () => {
     const x = ramp(N);
     const pump = new FeederPump({ srcRate: R, totalFrames: N });
     const results = run(pump, [[x]]);
-    const wins = [...results[0].windows, ...results[1].windows];
+    const wins = [...results[0]!.windows, ...results[1]!.windows];
     expect(Array.from(wins[0]!.samples.subarray(0, 8))).toEqual(Array.from(x.subarray(0, 8)));
     expect(wins[1]!.samples[0]).toBe(x[HOP]);
     expect(wins[2]!.samples[0]).toBe(x[2 * HOP]);

@@ -38,7 +38,7 @@
 | P2.4 | Timeline mapper (pure) | DONE | feat commit — 8 tests: round-trip, 200-seg monotonicity, clamped-tail visibility; rate-1.0 limitation documented in-module |
 | P2.5 | ASR worker (Whisper/transformers.js) | DONE (worker chunk lands in P2.7) | `81038b8` + test commit — handlers/cache/vendoring/D7; 22 tests; offline-by-contract (allowRemoteModels=false + storage cache); deps overridden (onnxruntime-node/sharp stubs); P2.7 acceptance: build worker chunk, prove transformers only there |
 | P2.6 | Window stitching (pure) | DONE | feat commit — 10 tests (golden/property), 200 ms inclusive tolerance, sanitation of untrusted ASR times |
-| P2.7 | Transcription job controller | TODO | — | — | — |
+| P2.7 | Transcription job controller | DONE | feat commit — 10 controller tests; typed errors, idempotency, cancel+rerun; runtime wiring + fake-ASR seam; chunk proof: ort/transformers only in asr.worker; bundle +1,164 ≤ +2,048; vitest 887/887 |
 | P2.8 | Transcript panel UI | TODO | — | — | — |
 | P2.9 | Export SRT / VTT / TXT | TODO | — | — | — |
 | P2.10 | Phase 2 e2e + docs | TODO | — | — | — |

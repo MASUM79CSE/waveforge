@@ -9,6 +9,19 @@ export default defineConfig({
     include: ['@breezystack/lamejs'],
   },
   plugins: [
+    {
+      // P2.5: onnxruntime-web references its .wasm files as static
+      // assets, so Vite emits ~27 MB duplicates of the vendored
+      // public/rag-assets/ort copies into dist/assets. The runtime
+      // loads ONLY from `/rag-assets/ort/` (wasmPaths) — drop the
+      // dead duplicates so dist and the precache stay lean.
+      name: 'drop-ort-asset-duplicates',
+      generateBundle: (_opts, bundle) => {
+        for (const fileName of Object.keys(bundle)) {
+          if (/assets\/ort-wasm-.*\.wasm$/.test(fileName)) delete bundle[fileName];
+        }
+      },
+    },
     preact(),
     // PWA (M6, ADR 008 D6): full precache incl. workers/wasm/demo — the
     // update flow is 'prompt' so an update never interrupts audio work
@@ -32,7 +45,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,wasm,wav}'],
         // vendored ort runtime + RAG model assets are NEVER precached
-        globIgnores: ['**/rag-assets/**'],
+        globIgnores: ['**/rag-assets/**', '**/ort-wasm-*.wasm'],
       },
     }),
   ],
