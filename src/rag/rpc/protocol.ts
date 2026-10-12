@@ -51,3 +51,19 @@ export class RagRpcError extends Error {
     this.code = code;
   }
 }
+
+/**
+ * Well-known symbol a handler may tag its RESULT with (P2.2) so `serveRpc`
+ * posts it with a transfer list — zero-copy handoff for large buffers
+ * (PCM windows). Symbols never survive structured clone, so this can
+ * never collide with real payload data; the server strips it before
+ * posting. Fully additive: handlers that return plain payloads are
+ * unchanged (clone semantics).
+ */
+export const RPC_TRANSFER: unique symbol = Symbol('ragRpcTransfer');
+
+/** Tag `payload` so `serveRpc` posts it with `transfer` (see RPC_TRANSFER). */
+export function withTransfer<T extends object>(payload: T, transfer: Transferable[]): T {
+  (payload as { [RPC_TRANSFER]?: Transferable[] })[RPC_TRANSFER] = transfer;
+  return payload;
+}

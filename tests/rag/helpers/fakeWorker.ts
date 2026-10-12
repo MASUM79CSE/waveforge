@@ -17,6 +17,9 @@ export class FakeWorker {
   /** Everything the client posted (data + transfer), in order. */
   readonly sent: FakeMessage[] = [];
 
+  /** Everything the worker side posted back (data + transfer), in order. */
+  readonly fromWorker: FakeMessage[] = [];
+
   /** Server-side request handler (installed by serveRpc's listen()). */
   serverOnMessage: ((ev: { data: unknown }) => void) | null = null;
 
@@ -28,7 +31,8 @@ export class FakeWorker {
   }
 
   /** RpcEndpoint.post — worker→main direction. */
-  post(data: unknown): void {
+  post(data: unknown, transfer?: Transferable[]): void {
+    this.fromWorker.push({ data, transfer });
     queueMicrotask(() => this.onmessage?.({ data }));
   }
 

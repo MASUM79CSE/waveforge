@@ -4,7 +4,7 @@
  * AbortError rejections into `cancelled` envelopes, other throws into
  * `error` envelopes. Malformed requests are dropped (strict rejection).
  */
-import { CancelSchema, ReqSchema } from './protocol';
+import { CancelSchema, ReqSchema, RPC_TRANSFER } from './protocol';
 
 export interface HandlerCtx {
   signal: AbortSignal;
@@ -66,7 +66,15 @@ export function serveRpc(endpoint: RpcEndpoint, handlers: RpcHandlers): void {
     handler(payload, ctx).then(
       (result) => {
         cancels.delete(id);
-        endpoint.post({ id, kind: 'result', payload: result });
+        // P2.2: a handler may opt its result into zero-copy transfer
+        // (large PCM buffers) via the RPC_TRANSFER symbol; stripped here.
+        let transfer: Transferable[] | undefined;
+        if (result !== null && typeof result === 'object' && RPC_TRANSFER in result) {
+          const tagged = result as { [RPC_TRANSFER]?: Transferable[] };
+          transfer = tagged[RPC_TRANSFER];
+          delete tagged[RPC_TRANSFER];
+        }
+        endpoint.post({ id, kind: 'result', payload: result }, transfer);
       },
       (err: unknown) => {
         cancels.delete(id);
