@@ -14,8 +14,8 @@ export type Sufficiency = z.infer<typeof SufficiencySchema>;
 export const CALIBRATION = Object.freeze({
   /** Midpoint of the logistic (RRF-score scale for k=60). */
   center: 0.02,
-  /** Steepness: score Δ around center for confidence 0.27↔0.73. */
-  slope: 120,
+  /** Steepness: score Δ around center for confidence ~0.03↔0.97. */
+  slope: 250,
 });
 
 /** Answer only at/above this confidence (code-fixed, not configurable). */
