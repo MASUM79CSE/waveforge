@@ -23,7 +23,13 @@ test('ragPanel: flag OFF — View menu has no Transcription group', async ({ pag
   await page.getByRole('button', { name: 'View', exact: true }).click();
   const items = page.getByRole('menuitem');
   const texts = await items.allTextContents();
-  expect(texts.join('|')).not.toMatch(/transcript/i);
+  // no RAG feature items when the flag is OFF (the opt-in/out toggle is
+  // deliberately always visible — rollout §6 step b)
+  expect(texts.join('|')).not.toMatch(/manage ai models|export transcript|smart deletion|silence selection/i);
+  expect(texts.join('|')).not.toMatch(/(^|\|)Transcript/i); // no panel item / group header
+  const toggle = page.getByRole('menuitem', { name: /smart transcript features/i });
+  await expect(toggle).toBeVisible();
+  expect(await toggle.locator('.menu-check').textContent()).toBe('');
   await page.keyboard.press('Escape');
   // shortcut does nothing visible either
   await page.keyboard.press('Control+Shift+F');

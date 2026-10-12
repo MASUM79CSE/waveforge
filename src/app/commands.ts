@@ -247,6 +247,24 @@ export const commands: Command[] = [
     },
   },
   {
+    // ALWAYS registered (unlike the flag-gated group above): this is the
+    // user-facing opt-in/out switch for Smart RAG (rollout §6 step b).
+    // Flip localStorage + reload — the flag is a boot-time decision.
+    id: 'rag.toggleEnabled',
+    label: () => t().ragEnableToggle,
+    run: () => {
+      const next = !isRagEnabled();
+      try {
+        window.localStorage.setItem('wf.rag', next ? '1' : '0');
+      } catch {
+        return; // storage blocked — nothing to apply
+      }
+      window.location.reload();
+    },
+    check: true,
+    isChecked: () => isRagEnabled(),
+  },
+  {
     id: 'rag.manageModels',
     label: () => (locale() === 'bn' ? 'এআই মডেল ব্যবস্থাপনা' : 'Manage AI models'),
     run: () => {

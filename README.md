@@ -99,6 +99,8 @@ no tracking**. Your audio never leaves your machine.
   red-teamed); **Smart edits** — natural-language edit plans (delete/
   silence/gain/insert) executed through the normal undo stack as one
   step; transcript-derived chapters; SRT/VTT/TXT export; full Bangla UI.
+  Enable from **View → Smart transcript features (beta)** (or `?rag=1`);
+  the flag stays OFF by default.
   See [`docs/rag/`](docs/rag/) (phase reports, privacy audit,
   failure-mode matrix, release report).
 

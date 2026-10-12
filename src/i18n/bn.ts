@@ -327,6 +327,7 @@ export const bn: Widen<Catalog> = {
   helpWelcome: 'স্বাগতম বার্তা',
   helpAbout: 'পরিচিতি',
   helpDoctor: 'ডায়াগনস্টিকস',
+  ragEnableToggle: 'স্মার্ট ট্রান্সক্রিপ্ট ফিচার (বিটা)',
   ragExportSrt: 'ট্রান্সক্রিপ্ট এক্সপোর্ট (SRT)',
   ragExportVtt: 'ট্রান্সক্রিপ্ট এক্সপোর্ট (VTT)',
   ragExportTxt: 'ট্রান্সক্রিপ্ট এক্সপোর্ট (TXT)',

@@ -324,6 +324,7 @@ export const en = {
   helpWelcome: 'Welcome Message',
   helpAbout: 'About',
   helpDoctor: 'Diagnostics',
+  ragEnableToggle: 'Smart transcript features (beta)',
   ragExportSrt: 'Export transcript (SRT)',
   ragExportVtt: 'Export transcript (VTT)',
   ragExportTxt: 'Export transcript (TXT)',

@@ -82,8 +82,12 @@ named passing test — see `docs/rag/FAILURE-MODES.md`.
    behavior and bundle are untouched for everyone else.
 2. **Staged enablement**: (a) ship with flag OFF → collect diagnostics via
    the in-app Diagnostics panel; (b) flip the default ON for a small cohort
-   (query-param cohort or a settings toggle) once model-host bandwidth is
-   provisioned; (c) default ON in a minor release after a soak period.
+   once model-host bandwidth is provisioned; (c) default ON in a minor
+   release after a soak period. **Shipped post-release:** the user-facing
+   opt-in/out switch — View → Smart transcript features (beta) — an
+   always-visible check item that flips `localStorage['wf.rag']` and
+   reloads (e2e `ragToggle`; flag-OFF menu invariant re-specified in
+   `ragPanel`). The DEFAULT remains OFF pending the product decision.
 3. **Model registry**: ships empty-but-valid by policy (sizes/hashes are
    measured, never guessed). To enable a model, a maintainer runs
    `node scripts/rag/measure-model.mjs …` on a provisioned machine and

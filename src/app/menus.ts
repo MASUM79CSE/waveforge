@@ -117,6 +117,7 @@ export const menus: MenuDef[] = [
       ...(isRagEnabled()
         ? [{ header: () => (locale() === 'bn' ? 'ট্রান্সক্রিপশন' : 'Transcription'), items: ['rag.togglePanel', 'rag.manageModels', 'rag.smartDeleteSelection', 'rag.smartSilenceSelection', 'rag.exportSrt', 'rag.exportVtt', 'rag.exportTxt'] }]
         : []),
+      'rag.toggleEnabled',
     ],
   },
   {
