@@ -208,3 +208,67 @@ axe-clean + en/bn strings in the right table, extend-don't-rename.
 - **P3.9 phase gate**: full vitest, full playwright, LH desktop+mobile,
   bundle ≤ +2 KB gz, lazy audit, tag `rag-phase-3-done`, PHASE-3 REPORT,
   push, STOP.
+
+## Phase 4 execution plan — acceptance criteria (planning pass 2026-10-12)
+
+Scope: Ask — question answering over the CURRENT transcript, fully
+on-device. Default path is EXTRACTIVE (deterministic, zero ML): retrieve
+(P3.5) → score sentences → quote with citations. An optional local LLM
+(text-generation via the SAME transformers.js dep — no new dependency,
+D10) is opt-in behind consent + the P1.4 downloader; its output passes
+the same grounding gate as the extractive path or it is shown as
+"insufficient". Execution order follows dependencies (grounding before
+providers); rows close as each task lands.
+
+- **P4.1 intent router** (`src/rag/ask/intent.ts`, pure): deterministic
+  rule router over en/bn cues → {ask | search | summarize | chat};
+  question words/wh-mark → ask; locate/jump cues → search; summary cues
+  → summarize; smalltalk → chat; default ask. zod-typed result; no ML.
+  Accept: golden table en+bn, tie-break priority order, NFKC + mixed
+  script, ≥ 8 tests.
+- **P4.2 history-aware query rewrite** (`src/rag/ask/rewrite.ts`, pure):
+  resolve deictic follow-ups ("what about it/that/after that?", bn
+  equivalents) by carrying forward topic terms from the PREVIOUS query
+  only — never invents content. Accept: rewrite table, no-rewrite cases,
+  history cap, determinism, ≥ 8 tests.
+- **P4.3 evidence sufficiency + calibration** (`src/rag/ask/sufficiency.ts`,
+  pure): fixed logistic calibration of retrieval scores → confidence in
+  [0,1]; decision 'answer' | 'insufficient' at a code-fixed threshold;
+  empty evidence always insufficient. Accept: boundary + monotonicity
+  tests, ≥ 8 tests.
+- **P4.6 grounding contract** (`src/rag/ask/grounding.ts`, pure — pulled
+  before providers): citations must reference evidence chunk ids and
+  quotes must be EXACT substrings (NFKC-normalized) of the cited chunk;
+  enforceGrounding() downgrades ungrounded answers to 'insufficient'.
+  Accept: adversarial tests (fake quotes, tampered ids, normalization
+  tricks), ≥ 10 tests.
+- **P4.4 provider interface + extractive default** (`src/rag/ask/provider.ts`,
+  `extractive.ts`): zod AskAnswer schema {status, text, citations[],
+  provider, confidence}; extractive provider = retrieval → sentence split
+  → IDF-weighted overlap scoring → best sentences as the answer; text is
+  ALWAYS a transcript substring. Accept: golden answers over the P3.8
+  corpus, citation correctness, insufficient on out-of-corpus questions,
+  ≥ 12 tests.
+- **P4.5 local LLM provider (opt-in)** (`llmProtocol/llmClient/llm.worker/
+  llmProvider.ts`): text-generation pipeline behind the P2.5 storage
+  contract (D10 — reuses @huggingface/transformers; CI uses a fake lib at
+  the DI seam; real model only after consent; never in CI). Prompt
+  builder wraps evidence as delimited DATA; provider validates output
+  through enforceGrounding() and falls back to extractive/insufficient.
+  Accept: seam tests ≥ 10, worker-only import audit.
+- **P4.7 prompt-injection defenses** (`sanitize.ts` + red-team suite):
+  sanitizeForPrompt (control chars stripped, length caps), evidence
+  delimiter framing, red-team transcripts (ignore-instructions, fake
+  system roles, script/markdown smuggle, homoglyphs) — extractive output
+  stays a substring; prompt builder golden; e2e hostile transcript.
+  Accept: ≥ 10 red-team tests green.
+- **P4.8 Ask UI** (panel Ask section + runtime `askTranscript` +
+  `ragAskHistory` signal, new — no renames): input + answer card, text
+  nodes only, citation buttons seek+highlight, insufficient state,
+  en/bn lazy strings, axe 0, keyboard operable; e2e with fake providers.
+- **P4.9 Phase 4 evals** (extends P3.8 harness): citation hit@1 over
+  golden Q/A, out-of-corpus → insufficient rate 1.0, injection corpus →
+  zero ungrounded answers; fixed thresholds; deterministic.
+- **P4.10 phase gate**: full vitest, full playwright, bundle ≤ +2 KB gz
+  vs CURRENT baseline, lazy audit, tsc/eslint clean, tag
+  `rag-phase-4-done`, PHASE-4 REPORT, push, STOP.
