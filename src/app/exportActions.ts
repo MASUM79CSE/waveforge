@@ -62,10 +62,14 @@ export async function performExport(
   const range = targetRange();
   if (!doc || !range || S.exportBusy.value) return;
 
-  const channels =
-    range.start === 0 && range.len === doc.length
-      ? currentChannels()
-      : sliceRegion(currentChannels(), range.start, range.len);
+  // Full range passes the canonical document channels (WF-002: never
+  // transferred — the worker boundary clones them). A sub-range hands
+  // over fresh sliceRegion copies the caller never reads again, so the
+  // worker request can be transferred (zero-copy move).
+  const fullRange = range.start === 0 && range.len === doc.length;
+  const channels = fullRange
+    ? currentChannels()
+    : sliceRegion(currentChannels(), range.start, range.len);
 
   const safeName = sanitizeFilename(filename);
   const fullName = `${safeName}.${EXTENSION[format]}`;
@@ -95,6 +99,7 @@ export async function performExport(
       channels,
       sampleRate: doc.sampleRate,
       options: { format, quality },
+      transferChannels: !fullRange,
       onProgress: (fraction) => {
         S.exportProgress.value = fraction;
       },

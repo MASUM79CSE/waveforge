@@ -20,6 +20,14 @@ export interface ExportJob {
   options: ExportOptions;
   onProgress?: (fraction: number) => void;
   signal?: { cancelled: boolean };
+  /**
+   * WF-002: declare that the caller owns these channel arrays outright
+   * (e.g. fresh `sliceRegion` copies) and they are never read again —
+   * the worker request is then transferred (zero-copy move) instead of
+   * structured-cloned. Default (undefined/false) NEVER transfers: the
+   * clone keeps canonical AudioDocument data intact.
+   */
+  transferChannels?: boolean;
 }
 
 export interface ExportResult {
@@ -66,14 +74,28 @@ async function runMp3Worker(job: ExportJob): Promise<ExportResult> {
   const kbps = (['128', '192', '256', '320'].includes(job.options.quality)
     ? Number(job.options.quality)
     : 192) as 128 | 192 | 256 | 320;
-  return driveWorker(worker, id, job, () => ({
-    cmd: 'encode',
+  const left = job.channels[0] ?? new Float32Array(0);
+  const right = job.channels[1];
+  // transfer only caller-owned buffers; the default clones (WF-002)
+  const transfer: Transferable[] | undefined = job.transferChannels
+    ? right
+      ? [left.buffer, right.buffer]
+      : [left.buffer]
+    : undefined;
+  return driveWorker(
+    worker,
     id,
-    sampleRate: job.sampleRate,
-    kbps,
-    left: job.channels[0] ?? new Float32Array(0),
-    right: job.channels[1],
-  }));
+    job,
+    () => ({
+      cmd: 'encode',
+      id,
+      sampleRate: job.sampleRate,
+      kbps,
+      left,
+      right,
+    }),
+    transfer,
+  );
 }
 
 function spawnFlacWorker(): Worker {
@@ -84,17 +106,31 @@ async function runFlacWorker(job: ExportJob): Promise<ExportResult> {
   const worker = spawnFlacWorker();
   const id = nextJobId++;
   const frames = job.channels[0]?.length ?? 0;
-  return driveWorker(worker, id, job, () => ({
-    cmd: 'encode',
+  const left = job.channels[0] ?? new Float32Array(0);
+  const right = job.channels[1];
+  // transfer only caller-owned buffers; the default clones (WF-002)
+  const transfer: Transferable[] | undefined = job.transferChannels
+    ? right
+      ? [left.buffer, right.buffer]
+      : [left.buffer]
+    : undefined;
+  return driveWorker(
+    worker,
     id,
-    sampleRate: job.sampleRate,
-    channels: job.channels.length >= 2 ? 2 : 1,
-    bits: job.options.quality === '24' ? 24 : 16,
-    level: Number(job.options.quality) || 5,
-    frames,
-    left: job.channels[0] ?? new Float32Array(0),
-    right: job.channels[1],
-  }));
+    job,
+    () => ({
+      cmd: 'encode',
+      id,
+      sampleRate: job.sampleRate,
+      channels: job.channels.length >= 2 ? 2 : 1,
+      bits: job.options.quality === '24' ? 24 : 16,
+      level: Number(job.options.quality) || 5,
+      frames,
+      left,
+      right,
+    }),
+    transfer,
+  );
 }
 
 /** Shared request/response plumbing: progress, cancel, cleanup, typing. */
@@ -103,6 +139,7 @@ function driveWorker(
   id: number,
   job: ExportJob,
   makeRequest: () => Record<string, unknown>,
+  transfer?: Transferable[],
 ): Promise<ExportResult> {
   return new Promise((resolve, reject) => {
     // WF-001: the cancel watcher is cancellable itself — cleanup() stops
@@ -145,7 +182,8 @@ function driveWorker(
       cleanup();
       reject(new Error(event.message || 'worker failure'));
     };
-    worker.postMessage(makeRequest());
+    if (transfer) worker.postMessage(makeRequest(), transfer);
+    else worker.postMessage(makeRequest());
     // watch the cancel signal (stopped by cleanup() on every terminal path)
     const watch = (): void => {
       if (watchStopped) return;
