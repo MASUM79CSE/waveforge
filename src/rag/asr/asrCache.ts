@@ -32,16 +32,22 @@ export interface TransformersCache {
 export function modelPathFromCacheKey(request: string, modelId: string): string | null {
   const marker = `/${modelId}/`;
   const i = request.indexOf(marker);
-  if (i < 0) return null;
-  let rest = request.slice(i + marker.length);
+  let rest: string;
+  if (i >= 0) {
+    rest = request.slice(i + marker.length);
+  } else if (request.startsWith(`${modelId}/`)) {
+    rest = request.slice(modelId.length + 1); // bare `{model}/{path}` keys
+  } else {
+    return null;
+  }
   // strip "resolve/{revision}/" when the key is a remote URL
   rest = rest.replace(/^resolve\/[^/]+\//, '');
   return rest.length > 0 ? decodeURIComponent(rest) : null;
 }
 
-// `version` is part of the adapter's identity for future multi-version
-// caches; storage keys files per installed version already.
-export function createStorageCache(storage: ModelStorage, modelId: string, _version: string): TransformersCache {
+// Storage keys files per installed version already; a future
+// multi-version cache can reintroduce a version argument.
+export function createStorageCache(storage: ModelStorage, modelId: string): TransformersCache {
   return {
     async match(request) {
       const path = modelPathFromCacheKey(request, modelId);

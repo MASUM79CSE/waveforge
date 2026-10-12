@@ -68,7 +68,7 @@ export function createAsrHandlers(deps: AsrDeps): RpcHandlers {
       }
       const lib = await deps.importLib();
       lib.env.useCustomCache = true;
-      lib.env.customCache = createStorageCache(deps.storage, modelId, version);
+      lib.env.customCache = createStorageCache(deps.storage, modelId);
       lib.env.allowRemoteModels = false;
       lib.env.allowLocalModels = false;
       lib.env.backends.onnx.wasm.wasmPaths = deps.ortBasePath ?? '/rag-assets/ort/';
