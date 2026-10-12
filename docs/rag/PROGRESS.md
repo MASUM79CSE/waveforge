@@ -24,6 +24,8 @@
 | P1.6 | COOP/COEP + CSP allow-list + robots.txt | DONE | `754e585` — crossOriginIsolated=true, e2e 59 passed under headers, LH desktop 97/100/100/100, mobile perf 99; D4/D5 |
 | P1.7 | Egress guard + journey proof | DONE | `0c37c53` — helpers/egress.ts; load→edit→export = 0 outbound requests, 0 bodies; self-test proves example.com caught |
 | P1.8 | Transcript panel shell + commands/menu/shortcut | DONE | this commit — ragPanel.spec 3/3, vitest 794/794, Ctrl+Shift+F, flag-OFF menus byte-identical |
+| P1.9 | Entry-bundle gate (≤2 KB gz growth) | DONE | `7d3e263` — first measure +3,734 (FAIL) → lazy RAG string table + armed import() (D6) → **+674 B** (entry 121,228 vs 120,554); runtime + RagDialogs verified separate lazy chunks; vitest 794/794 |
+| P1.10 | Full phase gate + tag | DONE | vitest 794/794; playwright 64/64 fake-media + 1/1 preview; LH desktop 100/100/100/100, mobile 98/100/100/100; bundle +674; tag `rag-phase-1-done` |
 | P1.5 | Consent dialog + settings | TODO | — | — | — |
 | P1.6 | Headers: CSP allow-list + COOP/COEP exp. | TODO | — | — | — |
 | P1.7 | Network-egress guard test | TODO | — | — | — |
