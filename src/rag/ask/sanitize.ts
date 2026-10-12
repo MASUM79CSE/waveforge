@@ -22,7 +22,11 @@ export const PROMPT_CAPS = Object.freeze({
 export function sanitizeForPrompt(text: string, maxChars: number): string {
   const stripped = text
     .normalize('NFKC')
-    .replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, ' ');
+    .replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, ' ')
+    // defang the evidence delimiters so transcript text cannot close a
+    // DATA block early and smuggle content into the instruction zone
+    .replace(/<<<\s*EVIDENCE/gi, '‹‹‹EVIDENCE')
+    .replace(/EVIDENCE\s*>>>/gi, 'EVIDENCE›››');
   return stripped.length > maxChars ? `${stripped.slice(0, maxChars)}…` : stripped;
 }
 
