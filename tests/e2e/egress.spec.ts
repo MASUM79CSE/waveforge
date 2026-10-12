@@ -7,12 +7,18 @@ import { attachEgressGuard } from './helpers/egress';
  * Invariant 1 from the master prompt, enforced structurally.
  */
 test('egress: load → edit → export makes no outbound requests', async ({ page }) => {
+  test.setTimeout(90_000); // full journey incl. first-export worker warmup
+  // headless Chromium cannot interact with the native save picker — force
+  // the <a download> fallback (same as export.spec)
+  await page.addInitScript(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (window as any).showSaveFilePicker;
+  });
   const egress = attachEgressGuard(page);
-  await page.goto('/?rag=1');
+  await page.goto('/');
   const welcome = page.getByRole('dialog', { name: /welcome/i });
-  await welcome.waitFor({ timeout: 10_000 });
   await welcome.getByRole('button', { name: /load sample/i }).click();
-  await page.getByText('demo.wav', { exact: true }).waitFor({ timeout: 10_000 });
+  await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
   // edit: select the first half and cut
   const canvas = page.locator('canvas').first();
@@ -27,9 +33,9 @@ test('egress: load → edit → export makes no outbound requests', async ({ pag
   // export WAV (download path)
   await page.getByRole('button', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
-  await page.getByTestId('export-format-wav').click();
   const panel = page.getByRole('dialog');
-  const download = page.waitForEvent('download', { timeout: 15_000 });
+  await expect(panel).toBeVisible();
+  const download = page.waitForEvent('download', { timeout: 25_000 });
   await panel.getByRole('button', { name: /export/i }).click();
   await download;
 

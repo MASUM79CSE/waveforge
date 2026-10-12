@@ -35,7 +35,8 @@ export function attachEgressGuard(page: import('@playwright/test').Page): Egress
       for (const u of urls) {
         let host: string;
         try {
-          host = new URL(u).host;
+          // hostname (no port) — same-origin requests carry :port
+          host = new URL(u).hostname;
         } catch {
           continue;
         }
