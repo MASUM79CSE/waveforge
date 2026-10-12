@@ -93,7 +93,9 @@ no tracking**. Your audio never leaves your machine.
   recordings, all local: consented model downloads only (SHA-256-pinned,
   documented hosts), audio/transcripts/embeddings never leave the
   device. Whisper transcription with click-to-seek segments; transcript
-  search (BM25 + embeddings, RRF fusion); **Ask** — grounded answers
+  search (semantic ranking against a calibrated no-match floor once the
+  real embedder is installed; hybrid BM25+vector fusion otherwise);
+  **Ask** — grounded answers
   quoted from the transcript with seekable citations (extractive by
   default, optional local LLM behind the same consent flow, injection-
   red-teamed); **Smart edits** — natural-language edit plans (delete/

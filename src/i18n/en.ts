@@ -69,6 +69,7 @@ export const en = {
   menuGroupZoom: 'Zoom',
   menuGroupCursor: 'Cursor & axis',
   menuGroupAppearance: 'Appearance',
+  menuGroupSmart: 'Smart transcript',
   fxGroupDynamics: 'Dynamics',
   fxGroupNoise: 'Noise reduction',
   fxGroupEq: 'EQ',

@@ -114,10 +114,10 @@ export const menus: MenuDef[] = [
       { header: () => t().menuGroupZoom, items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', 'view.center'] },
       { header: () => t().menuGroupCursor, items: ['view.follow', 'view.zerocross', 'view.axis'] },
       { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent'] },
+      { header: () => t().menuGroupSmart, items: ['rag.toggleEnabled'] },
       ...(isRagEnabled()
         ? [{ header: () => (locale() === 'bn' ? 'ট্রান্সক্রিপশন' : 'Transcription'), items: ['rag.togglePanel', 'rag.manageModels', 'rag.smartDeleteSelection', 'rag.smartSilenceSelection', 'rag.exportSrt', 'rag.exportVtt', 'rag.exportTxt'] }]
         : []),
-      'rag.toggleEnabled',
     ],
   },
   {

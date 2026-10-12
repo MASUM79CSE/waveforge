@@ -72,6 +72,7 @@ export const bn: Widen<Catalog> = {
   menuGroupZoom: 'জুম',
   menuGroupCursor: 'কার্সর ও অক্ষ',
   menuGroupAppearance: 'চেহারা',
+  menuGroupSmart: 'স্মার্ট ট্রান্সক্রিপ্ট',
   fxGroupDynamics: 'ডাইনামিক্স',
   fxGroupNoise: 'নয়েজ রিডাকশন',
   fxGroupEq: 'EQ',

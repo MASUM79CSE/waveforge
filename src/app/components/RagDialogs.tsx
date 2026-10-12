@@ -251,10 +251,13 @@ function TranscriptPanel() {
           // semantic search with the calibrated no-match floor when the
           // rows carry the real model; fake-embedder rows (CI) keep
           // find-in-transcript lexical semantics (D9)
-          let res = await rtMod.searchTranscript(query, { topK: 5, semantic: true });
+          // mode:'lexical' is the fake-row fallback (find-in-transcript
+          // stays literal — nonsense queries return no matches, P3.7);
+          // semantic:true overrides it to vector+floor on real rows (D9).
+          let res = await rtMod.searchTranscript(query, { topK: 5, mode: 'lexical', semantic: true });
           if (res.length === 0 && !rtMod.ragIndexBusy.value) {
             await rtMod.indexTranscript();
-            res = await rtMod.searchTranscript(query, { topK: 5, semantic: true });
+            res = await rtMod.searchTranscript(query, { topK: 5, mode: 'lexical', semantic: true });
           }
           setHits(res);
         })

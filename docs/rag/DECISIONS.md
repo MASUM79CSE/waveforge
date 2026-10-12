@@ -139,10 +139,12 @@ Semantics of the flag (`src/rag/runtime.ts`):
 - **Real-model rows** (`modelId !== 'fake-embed'`): pure vector ranking,
   scores below `SEMANTIC_FLOOR = 0.15` filtered before top-K — the
   engine can now return "no meaningful matches" for off-topic queries.
-- **Fake-embedder rows** (tests/fakes, no consent yet): falls back to
-  hybrid (RRF) exactly as before — the floor is meaningless for hash
-  embeddings, and panel behaviour in fake-media runs is unchanged
-  (asserted by the ragSearch e2e).
+- **Fake-embedder rows** (tests/fakes, no consent yet): the flag has no
+  effect and the caller's mode stands — the panel passes
+  `mode: 'lexical'`, so pre-consent installs keep the literal
+  find-in-transcript semantics of P3.7 (nonsense queries return no
+  matches; assertable by the ragSearch e2e). A hybrid fallback would
+  let RRF rank hash-noise for every query, breaking that contract.
 
 The option is per-call; the default (`semantic` unset) keeps every
 existing caller on hybrid. Calibration (2026-10-12, real MiniLM q8,

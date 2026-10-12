@@ -30,4 +30,10 @@ Notes:
   ready`) resets to `idle` on every failure path (runtime wiring tests).
 - Smart edits NEVER auto-apply; every failure above leaves the document
   and the undo stack untouched until an explicit user action succeeds.
+- Semantic panel search (D9/P6.12) can return "no matches" for queries
+  whose MiniLM cosine falls below the calibrated floor (0.15) — e.g.
+  heavy paraphrase, or languages the encoder represents weakly. This is
+  by design (honest empty beats noise), the literal text is still
+  findable, and the floor is a frozen constant reproducible via
+  `scripts/rag/quality-embed.mjs` if recalibration is ever needed.
 - See `RELEASE-REPORT.md` § invariants for the privacy/egress ledger.

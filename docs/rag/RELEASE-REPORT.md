@@ -98,10 +98,10 @@ named passing test — see `docs/rag/FAILURE-MODES.md`.
 5. **Known limitations** (documented, not blockers): panel search scores
    are MiniLM cosines against `SEMANTIC_FLOOR = 0.15` (calibrated on the
    golden corpus — see D9/P6.12); queries in languages the embedder
-   handles weakly may rank lower, and fake-embedder installs fall back
-   to hybrid without a floor (by design); the LLM registry entry ships
-   via the seam until measured (D10/D12 notes); RAG string tables are
-   lazy per module (en/bn parity enforced by test).
+   handles weakly may rank lower, and fake-embedder installs keep the
+   literal lexical search of P3.7 without a floor (by design); the LLM
+   registry entry ships via the seam until measured (D10/D12 notes); RAG
+   string tables are lazy per module (en/bn parity enforced by test).
 
 ## 7. Opt-in maintainer tooling (never CI)
 
