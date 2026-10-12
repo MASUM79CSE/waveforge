@@ -98,7 +98,18 @@ export function createExtractiveProvider(): AskProvider {
       const picked: Scored[] = [];
       let chars = 0;
       for (const cand of ranked) {
-        if (picked.length >= MAX_SENTENCES || chars + cand.sentence.length > MAX_CHARS) break;
+        if (picked.length >= MAX_SENTENCES) break;
+        if (chars + cand.sentence.length > MAX_CHARS) {
+          // run-on chunk (transcript segments carry no sentence marks):
+          // truncate at a word boundary — a slice is STILL an exact
+          // transcript substring, so grounding holds
+          if (picked.length === 0) {
+            const cut = cand.sentence.slice(0, MAX_CHARS);
+            const lastSpace = cut.lastIndexOf(' ');
+            picked.push({ ...cand, sentence: lastSpace > 40 ? cut.slice(0, lastSpace) : cut });
+          }
+          break;
+        }
         picked.push(cand);
         chars += cand.sentence.length;
       }
