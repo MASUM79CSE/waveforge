@@ -105,3 +105,25 @@ Result: **+674 B gz** (entry 121,228 vs 120,554 baseline; tolerance
 +2,048). Verified: `runtime.ts` remains a separate lazy chunk; entry
 contains no model-host strings. No public API renamed (`t()` untouched;
 `locale()` is additive).
+
+## D8 — Embeddings: same transformers.js runtime, MiniLM-class model, deterministic fake for CI (P3.3)
+
+**No new dependency.** The embedding worker reuses `@huggingface/transformers`
+(D7) with the `feature-extraction` pipeline (model class: MiniLM-L6-v2, e.g.
+`Xenova/all-MiniLM-L6-v2`, 384-dim, q8, mean pooling + normalize). It rides
+the identical offline contract as the ASR worker: P1.3 storage-backed custom
+cache, `allowRemoteModels=false`, vendored ort wasm — a missing model is
+`MODEL_NOT_INSTALLED`, never a fetch. Model files enter storage only through
+the P1.4 consented downloader; registry entries ship via the seam/registry
+like ASR models.
+
+**Deterministic fake for CI:** `embedFake.ts` (signed bag-of-hashed-tokens,
+256-dim, L2-normalized) — same `EmbedClient` contract, no ML, fully
+deterministic. It is overlap-sensitive (more shared tokens ⇒ higher cosine),
+which makes retrieval-ordering tests and the P3.8 eval harness meaningful in
+CI. It is NOT semantic; real-model retrieval quality is validated opt-in
+(P6), never in CI.
+
+**Worker isolation:** `embed.worker.ts` is the only chunk pulling
+transformers for embeddings; the entry bundle is untouched (gate-checked in
+P3.9). Result vectors ride the RPC transfer list (zero-copy).
