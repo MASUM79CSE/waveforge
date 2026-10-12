@@ -76,7 +76,7 @@
 | P6.3 | Accessibility sweep | DONE | 22 axe (wcag2a+aa) assertions across 6 rag e2e specs (consent, manage, panel, search, ask, edits) — green in the P6.9 gate run |
 | P6.4 | i18n completeness | DONE | feat commit fd7973a — full bn catalog (419 keys) + parity unit test |
 | P6.5 | Privacy audit | DONE | docs/rag/PRIVACY-AUDIT.md — full egress+storage ledger, cites ragEgressJourney + guard e2e |
-| P6.6 | Perf / bundle / Lighthouse | TODO | — | — | — |
+| P6.6 | Perf / bundle / Lighthouse | DONE | baseline 128,447 gz + D12 amendment; LH desktop 100×4 · mobile 98/100/100/100 (vite preview 4179, real output); lazy audit: transformers only in asr/embed/llm worker chunks |
 | P6.7 | Documentation | TODO | — | — | — |
 | P6.8 | Rollout recommendation | TODO | — | — | — |
 | P6.9 | Release gate + final report | TODO | — | — | — |
