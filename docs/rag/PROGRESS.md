@@ -58,7 +58,7 @@
 | P4.4 | Provider interface + extractive default | DONE | feat commit — 14 tests (golden, substring property, zod, bn, budget, determinism) |
 | P4.5 | Local LLM provider (opt-in) | DONE | feat commit — 13 tests (grounded passthrough, refusal, hallucination→extractive, framing) + D10 |
 | P4.6 | Grounding contract | DONE | feat commit — 10 tests (exact-substring, adversarial, downgrade; done early: providers depend on it) |
-| P4.7 | Prompt-injection defenses | TODO | — | — | — |
+| P4.7 | Prompt-injection defenses | DONE | feat commit — 15 red-team tests (substring invariant, delimiter escape, flood) + sanitize hardening |
 | P4.8 | Ask UI | TODO | — | — | — |
 | P4.9 | Phase 4 evals | TODO | — | — | — |
 | P4.10 | Phase 4 gate | TODO | — | — | — |
