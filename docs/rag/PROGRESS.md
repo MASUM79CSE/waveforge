@@ -61,7 +61,7 @@
 | P4.7 | Prompt-injection defenses | DONE | feat commit — 15 red-team tests (substring invariant, delimiter escape, flood) + sanitize hardening |
 | P4.8 | Ask UI | DONE | feat commit — e2e ragAsk 3/3 (grounded+seek, hostile inert, LLM badge) + axe 0 + en/bn |
 | P4.9 | Phase 4 evals | DONE | feat commit — hit@3/answer ≥ 5/6, refusal 100%, injection 0 ungrounded, deterministic |
-| P4.10 | Phase 4 gate | TODO | — | — | — |
+| P4.10 | Phase 4 gate | DONE | 1047/1047 unit · 72/72 e2e · bundle 122,351/122,602 gz · tsc+eslint 0 · tag rag-phase-4-done · PHASE-4-REPORT.md |
 | P5.1 | EditPlan schema | TODO | — | — | — |
 | P5.2 | Deterministic planners | TODO | — | — | — |
 | P5.3 | Range normalization | TODO | — | — | — |
