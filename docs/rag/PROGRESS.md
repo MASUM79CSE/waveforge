@@ -70,7 +70,7 @@
 | P5.6 | Markers / chapters | DONE | feat commit — 8 tests (gap split, sanitize, overlap guard, determinism) |
 | P5.7 | Command integration + NL box | DONE | feat commit — rag.smart* commands (flag-gated menu group) + NL box with confirm row |
 | P5.8 | Safety review | DONE | feat commit — 8 safety tests + D11 decision record |
-| P5.9 | Phase 5 gate | TODO | — | — | — |
+| P5.9 | Phase 5 gate | DONE | 1104/1104 unit · 74/74 e2e · bundle 122,593/122,602 gz (kernels lazy-fixed) · tsc+eslint 0 · tag rag-phase-5-done · PHASE-5-REPORT.md |
 | P6.1 | Scale test (1 h end-to-end) | TODO | — | — | — |
 | P6.2 | Failure-mode matrix | TODO | — | — | — |
 | P6.3 | Accessibility sweep | TODO | — | — | — |
