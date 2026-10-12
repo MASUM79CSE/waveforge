@@ -31,6 +31,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,wasm,wav}'],
+        // vendored ort runtime + RAG model assets are NEVER precached
+        globIgnores: ['**/rag-assets/**'],
       },
     }),
   ],

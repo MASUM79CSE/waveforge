@@ -8,3 +8,6 @@ coverage/
 # playwright
 test-results/
 playwright-report/
+
+# generated at build time by scripts/rag/vendor-ort.mjs
+public/rag-assets/
