@@ -49,7 +49,7 @@
 | P3.4 | Index store + migration | DONE | feat commit — 8 tests (bitwise vectors, replace/delete, quota, v1 chain); rag suites 218/218 |
 | P3.5 | Hybrid search + RRF | DONE | feat commit — 11 tests (RRF golden, k-dominance, modes, determinism) |
 | P3.6 | Index job controller | DONE | feat commit — 10 tests (typed errors, idempotency, abort-safety, IDB e2e) |
-| P3.7 | Search UI | TODO | — | — | — |
+| P3.7 | Search UI | DONE | feat commit — e2e ragSearch 2/2 (seek click+Enter, axe 0, inert text, reopen) + D9 lexical-mode |
 | P3.8 | Evaluation harness | TODO | — | — | — |
 | P3.9 | Phase 3 gate | TODO | — | — | — |
 | P4.1 | Deterministic intent router | TODO | — | — | — |
