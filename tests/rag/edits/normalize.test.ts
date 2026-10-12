@@ -93,7 +93,7 @@ describe('P5.3 range normalization', () => {
 
   it('makeSnap bridges sample-domain findZeroCross to seconds (pure)', () => {
     // zero at sample 48000 (1.0 s) — a fake findZeroCross returns it
-    const fakeFind = (target: number) => (Math.abs(target - 48_000) <= 240 ? 48_000 : target);
+    const fakeFind = (_: Float32Array, target: number, radius: number) => (Math.abs(target - 48_000) <= radius ? 48_000 : target);
     const snap = makeSnap(new Float32Array(480_000), 48_000, fakeFind);
     expect(snap(1.002)).toBeCloseTo(1.0, 4);
     expect(snap(5)).toBeCloseTo(5, 6); // outside radius → unchanged
