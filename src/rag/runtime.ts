@@ -15,11 +15,31 @@ export const ragProgress = signal(0);
 export const ragPendingModel = signal<ModelEntry | null>(null);
 /** Latest transcript for the CURRENT document (null = none/stale). */
 export const ragTranscript = signal<import('./transcripts/model').TranscriptRecord | null>(null);
+/** P3.6 — true while a transcript-index job (chunk → embed → store) runs. */
+export const ragIndexBusy = signal(false);
 // Dialog open flags live in src/app/state.ts (shared with the host + keyboard chain).
 export const ragConsentOpen = modelConsentOpen;
 export const ragManageOpen = manageModelsOpen;
 
 let storage: ModelStorage | null = null;
+let indexStore: import('./retrieval/indexStore').IndexStorage | null = null;
+
+/** The embedding model used for chunk vectors (D8: MiniLM class, q8). */
+export const EMBED_MODEL_ID = 'Xenova/all-MiniLM-L6-v2';
+
+function fakeMode(): boolean {
+  return Boolean((window as unknown as Record<string, unknown>)['__wfRagTest'] !== undefined &&
+    ((window as unknown as { __wfRagTest?: { useFakeAsr?: () => void } })['__wfRagTest']?.useFakeAsr !== undefined));
+}
+
+async function getIndexStore(): Promise<import('./retrieval/indexStore').IndexStorage> {
+  if (!indexStore) {
+    const { createIndexStorage } = await import('./retrieval/indexStore');
+    const { openIndexDB } = await import('./retrieval/indexStore');
+    indexStore = createIndexStorage(await openIndexDB(indexedDB as never));
+  }
+  return indexStore;
+}
 
 export function getStorage(): ModelStorage {
   if (!storage) storage = createModelStorage(globalThis.caches as never);
@@ -182,5 +202,47 @@ export async function startTranscription(
   } catch (err) {
     ragState.value = 'idle';
     throw err;
+  }
+}
+
+/**
+ * P3.6 — index the CURRENT transcript (chunk → embed → IDB store) so the
+ * transcript panel can run hybrid search over it. Idempotent per
+ * transcript (short-circuit unless `force`); flips `ragIndexBusy`.
+ */
+export async function indexTranscript(
+  opts: { signal?: AbortSignal; force?: boolean; onProgress?: (pct: number) => void } = {},
+): Promise<import('./retrieval/indexJob').IndexRunResult> {
+  if (ragIndexBusy.value) {
+    throw new (await import('./retrieval/indexJob')).IndexError('INDEX_FAILED', 'indexing already running');
+  }
+  const record = ragTranscript.value;
+  if (!record) {
+    throw new (await import('./retrieval/indexJob')).IndexError('NO_SEGMENTS', 'no transcript to index');
+  }
+  ragIndexBusy.value = true;
+  try {
+    const { createIndexController } = await import('./retrieval/indexJob');
+    const { createEmbedClient, createFakeEmbedClient, createEmbedWorker } = await import('./retrieval/embedClient');
+    const fake = fakeMode();
+    const modelId = fake ? 'fake-embed' : EMBED_MODEL_ID;
+    const storage = getStorage();
+    const version = fake ? '1.0.0' : await storage.installedVersion(modelId);
+    const controller = createIndexController({
+      index: await getIndexStore(),
+      makeEmbedder: () =>
+        fake ? createFakeEmbedClient() : createEmbedClient(() => createEmbedWorker() as never),
+      embedModel: { modelId, version: version ?? '0' },
+      installedVersion: async (id) => (fake ? (id === 'fake-embed' ? '1.0.0' : null) : storage.installedVersion(id)),
+      clock: () => Date.now(),
+    });
+    return await controller.run(record, {
+      signal: opts.signal,
+      force: opts.force,
+      device: 'wasm',
+      onProgress: (p) => opts.onProgress?.(p),
+    });
+  } finally {
+    ragIndexBusy.value = false;
   }
 }
