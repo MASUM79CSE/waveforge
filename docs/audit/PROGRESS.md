@@ -21,7 +21,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | ID | Title | Priority | Status | Commit | Notes |
 | --- | --- | --- | --- | --- | --- |
 | WF-001 | Export cancellation + resource cleanup | P0 | VERIFIED | `c737d67` | RED 6 fail → GREEN 10/10; zero timers on all terminal paths; suite 730/730 + e2e 59/59; see E-005 |
-| WF-002 | Buffer ownership/copies/transfer lists | P0 | OPEN | — | static: no transfer lists (clone copies); no source detachment |
+| WF-002 | Buffer ownership/copies/transfer lists | P0 | VERIFIED | `6bd43b3` | ownership documented (MEMORY §5 rewritten); opt-in transfer for exclusive range slices (measured 71.8→22.1 ms); canonical data clone-protected (tests); 738/738 + 59/59; see E-006 |
 | WF-003 | WAV encoding on main thread | P0 | OPEN | — | static: `encodeWav` inline (`exportService.ts:45-51`) |
 | WF-004 | CSP Report-Only, no reporting, missing directives | P1 | OPEN | — | live-confirmed header |
 | WF-005 | Architecture/memory docs vs code | P2 | OPEN | — | avatar + URL-import + "LH CI gates" already contradict code |
