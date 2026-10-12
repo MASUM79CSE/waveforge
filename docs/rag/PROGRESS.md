@@ -69,7 +69,7 @@
 | P5.5 | Executor through performEdit | DONE | feat commit — 8 kernel tests (outcome shape, undo/redo round-trip, null guards); ONE-undo in e2e |
 | P5.6 | Markers / chapters | DONE | feat commit — 8 tests (gap split, sanitize, overlap guard, determinism) |
 | P5.7 | Command integration + NL box | DONE | feat commit — rag.smart* commands (flag-gated menu group) + NL box with confirm row |
-| P5.8 | Safety review | TODO | — | — | — |
+| P5.8 | Safety review | DONE | feat commit — 8 safety tests + D11 decision record |
 | P5.9 | Phase 5 gate | TODO | — | — | — |
 | P6.1 | Scale test (1 h end-to-end) | TODO | — | — | — |
 | P6.2 | Failure-mode matrix | TODO | — | — | — |
