@@ -150,3 +150,16 @@ surface). Zero new dependencies, one offline contract, CI uses the
 deterministic fake LLM client; real-model quality checks stay opt-in
 scripts (P6). Ungrounded generations fall back to the extractive
 provider, so the grounding guarantee never depends on the model.
+
+## D11 — Smart edits are deterministic plans through performEdit (P5)
+
+No ML proposes edits in P5. Models (at most) supply RANGES (ask
+citations); deterministic planners + normalize + caps compute the plan;
+planToOutcome maps it onto the engine's edit kernels; the lazy bridge
+(src/app/ragEditActions) commits via ONE performEdit call = exactly ONE
+undo step with a human-readable label. Hard caps: delete ≤ 90% of doc,
+insert ≤ 30 s, gain 0.25–4, min range 0.02 s; zod parse at the executor
+boundary; nothing auto-applies — transcript text (however hostile) can
+never mutate the document without an explicit user action on a visible
+confirm row / button (e2e-pinned). Plans are plain serializable data —
+no audio, no functions.
