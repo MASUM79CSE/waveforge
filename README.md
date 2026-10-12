@@ -89,6 +89,10 @@ no tracking**. Your audio never leaves your machine.
 - IndexedDB drafts + autosave ring with crash recovery; noise prints and
   automation persist across save/reload
 - Light & dark themes; full keyboard operability; WCAG 2.1 AA (axe-gated)
+- **Smart RAG (beta, opt-in `?rag=1` flag)** — on-device speech
+  transcription (Whisper): consented model downloads only, audio and
+  transcripts never leave the device, SRT/VTT/TXT export. See
+  [`docs/rag/`](docs/rag/).
 
 ## 🧱 Tech Stack
 
@@ -249,6 +253,7 @@ HTTPS, or `localhost` for local development.
 | [`docs/DATABASE.md`](docs/DATABASE.md) | IndexedDB schema & WFD versioning, autosave/crash recovery; deferred cloud (MongoDB Atlas) design |
 | [`docs/PROJECT_BREAKDOWN.md`](docs/PROJECT_BREAKDOWN.md) | Full build history phase by phase, quality-gate evolution, release checklist |
 | [`docs/THIRD_PARTY_NOTICES.md`](docs/THIRD_PARTY_NOTICES.md) | Bundled third-party code and licenses |
+| [`docs/rag/`](docs/rag/) | Smart RAG: progress ledger, decisions (incl. dependency/privacy), baseline, phase reports |
 
 ## 📄 License
 
