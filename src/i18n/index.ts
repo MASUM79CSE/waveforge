@@ -6,8 +6,9 @@ import type { ErrorCode } from '../core/errors';
 import { bn } from './bn';
 import { en, type Catalog } from './en';
 
-// Bangla ships as a partial catalog over the English fallback (full
-// translation lands in P6.4); missing keys degrade to English.
+// Bangla is a FULL catalog since P6.4 (parity-tested in
+// tests/unit/i18n/completeness.test.ts); missing keys would degrade to
+// English, but none remain.
 /** Widened catalog (literal string types → string) for merged partials. */
 type CatalogLoose = { [K in keyof Catalog]: Catalog[K] extends string ? string : Catalog[K] };
 
