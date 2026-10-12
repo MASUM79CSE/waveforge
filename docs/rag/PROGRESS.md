@@ -72,9 +72,9 @@
 | P5.8 | Safety review | DONE | feat commit — 8 safety tests + D11 decision record |
 | P5.9 | Phase 5 gate | DONE | 1104/1104 unit · 74/74 e2e · bundle 122,593/122,602 gz (kernels lazy-fixed) · tsc+eslint 0 · tag rag-phase-5-done · PHASE-5-REPORT.md |
 | P6.1 | Scale test (1 h end-to-end) | DONE | feat commit — 720-seg 1 h fixture: chunk 1ms / embed 9ms / 20 searches 16ms / ask 3ms / chapters 0ms |
-| P6.2 | Failure-mode matrix | TODO | — | — | — |
-| P6.3 | Accessibility sweep | TODO | — | — | — |
-| P6.4 | i18n completeness | TODO | — | — | — |
+| P6.2 | Failure-mode matrix | DONE | docs/rag/FAILURE-MODES.md — 18 typed failures, each citing a passing test (path fix applied) |
+| P6.3 | Accessibility sweep | DONE | 22 axe (wcag2a+aa) assertions across 6 rag e2e specs (consent, manage, panel, search, ask, edits) — green in the P6.9 gate run |
+| P6.4 | i18n completeness | DONE | feat commit fd7973a — full bn catalog (419 keys) + parity unit test |
 | P6.5 | Privacy audit | TODO | — | — | — |
 | P6.6 | Perf / bundle / Lighthouse | TODO | — | — | — |
 | P6.7 | Documentation | TODO | — | — | — |
