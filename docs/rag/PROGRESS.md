@@ -51,7 +51,7 @@
 | P3.6 | Index job controller | DONE | feat commit — 10 tests (typed errors, idempotency, abort-safety, IDB e2e) |
 | P3.7 | Search UI | DONE | feat commit — e2e ragSearch 2/2 (seek click+Enter, axe 0, inert text, reopen) + D9 lexical-mode |
 | P3.8 | Evaluation harness | DONE | feat commit — 5 tests (metrics, corpus integrity, fixed thresholds lexical+hybrid, distractor guard) |
-| P3.9 | Phase 3 gate | TODO | — | — | — |
+| P3.9 | Phase 3 gate | DONE | 964/964 unit · 69/69 e2e · bundle 122,347/122,602 gz · tsc+eslint 0 · tag rag-phase-3-done · PHASE-3-REPORT.md |
 | P4.1 | Deterministic intent router | TODO | — | — | — |
 | P4.2 | History-aware query rewrite | TODO | — | — | — |
 | P4.3 | Evidence sufficiency + calibration | TODO | — | — | — |
