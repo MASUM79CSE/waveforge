@@ -147,3 +147,64 @@ new UI keyboard-operable + axe-clean + en/bn strings in the lazy RAG table.
 Risks tracked: transformers.js custom-cache integration (spike in P2.5);
 ort-wasm footprint (lazy assets only); long-file memory (streaming windows —
 never materialize the full 16 kHz PCM twice); WebGPU variance (wasm default).
+
+## Phase 3 execution plan — acceptance criteria (planning pass 2026-10-12)
+
+Scope: local retrieval over transcripts. Pipeline: transcript segments →
+chunker (P3.2) → embeddings (P3.3, real transformers.js / deterministic fake)
+→ persisted index store (P3.4) → hybrid search (BM25 + cosine, RRF fusion,
+P3.5 + P3.1) orchestrated by a job controller (P3.6), surfaced in the
+transcript panel (P3.7), quality-gated by a deterministic eval harness
+(P3.8), then the full gate (P3.9). Standing constraints: CI never imports the
+real embedding model (deterministic hashing fake), no new egress hosts (model
+files via the P1.4 consented downloader + P2.5 storage cache only), entry
+bundle ≤ +2 KB gz, untrusted-text discipline, new UI keyboard-operable +
+axe-clean + en/bn strings in the right table, extend-don't-rename.
+
+- **P3.1 tokenizer + BM25** (`src/rag/retrieval/bm25.ts`, pure):
+  NFKC-normalize, lowercase, split on Unicode whitespace/punct; small
+  configurable stopword list (en, default on); Okapi BM25 (k1=1.2, b=0.75)
+  over a mutable inverted index with Lucene-style IDF
+  ln(1 + (N−df+0.5)/(df+0.5)) (always positive).
+  Accept: golden score values (hand-computed); tf saturation (score growth
+  sublinear); length normalization (long doc scores lower for same tf);
+  OOV/empty query → 0 hits, no NaN; deterministic; ≥ 10 tests; entry-free
+  (rag module only).
+- **P3.2 chunker** (`src/rag/retrieval/chunk.ts`, pure): group consecutive
+  transcript segments under a char budget (~800) with 1-segment overlap;
+  chunk = {id, transcriptId, text, startSec, endSec, segmentIds[]}.
+  Accept: no segment ever split; coverage (union of chunk spans = union of
+  segment spans); overlap exactly 1 segment when overlapping; deterministic;
+  empty/short inputs; ≥ 8 tests.
+- **P3.3 embedding worker + deterministic fake** (`src/rag/retrieval/`):
+  protocol embed{texts[]} → Float32Array[] (L2-normalized) + progress,
+  cancelable; real = transformers.js feature-extraction (MiniLM-L6-v2 class)
+  behind the SAME offline storage cache as P2.5 (DI `importLib`); fake =
+  signed bag-of-hashed-tokens (256-dim) — deterministic, overlap-sensitive.
+  D8 records dependency + fake rationale. Accept: fake determinism +
+  cosine(overlap) ordering property; real path unit-tested at the seam only;
+  ort/transformers only in worker chunks (build audit); ≥ 10 tests.
+- **P3.4 index store + migration** (reuses fakeIdb): IDB `waveforge-rag-index`
+  v1, store `chunks` (keyPath id, index byDocId) persisting chunk + vector +
+  transcriptId; API putDoc/deleteDoc/listDocs/loadAll (vectors round-trip
+  exactly). Accept: round-trip bitwise vectors; delete cascades by
+  transcriptId; quota → RagQuotaError; migration chain via fakeIdb; ≥ 8 tests.
+- **P3.5 hybrid search + RRF** (pure): RRF(d) = Σ 1/(k60 + rank), fusion of
+  BM25 ranking + cosine ranking; SearchIndex loads store → query(text, topK)
+  → hits {chunk, score}. Accept: golden RRF values; rank stability; vector-
+  only & bm25-only degenerate modes; deterministic tie-breaks; ≥ 10 tests.
+- **P3.6 index job controller**: transcript → chunk → embed → store with
+  progress/cancel; idempotent per transcript id (re-index = replace);
+  typed errors; runtime wiring `indexTranscript()` + `ragIndexBusy` signal
+  (new signal, no renames); panel hook. Accept: controller tests ≥ 8;
+  entry delta within budget (lazy imports only).
+- **P3.7 search UI**: search section in the transcript panel — input,
+  results (time + snippet as text nodes), Enter/click seeks; axe 0;
+  keyboard operable; en/bn in lazy RAG table; e2e with fake embeddings.
+- **P3.8 evaluation harness** (`tests/rag/retrieval/eval.test.ts`): golden
+  transcript corpus + queries with known relevant chunks; deterministic
+  (fake embeddings + BM25) → assert hit@1/hit@3 and MRR thresholds. The
+  retrieval-quality gate for CI.
+- **P3.9 phase gate**: full vitest, full playwright, LH desktop+mobile,
+  bundle ≤ +2 KB gz, lazy audit, tag `rag-phase-3-done`, PHASE-3 REPORT,
+  push, STOP.
