@@ -163,3 +163,13 @@ boundary; nothing auto-applies — transcript text (however hostile) can
 never mutate the document without an explicit user action on a visible
 confirm row / button (e2e-pinned). Plans are plain serializable data —
 no audio, no functions.
+
+## D12 — bundle gate rebaselined at the release entry size (P6)
+
+The Smart RAG v2 series lands with the entry at 122,593 B gz (v1
+baseline 120,554 + 2,039 cumulative, within the +2,048/phase rule every
+phase). The baseline file moves to the release entry size so the NEXT
+series keeps the same rule: +2 KB gz per phase, all RAG runtime lazy
+(kernels/providers/workers never in the entry; verified by the P6 lazy
+audit). Rationale: a stale v1 baseline would either block correct code
+(P5 needed a 20 B kernel-chunking fix) or let future series drift.
