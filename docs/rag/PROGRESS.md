@@ -42,7 +42,7 @@
 | P2.8 | Transcript panel UI | DONE | feat commit — ragTranscribe.spec 2/2 (axe 0, text-nodes-only, seek+active, copy); +5 keys en/bn; RAG e2e 7/7; entry +1,171 ≤ +2,048; vitest 887/887 |
 | P2.9 | Export SRT / VTT / TXT | DONE | feat commit — 9 serializer tests (golden/edge/injection-safe); 3 flag-gated commands; e2e download leg (exact filename + SRT body); vitest 896/896; bundle +1,792 |
 | P2.10 | Phase 2 e2e + docs | DONE | feat commit — ragEgressJourney 1/1 (0 violations / 0 bodies / exactly 1 allow-listed outbound); README features + docs table; vitest 896/896 |
-| P2.11 | Phase 2 gate | TODO | — | — | — |
+| P2.11 | Phase 2 gate | DONE | vitest 896/896; playwright 67/67 (0 flaky) + 1/1 preview; LH 100×4 desktop, 98/100/100/100 mobile; bundle +1,792 ≤ +2,048; chunk audit clean; tag `rag-phase-2-done` |
 | P3.1 | Tokenizer + BM25 | TODO | — | — | — |
 | P3.2 | Chunker | TODO | — | — | — |
 | P3.3 | Embedding worker (+ fake) | TODO | — | — | — |
