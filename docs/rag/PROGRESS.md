@@ -67,7 +67,7 @@
 | P5.3 | Range normalization | DONE | feat commit — 10 tests (clamp, collapse, caps, snap order, bad-doc) |
 | P5.4 | Preview + audition UI | TODO | — | — | — |
 | P5.5 | Executor through performEdit | DONE | feat commit — 8 kernel tests (outcome shape, undo/redo round-trip, null guards); ONE-undo in e2e |
-| P5.6 | Markers / chapters | TODO | — | — | — |
+| P5.6 | Markers / chapters | DONE | feat commit — 8 tests (gap split, sanitize, overlap guard, determinism) |
 | P5.7 | Command integration + NL box | TODO | — | — | — |
 | P5.8 | Safety review | TODO | — | — | — |
 | P5.9 | Phase 5 gate | TODO | — | — | — |
