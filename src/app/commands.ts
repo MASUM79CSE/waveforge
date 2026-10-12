@@ -4,6 +4,7 @@ import * as A from './actions';
 import { kbdHints } from './shortcuts';
 import { isRagEnabled } from '../rag/flag';
 import { locale } from '../i18n';
+import { exportTranscriptAction } from './ragExportActions';
 import { manageModelsOpen, ragPanelOpen } from './state';
 
 const HINTS = kbdHints();
@@ -207,6 +208,21 @@ export const commands: Command[] = [
       if (!isRagEnabled()) return;
       ragPanelOpen.value = !ragPanelOpen.value;
     },
+  },
+  {
+    id: 'rag.exportSrt',
+    label: () => t().ragExportSrt,
+    run: () => void exportTranscriptAction('srt'),
+  },
+  {
+    id: 'rag.exportVtt',
+    label: () => t().ragExportVtt,
+    run: () => void exportTranscriptAction('vtt'),
+  },
+  {
+    id: 'rag.exportTxt',
+    label: () => t().ragExportTxt,
+    run: () => void exportTranscriptAction('txt'),
   },
   {
     id: 'rag.manageModels',

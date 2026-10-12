@@ -99,6 +99,16 @@ test('ragTranscribe: install → panel → transcribe (fake) → segments + seek
   // Escape closes the panel
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
+
+  // P2.9: export via View → Transcription → Export transcript (SRT)
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  const download = page.waitForEvent('download', { timeout: 15_000 });
+  await page.getByRole('menuitem', { name: /export transcript \(srt\)/i }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe('waveforge-transcript.srt');
+  const path = await file.path();
+  const body = (await import('node:fs')).readFileSync(path, 'utf8');
+  expect(body).toMatch(/^1\n00:00:00,000 --> 00:00:\d\d,\d{3}\nfake segment 0\n$/);
 });
 
 test('ragTranscribe: segment text renders as inert text (no HTML injection)', async ({ page }) => {

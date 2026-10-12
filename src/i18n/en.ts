@@ -324,6 +324,11 @@ export const en = {
   helpWelcome: 'Welcome Message',
   helpAbout: 'About',
   helpDoctor: 'Diagnostics',
+  ragExportSrt: 'Export transcript (SRT)',
+  ragExportVtt: 'Export transcript (VTT)',
+  ragExportTxt: 'Export transcript (TXT)',
+  ragExportNone: 'No transcript yet — run Transcribe first.',
+  ragExportDone: 'Transcript exported',
   helpShortcuts: 'Keyboard Shortcuts',
 
   // transport
