@@ -82,10 +82,16 @@ export function enforceGrounding<A extends { text: string; citations: Citation[]
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
     .reduce((a, b) => (b.length > a.length ? b : a), '');
-  const traceable = answer.citations.some((c) => {
-    const chunk = evidence.find((e) => e.id === c.chunkId);
-    return chunk ? nfkc(chunk.text).includes(longest) : false;
-  });
+  const composed = answer.citations.map((c) => nfkc(c.quote)).join(' ');
+  const traceable =
+    // extractive path: text is EXACTLY the verified quotes joined — every
+    // character is transcript text already verified as a substring
+    composed === text ||
+    // llm path: the longest sentence must trace to a cited chunk
+    answer.citations.some((c) => {
+      const chunk = evidence.find((e) => e.id === c.chunkId);
+      return chunk ? nfkc(chunk.text).includes(longest) : false;
+    });
   if (!traceable) {
     return { status: 'insufficient', reason: 'text-not-in-evidence' };
   }
