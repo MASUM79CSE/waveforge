@@ -204,3 +204,15 @@ One entry per verification. Fields: ID · date/time (Asia/Dhaka, UTC+6) · Git S
 - **Remaining gaps (owned):** none for WF-006.
 - **Reviewer:** agent (self), independent diff re-read per 5.2-G
 - **Limitations:** guard covers Preact (the dep with a history of drift); generalizing to every dep mention would false-positive on prose — depsHygiene test 1 already covers import-level truth for all deps.
+
+
+## E-018 — WF-015 repo hygiene: @types/node aligned to runtime; `.claude` untracked
+- **ID/task:** WF-015 · **Date:** 2026-10-13 (Phase 4) · **SHA:** see git log (hygiene commit on `audit/remediation`)
+- **Found (RED via new guard):** (1) `@types/node` declared `^26.6.2` (installed 26.6.2) while `engines.node` = `>=20` and CI runs node 20 — type definitions describe a runtime four majors ahead of every environment that actually runs the code; (2) `.claude/settings.json` (an AI-assistant hook config referencing `scripts/hooks/format-changed.mjs`) was git-tracked — machine-local tool state in the repo. (3) fake-indexeddb placement — ALREADY FIXED under WF-014 (devDependencies, test-pinned).
+- **Fix:** `npm install -D @types/node@^20` (declared + installed now 20.19.43; tsc green → no v26-only APIs were used); `.claude/` untracked + gitignored (D-A12 — the format-hook script itself remains at `scripts/hooks/format-changed.mjs` for anyone who wants to wire it). New permanent guard in depsHygiene: `@types/node` major must equal `engines.node` major — RED first ("expected '26' to be '20'"), GREEN after the alignment.
+- **Commands + results:** guard RED → `npm install -D @types/node@^20` → guard **GREEN 6/6** · full unit **765/765** (93 files — 763 + 2 new guards) · tsc ✓ lint ✓ · `git ls-files .claude` → empty.
+- **Acceptance criteria:** declared type-runtime matches engines/CI runtime ✓ (test-pinned) · no machine-local tool state tracked ✓ · fake-indexeddb already test-pinned under WF-014 ✓.
+- **Gap & Error Sweep (H):** criteria ✓; adversarial — checked whether anything else references .claude (grep repo: only the file itself) ✓; verified the hook script stays available and is not referenced by CI/husky ✓; checked @types/node downgrade for used APIs (process/buffer/fs/url — all in node 20 types; tsc proves) ✓; full regression ✓; consistency ✓; diff hygiene ✓ (lockfile limited to @types/node, .gitignore 2 lines, .claude untracked not deleted from disk).
+- **Remaining gaps (owned):** none for WF-015 (all three baseline items dispositioned).
+- **Reviewer:** agent (self), independent diff re-read per 5.2-G
+- **Limitations:** the local `.claude/settings.json` remains on the maintainer's disk (untracked) so the owner's tooling keeps working; restoring tracked state = `git update-index --add .claude/settings.json` if the owner prefers it tracked (decision D-A12 reversible).
