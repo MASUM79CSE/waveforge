@@ -8,3 +8,6 @@ coverage/
 # playwright
 test-results/
 playwright-report/
+
+# AI-assistant tool state (WF-015: machine-local, not project files)
+.claude/

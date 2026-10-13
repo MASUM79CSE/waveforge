@@ -89,6 +89,18 @@ describe('dependency provenance hygiene', () => {
     }
   });
 
+  it('@types/node major matches the engines/CI node major (WF-015 guard)', () => {
+    const pkg = readJson('package.json');
+    const typesMajor = /^[^\d]*(\d+)/.exec(
+      String((pkg.devDependencies as Record<string, string>)['@types/node'] ?? ''),
+    )?.[1];
+    const enginesMajor = /^[^\d]*(\d+)/.exec(
+      String((pkg.engines as Record<string, string>)?.node ?? ''),
+    )?.[1];
+    // types must describe the runtime we pin and CI runs (node 20)
+    expect(typesMajor, '@types/node major').toBe(enginesMajor);
+  });
+
   it('README does not credit phantom npm packages', () => {
     const readme = readFileSync(resolve(root, 'README.md'), 'utf8');
     expect(readme).not.toContain('@echogarden/rnnoise-wasm');
