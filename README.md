@@ -206,7 +206,7 @@ suite. Lighthouse is measured at release/audit time (desktop
 |---|---|---|
 | **Unit** | `npm run test` | 720 tests across 86 files — pure DSP kernels with analytic anchors (true-peak, RBJ, RT60, WOLA, SNR), edit/history byte economics, storage round-trips, catalogs, reducer state |
 | **End-to-end** | `npm run e2e` | Playwright in Chromium with fake media — full user flows (load → edit → effect → export, record, drafts, shortcuts) plus a permanent **axe-core WCAG 2.1 AA zero-violations** gate |
-| **Quality gates** | `lint` / `typecheck` / `build` | ESLint 0 findings, strict tsc, production build; Lighthouse **99/100/100/100** desktop, **99** mobile performance |
+| **Quality gates** | `lint` / `typecheck` / `build` / coverage thresholds / bundle budget | ESLint 0 findings, strict tsc, production build; Lighthouse measured **100/100/100/91** desktop, **99/100/100/91** mobile (perf/a11y/BP/SEO, 2026-10-13) |
 
 DSP accuracy is anchor-tested, not eyeballed: every effects kernel ships
 with analytic or reference tolerances (see
