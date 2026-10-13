@@ -128,7 +128,7 @@ noise prints persist inside draft headers so NR survives reload.
 | Undo retention | < 250 MB hard, ≥ 100 steps (tested) |
 | Decoded audio (document/asset/IR) | ≤ 512 MiB decoded PCM — WF-009 guard (≈45 min stereo 44.1 kHz); files > 512 MB rejected pre-decode; decode watchdog 60 s |
 | Peaks cache | ~ KBs–low MBs (mip levels × channels) |
-| Main JS bundle | ≈ 119.5 KB gzipped |
+| Main JS bundle | ≈ 118 KB gzipped (entry 118,171 B, CI budget 122,132 B — WF-007 gate) |
 | Autosave ring | bounded (oldest snapshots evicted) |
 | Error log ring | bounded entries, session-scoped |
 | Long-session behavior | memory flat after eviction; no per-keystroke growth |

@@ -216,3 +216,15 @@ One entry per verification. Fields: ID · date/time (Asia/Dhaka, UTC+6) · Git S
 - **Remaining gaps (owned):** none for WF-015 (all three baseline items dispositioned).
 - **Reviewer:** agent (self), independent diff re-read per 5.2-G
 - **Limitations:** the local `.claude/settings.json` remains on the maintainer's disk (untracked) so the owner's tooling keeps working; restoring tracked state = `git update-index --add .claude/settings.json` if the owner prefers it tracked (decision D-A12 reversible).
+
+
+## E-019 — WF-016 performance claims re-measured on the final Phase-4 build
+- **ID/task:** WF-016 · **Date:** 2026-10-13 (Phase 4) · **SHA:** see git log (perf-claims commit on `audit/remediation`)
+- **Method:** production build + `vite preview` + Lighthouse (Chrome for Testing 153) — desktop preset AND default (mobile emulation), 1 run each per the baseline method; entry size via `gzip -kc dist/assets/index-*.js | wc -c`.
+- **Measured (this build):** Lighthouse desktop **100 / 100 / 100 / 91**, mobile **99 / 100 / 100 / 91** (perf/a11y/best-practices/SEO) · entry **118,171 B gz** (baseline 120,084 → −1,913; CI budget 122,132 enforced by the WF-007 gate). Baseline LH values are REPRODUCED exactly — the enforcing CSP + jitless zod + same-origin worklet cost zero measurable performance.
+- **Docs synced:** README quality-gates row (was "99/100/100/100 desktop, 99 mobile" — wrong SEO/BP columns and unlabeled) → measured values with category labels + date; docs/MEMORY.md bundle row → 118,171 B + budget pointer; README Lighthouse badge + ARCHITECTURE §9 already corrected under WF-007/WF-004 and now re-verified against this fresh run.
+- **Acceptance criteria:** every README/ARCHITECTURE/MEMORY performance number equals a measured value of the current build with method + date ✓ · no unmeasured claims remain (grep for 119.5/99/100/100/100 patterns → only measured text) ✓.
+- **Gap & Error Sweep (H):** criteria ✓; adversarial — re-ran BOTH form factors (not just desktop) on the FINAL build rather than reusing Phase-3 numbers ✓; checked the perf trajectory ledger (120,084 → 118,171) for consistency with the bundle-gate budget ✓; grep for stale bundle figures across docs ✓; consistency ✓ (README badge = README row = ARCHITECTURE = MEMORY = E-019); diff hygiene ✓ (doc numbers only).
+- **Remaining gaps (owned):** none for WF-016. (Production-URL LH runs remain a Phase-6/release option; per D-A6 the audit measures the build being audited.)
+- **Reviewer:** agent (self), independent diff re-read per 5.2-G
+- **Limitations:** 1 run per form factor (baseline method; not a statistical measurement); sandbox resources noted in E-014 did not affect these runs.

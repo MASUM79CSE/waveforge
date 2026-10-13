@@ -35,7 +35,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | WF-013 | Dependency provenance (rnnoise) | P2 | VERIFIED | (this commit) | phantom `@echogarden/rnnoise-wasm` credit removed from README+NOTICES; vendored build + COPYING documented; full npm dep table with licences (LGPL lamejs pinned); depsHygiene test guards notices↔package.json agreement; 763/763; see E-013 |
 | WF-014 | Duplicate/vendored FLAC runtime | P2 | VERIFIED | (this commit) | `libflacjs` npm dep removed (imported nowhere); dead duplicate `public/vendor/libflac.min.wasm.wasm` removed (live path `/workers/…` proven by request capture); fake-indexeddb → devDeps; depsHygiene test RED→GREEN ×2; 763/763 + 64/64; see E-014, D-A11 |
 | WF-015 | Dep/repo hygiene (fake-indexeddb, @types/node, .claude) | P3 | VERIFIED | (this commit) | fake-indexeddb → devDeps (WF-014); @types/node 26→^20.19.43 aligned to engines/CI node 20 (guard RED→GREEN, 765/765); `.claude/` untracked+gitignored (D-A12); see E-018 |
-| WF-016 | Performance claims re-measurement | P2 | OPEN | — | baseline measured; docs update pending |
+| WF-016 | Performance claims re-measurement | P2 | VERIFIED | (this commit) | fresh LH desktop 100/100/100/91 + mobile 99/100/100/91 on final build; entry 118,171 gz (−1,913 vs baseline); README/MEMORY numbers synced with method+date; see E-019 |
 | PF-01 | Markers (AM-07) | P1 | OPEN | — | Phase 5 |
 | PF-02 | Clip fades + crossfade (AM-06) | P1 | OPEN | — | Phase 5 |
 | PF-03 | Repair tools: click/hum/edit-point (AM-09) | P1 | OPEN | — | Phase 5 |
