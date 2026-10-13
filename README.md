@@ -100,7 +100,7 @@ no tracking**. Your audio never leaves your machine.
 | Audio engine | [Web Audio API](https://developer.mozilla.org/docs/Web/API/Web_Audio_API) + AudioWorklet capture |
 | DSP | Pure TypeScript kernels + FFT partitioned convolver |
 | Codecs | lamejs (MP3, worker), libFLAC (WASM worker), native WAV writer |
-| AI denoise | [RNNoise](https://github.com/xiph/rnnoise) via `@echogarden/rnnoise-wasm` |
+| AI denoise | [RNNoise](https://github.com/xiph/rnnoise) WASM (vendored build, `src/vendor/rnnoise`) |
 | Persistence | IndexedDB (drafts/autosave/assets/presets) + `localStorage` settings |
 | Testing | [Vitest](https://vitest.dev) (unit), [Playwright](https://playwright.dev) (e2e + axe-core) |
 | Quality | ESLint, Prettier, Lighthouse CI gates |
