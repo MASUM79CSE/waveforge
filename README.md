@@ -167,7 +167,7 @@ scripts/        Deterministic sample generator, encoder validation
 ```bash
 git clone https://github.com/MASUM79CSE/waveforge.git
 cd waveforge
-npm install --legacy-peer-deps   # peer-dep pinning is intentional
+npm ci   # lockfile install — the same command CI and Vercel run
 ```
 
 ### Run it
