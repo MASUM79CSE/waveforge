@@ -75,6 +75,15 @@ export default defineConfig({
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     coverage: {
       provider: 'v8',
+      // WF-007: floors measured at audit time (2026-10-13:
+      // 96.38/76.76/94.96/97.92, rounded down) — CI fails if coverage
+      // regresses below these.
+      thresholds: {
+        statements: 96,
+        branches: 76,
+        functions: 94,
+        lines: 97,
+      },
       include: [
         // pure modules — TDD'd; browser classes join as their harnesses land
         'src/core/**',

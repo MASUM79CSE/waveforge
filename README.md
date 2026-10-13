@@ -13,8 +13,8 @@ no tracking**. Your audio never leaves your machine.
 [![Preact](https://img.shields.io/badge/Preact-11-673AB8?logo=preact&logoColor=white)](https://preactjs.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-720%20%2B%2059%20e2e%20passing-brightgreen)](#-testing)
-[![Lighthouse](https://img.shields.io/badge/Lighthouse-99%20%2F%20100%20%2F%20100%20%2F%20100-success)](#-testing)
+[![CI](https://github.com/MASUM79CSE/waveforge/actions/workflows/ci.yml/badge.svg)](https://github.com/MASUM79CSE/waveforge/actions/workflows/ci.yml)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse-100%20%2F%20100%20%2F%20100%20%2F%2091-success)](#-testing)
 [![License](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 
 [Features](#-features) · [Tech Stack](#-tech-stack) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [Testing](#-testing) · [Deployment](#-deployment) · [Documentation](#-documentation)
@@ -103,7 +103,7 @@ no tracking**. Your audio never leaves your machine.
 | AI denoise | [RNNoise](https://github.com/xiph/rnnoise) WASM (vendored build, `src/vendor/rnnoise`) |
 | Persistence | IndexedDB (drafts/autosave/assets/presets) + `localStorage` settings |
 | Testing | [Vitest](https://vitest.dev) (unit), [Playwright](https://playwright.dev) (e2e + axe-core) |
-| Quality | ESLint, Prettier, Lighthouse CI gates |
+| Quality | ESLint, Prettier, coverage thresholds, bundle-size budget (CI-enforced) |
 
 Full dependency list: [`package.json`](package.json). Third-party notices:
 [`docs/THIRD_PARTY_NOTICES.md`](docs/THIRD_PARTY_NOTICES.md).
@@ -194,9 +194,11 @@ npm run preview          # serve the production build locally
 npm run validate:encoders # encoder contract checks
 ```
 
-CI (`.github/workflows/ci.yml`) runs typecheck, lint, and the unit suite
-with coverage on every push/PR to `main`. The full gate bar per change:
-**720/720 unit · 59/59 e2e · lint 0 · tsc clean · Lighthouse ≥ 95**.
+CI (`.github/workflows/ci.yml`) runs typecheck, lint, the unit suite
+with coverage thresholds, a bundle-size budget check, and the production
+build on every push/PR, plus a separate job for the full Playwright e2e
+suite. Lighthouse is measured at release/audit time (desktop
+100/100/100/91, mobile 99/100/100/91) rather than gated in CI.
 
 ## ✅ Testing
 
