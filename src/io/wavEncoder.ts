@@ -39,19 +39,19 @@ function writeU32(bytes: Uint8Array, offset: number, value: number): void {
   bytes[offset + 3] = (value >>> 24) & 0xff;
 }
 
-export function encodeWav(
-  channels: Float32Array[],
-  sampleRate: number,
+function writeWavHeader(
+  out: Uint8Array,
   encoding: WavEncoding,
-): ArrayBuffer {
-  const channelCount = Math.max(1, channels.length);
-  const frames = framesOf(channels);
+  sampleRate: number,
+  channelCount: number,
+  frames: number,
+): void {
   const bits = encoding === 'pcm16' ? 16 : encoding === 'pcm24' ? 24 : 32;
   const bytesPerSample = bits / 8;
   const dataLen = frames * channelCount * bytesPerSample;
   const headerSize = wavHeaderSize(encoding);
   const pad = dataLen % 2 === 1 ? 1 : 0;
-  const out = new Uint8Array(headerSize + dataLen + pad);
+  void pad; // pad affects the allocation, not the header fields
 
   const formatTag = encoding === 'float32' ? IEEE_FLOAT : PCM;
   const blockAlign = channelCount * bytesPerSample;
@@ -79,6 +79,29 @@ export function encodeWav(
     writeAscii(out, 36, 'data');
     writeU32(out, 40, dataLen);
   }
+}
+
+/** Allocation size for a WAV of this shape (header + data + odd-pad). */
+export function wavOutputSize(
+  encoding: WavEncoding,
+  channelCount: number,
+  frames: number,
+): number {
+  const bits = encoding === 'pcm16' ? 16 : encoding === 'pcm24' ? 24 : 32;
+  const dataLen = frames * channelCount * (bits / 8);
+  return wavHeaderSize(encoding) + dataLen + (dataLen % 2 === 1 ? 1 : 0);
+}
+
+export function encodeWav(
+  channels: Float32Array[],
+  sampleRate: number,
+  encoding: WavEncoding,
+): ArrayBuffer {
+  const channelCount = Math.max(1, channels.length);
+  const frames = framesOf(channels);
+  const headerSize = wavHeaderSize(encoding);
+  const out = new Uint8Array(wavOutputSize(encoding, channelCount, frames));
+  writeWavHeader(out, encoding, sampleRate, channelCount, frames);
 
   if (encoding === 'pcm16') writePcm16(channels, out, headerSize);
   else if (encoding === 'pcm24') writePcm24(channels, out, headerSize);
@@ -88,10 +111,13 @@ export function encodeWav(
 }
 
 function writePcm16(channels: Float32Array[], out: Uint8Array, offset: number): void {
+  writePcm16Range(channels, out, offset, 0, framesOf(channels));
+}
+
+function writePcm16Range(channels: Float32Array[], out: Uint8Array, offset: number, start: number, end: number): void {
   const chCount = channels.length;
-  const frames = framesOf(channels);
-  let pos = offset;
-  for (let i = 0; i < frames; ++i) {
+  let pos = offset + start * chCount * 2;
+  for (let i = start; i < end; ++i) {
     for (let ch = 0; ch < chCount; ++ch) {
       // negative side scales by 32768 so -1.0 maps to full range (matches
       // the MP3 path and the reference editor); positive side by 32767 (no clip)
@@ -105,10 +131,13 @@ function writePcm16(channels: Float32Array[], out: Uint8Array, offset: number): 
 }
 
 function writePcm24(channels: Float32Array[], out: Uint8Array, offset: number): void {
+  writePcm24Range(channels, out, offset, 0, framesOf(channels));
+}
+
+function writePcm24Range(channels: Float32Array[], out: Uint8Array, offset: number, start: number, end: number): void {
   const chCount = channels.length;
-  const frames = framesOf(channels);
-  let pos = offset;
-  for (let i = 0; i < frames; ++i) {
+  let pos = offset + start * chCount * 3;
+  for (let i = start; i < end; ++i) {
     for (let ch = 0; ch < chCount; ++ch) {
       const x = channels[ch]?.[i] ?? 0;
       const s = clamp(Math.round(x < 0 ? x * 8388608 : x * 8388607), -8388608, 8388607);
@@ -121,14 +150,58 @@ function writePcm24(channels: Float32Array[], out: Uint8Array, offset: number): 
 }
 
 function writeFloat32(channels: Float32Array[], out: Uint8Array, offset: number): void {
+  writeFloat32Range(channels, out, offset, 0, framesOf(channels));
+}
+
+function writeFloat32Range(channels: Float32Array[], out: Uint8Array, offset: number, start: number, end: number): void {
   const chCount = channels.length;
-  const frames = framesOf(channels);
-  let pos = offset;
-  for (let i = 0; i < frames; ++i) {
+  let pos = offset + start * chCount * 4;
+  for (let i = start; i < end; ++i) {
     for (let ch = 0; ch < chCount; ++ch) {
       const view = new DataView(out.buffer, pos, 4);
       view.setFloat32(0, channels[ch]?.[i] ?? 0, true);
       pos += 4;
     }
   }
+}
+
+/**
+ * Chunked WAV encode (WF-003): byte-identical to `encodeWav` but converts
+ * in frame ranges so a worker can report real progress and honour cancel
+ * between chunks. Returns null when `shouldCancel()` fires.
+ */
+export interface WavChunkedOptions {
+  chunkFrames?: number;
+  onProgress?: (fraction: number) => void;
+  shouldCancel?: () => boolean;
+}
+
+export function encodeWavChunked(
+  channels: Float32Array[],
+  sampleRate: number,
+  encoding: WavEncoding,
+  opts: WavChunkedOptions = {},
+): ArrayBuffer | null {
+  const channelCount = Math.max(1, channels.length);
+  const frames = framesOf(channels);
+  const headerSize = wavHeaderSize(encoding);
+  const out = new Uint8Array(wavOutputSize(encoding, channelCount, frames));
+  writeWavHeader(out, encoding, sampleRate, channelCount, frames);
+
+  const chunkFrames = Math.max(1, opts.chunkFrames ?? 65_536);
+  const write =
+    encoding === 'pcm16'
+      ? writePcm16Range
+      : encoding === 'pcm24'
+        ? writePcm24Range
+        : writeFloat32Range;
+
+  for (let start = 0; start < frames; start += chunkFrames) {
+    if (opts.shouldCancel?.()) return null;
+    const end = Math.min(start + chunkFrames, frames);
+    write(channels, out, headerSize, start, end);
+    opts.onProgress?.(end / frames);
+  }
+  opts.onProgress?.(1);
+  return out.buffer;
 }

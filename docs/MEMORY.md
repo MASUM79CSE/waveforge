@@ -91,9 +91,12 @@ ownership (WF-002 audit):
   worker-side flags (FLAC/analysis). The export cancel watcher stops
   on every terminal path (WF-001), so no job closure outlives its
   export.
-- WAV encoding currently runs on the main thread and writes into a
-  fresh interleaved buffer (the input channels are only read);
-  see the register note on moving it into a worker (WF-003).
+- WAV encoding runs in its own module worker (WF-003): the pure
+  `encodeWavChunked` kernel converts in 65,536-frame chunks with real
+  progress and cancel between chunks; the main thread only orchestrates
+  and wraps the transferred result in a `Blob` (measured main-thread
+  blocking moved from 134/137/1161 ms to zero long tasks for a 120 s
+  stereo export; audit EVIDENCE_LOG E-007).
 
 ## 6. Session state (non-durable)
 

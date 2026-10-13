@@ -1,11 +1,11 @@
 /**
- * Export service (M4): main-thread façade over the two encoder workers.
- * WAV encodes inline (memcpy-speed); MP3 runs in a module worker, FLAC in
- * a classic worker over the vendored emscripten build (ADR 006 §2).
- * Both workers stream progress, honour cancel, and return transferables.
+ * Export service (M4): main-thread façade over the three encoder workers.
+ * WAV/MP3 run in module workers; FLAC in a classic worker over the vendored
+ * emscripten build (ADR 006 §2; WAV moved off-thread by WF-003). All three
+ * stream real progress, honour cancel, and return transferables.
  */
 import { z } from 'zod';
-import { encodeWav, type WavEncoding } from './wavEncoder';
+import type { WavEncoding } from './wavEncoder';
 import type { ExportFormat } from './exportName';
 
 export interface ExportOptions {
@@ -50,16 +50,45 @@ let nextJobId = 1;
 
 export async function runExport(job: ExportJob): Promise<ExportResult> {
   const { format } = job.options;
-  if (format === 'wav') {
-    const encoding: WavEncoding =
-      job.options.quality === 'pcm24' ? 'pcm24' : job.options.quality === 'float32' ? 'float32' : 'pcm16';
-    job.onProgress?.(0.5);
-    const buffer = encodeWav(job.channels, job.sampleRate, encoding);
-    job.onProgress?.(1);
-    return { blob: new Blob([buffer], { type: 'audio/wav' }), mimeType: 'audio/wav' };
-  }
+  if (format === 'wav') return runWavWorker(job);
   if (format === 'mp3') return runMp3Worker(job);
   return runFlacWorker(job);
+}
+
+function spawnWavWorker(): Worker {
+  return new Worker(new URL('../workers/wavExport.worker.ts', import.meta.url), {
+    type: 'module',
+  });
+}
+
+async function runWavWorker(job: ExportJob): Promise<ExportResult> {
+  const worker = spawnWavWorker();
+  const id = nextJobId++;
+  const encoding: WavEncoding =
+    job.options.quality === 'pcm24' ? 'pcm24' : job.options.quality === 'float32' ? 'float32' : 'pcm16';
+  const left = job.channels[0] ?? new Float32Array(0);
+  const right = job.channels[1];
+  // transfer only caller-owned buffers; the default clones (WF-002)
+  const transfer: Transferable[] | undefined = job.transferChannels
+    ? right
+      ? [left.buffer, right.buffer]
+      : [left.buffer]
+    : undefined;
+  const result = await driveWorker(
+    worker,
+    id,
+    job,
+    () => ({
+      cmd: 'encode',
+      id,
+      sampleRate: job.sampleRate,
+      encoding,
+      left,
+      right,
+    }),
+    transfer,
+  );
+  return { ...result, mimeType: 'audio/wav' };
 }
 
 function spawnMp3Worker(): Worker {

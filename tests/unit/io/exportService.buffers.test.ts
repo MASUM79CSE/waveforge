@@ -171,7 +171,9 @@ describe('exportService buffer ownership (WF-002)', () => {
   it('WAV path: sources never leave the main thread and stay intact', async () => {
     const left = new Float32Array([0.1, -0.2, 0.3]);
     const snapshot = new Float32Array(left);
-    const result = await runExport(stereoJob({ channels: [left], options: { format: 'wav', quality: 'pcm16' } }));
+    const pending = runExport(stereoJob({ channels: [left], options: { format: 'wav', quality: 'pcm16' } }));
+    lastWorker().reply({ type: 'done', data: new ArrayBuffer(64) }); // WAV now answers via its worker
+    const result = await pending;
     expect(result.mimeType).toBe('audio/wav');
     expect(result.blob.size).toBeGreaterThan(44); // RIFF header + data
     expect(Array.from(left)).toEqual(Array.from(snapshot));
