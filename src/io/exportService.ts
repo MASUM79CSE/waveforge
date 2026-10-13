@@ -7,6 +7,8 @@
 import { z } from 'zod';
 import type { WavEncoding } from './wavEncoder';
 import type { ExportFormat } from './exportName';
+import { formatInfo, isSupportedQuality } from './exportFormats';
+import { WaveForgeError } from '../core/errors';
 
 export interface ExportOptions {
   format: ExportFormat;
@@ -49,10 +51,20 @@ const workerFail = z.union([
 let nextJobId = 1;
 
 export async function runExport(job: ExportJob): Promise<ExportResult> {
-  const { format } = job.options;
-  if (format === 'wav') return runWavWorker(job);
-  if (format === 'mp3') return runMp3Worker(job);
-  return runFlacWorker(job);
+  const { format, quality } = job.options;
+  // WF-010: the catalog is the authority — never silently fall back
+  if (!isSupportedQuality(format, quality)) {
+    throw new WaveForgeError('WF-E105', `unsupported ${format} quality "${quality}"`, {
+      context: { format, quality },
+    });
+  }
+  const result =
+    format === 'wav'
+      ? await runWavWorker(job)
+      : format === 'mp3'
+        ? await runMp3Worker(job)
+        : await runFlacWorker(job);
+  return { ...result, mimeType: formatInfo(format).mime };
 }
 
 function spawnWavWorker(): Worker {
@@ -74,7 +86,7 @@ async function runWavWorker(job: ExportJob): Promise<ExportResult> {
       ? [left.buffer, right.buffer]
       : [left.buffer]
     : undefined;
-  const result = await driveWorker(
+  return driveWorker(
     worker,
     id,
     job,
@@ -88,7 +100,6 @@ async function runWavWorker(job: ExportJob): Promise<ExportResult> {
     }),
     transfer,
   );
-  return { ...result, mimeType: 'audio/wav' };
 }
 
 function spawnMp3Worker(): Worker {
@@ -152,7 +163,7 @@ async function runFlacWorker(job: ExportJob): Promise<ExportResult> {
       id,
       sampleRate: job.sampleRate,
       channels: job.channels.length >= 2 ? 2 : 1,
-      bits: job.options.quality === '24' ? 24 : 16,
+      bits: 16, // catalog advertises 16-bit FLAC only (validated above)
       level: Number(job.options.quality) || 5,
       frames,
       left,
@@ -204,7 +215,8 @@ function driveWorker(
       if (done.success) {
         job.onProgress?.(1);
         cleanup();
-        resolve({ blob: new Blob([done.data.data]), mimeType: 'application/octet-stream' });
+        // mimeType is set by runExport from the format catalog (WF-010)
+        resolve({ blob: new Blob([done.data.data]), mimeType: '' });
       }
     };
     worker.onerror = (event) => {

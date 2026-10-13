@@ -6,6 +6,7 @@
  */
 import { logger } from '../core/logger-instance';
 import { sanitizeFilename, estimateExportBytes, type ExportFormat } from '../io/exportName';
+import { formatInfo } from '../io/exportFormats';
 import { runExport } from '../io/exportService';
 import { buildId3Tag } from '../io/id3';
 import { sliceRegion } from '../engine/editOps';
@@ -29,13 +30,18 @@ interface SavePickerWindow {
   }>;
 }
 
+// WF-010: the format catalog is the single authority for MIME/extension
 const MIME_BY_FORMAT: Record<ExportFormat, string> = {
-  wav: 'audio/wav',
-  mp3: 'audio/mpeg',
-  flac: 'audio/flac',
+  wav: formatInfo('wav').mime,
+  mp3: formatInfo('mp3').mime,
+  flac: formatInfo('flac').mime,
 };
 
-const EXTENSION: Record<ExportFormat, string> = { wav: 'wav', mp3: 'mp3', flac: 'flac' };
+const EXTENSION: Record<ExportFormat, string> = {
+  wav: formatInfo('wav').ext,
+  mp3: formatInfo('mp3').ext,
+  flac: formatInfo('flac').ext,
+};
 
 export function defaultExportName(): string {
   const doc = getDoc();
