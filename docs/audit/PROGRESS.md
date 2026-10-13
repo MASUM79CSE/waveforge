@@ -51,6 +51,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 - **Phase 1 (WF-001..003): COMPLETE — PCA PASS** (`6bd43b3`..docs; see E-005..E-007).
 - **Phase 2 (WF-009, WF-010): COMPLETE — PCA PASS** (`c51c983`, `43e3c2c`; see E-008, E-009).
 - **Phase 3 (WF-011, WF-004, WF-012, WF-013, WF-014): COMPLETE — tasks all VERIFIED; PCA run at `b3a2475`** (clean rebuild: unit 763/763, e2e 64/64, csp-under-enforce 1/1, prod smoke 3/3, validate:encoders, io 43/43, build, LH desktop 100/100/100/91, entry 118,171 B gz; see E-010..E-014, D-A8..D-A11).
-- **Phase 4 (WF-007 → WF-008 → WF-006 → WF-015 → WF-016 → WF-005): next — awaits explicit `PROCEED TO PHASE 4`.**
+- **Phase 4 (WF-007, WF-008, WF-006, WF-015, WF-016, WF-005): COMPLETE — tasks all VERIFIED; PCA run at `2c801db`** (clean rebuild incl. npm ci: unit 765/765 + coverage thresholds exit 0, e2e 64/64, csp-under-enforce 1/1, prod smoke 3/3, validate:encoders, io 43/43, build + bundle gate PASS, LH desktop 100/100/100/91 + mobile 99/100/100/91; PCA CAUGHT the WF-015 @types/node peer-range regression breaking npm ci — fixed via overrides at `2c801db`; see E-015..E-020, D-A12).
+- **Phase 5 (PF-01..08 + AM matrix): next — awaits explicit `PROCEED TO PHASE 5`.**
 - **Phase 5 (PF-01..08 + AM matrix): pending.**
 - **Phase 6 (release readiness): pending.**
