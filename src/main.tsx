@@ -1,3 +1,4 @@
+import './core/zodConfig';
 import { render } from 'preact';
 import './app/styles/tokens.css';
 import './app/styles/base.css';

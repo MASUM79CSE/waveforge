@@ -6,6 +6,8 @@
  * the probe never sends data anywhere.
  */
 
+const workletUrl = '/worklets/recorder.worklet.js';
+
 export interface CheckResult {
   ok: boolean;
   detail: string;
@@ -69,15 +71,16 @@ async function workletProbe(): Promise<CheckResult> {
   if (typeof AudioContext === 'undefined') {
     return { ok: true, detail: 'AudioWorkletNode present (no AudioContext to addModule)' };
   }
-  const src = 'class P extends AudioWorkletProcessor {}\nregisterProcessor("p", P);';
-  const url = URL.createObjectURL(new Blob([src], { type: 'application/javascript' }));
+  // Probe the REAL shipped worklet module (same mechanism as the recorder),
+  // not a synthetic blob:-URL class: blob: scripts are blocked by the
+  // enforcing CSP (script-src has no blob:), and exercising the actual
+  // asset is a stronger signal anyway.
   const ctx = new AudioContext();
   try {
-    await ctx.audioWorklet.addModule(url);
+    await ctx.audioWorklet.addModule(workletUrl);
     return { ok: true, detail: 'worklet module added' };
   } finally {
     void ctx.close();
-    URL.revokeObjectURL(url);
   }
 }
 

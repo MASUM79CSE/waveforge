@@ -4,6 +4,7 @@
  * boundary (security review §ADR 006). Module worker — Vite bundles it
  * separately (lazy, like the peaks worker).
  */
+import '../core/zodConfig';
 import { z } from 'zod';
 import { Mp3Encoder } from '@breezystack/lamejs';
 

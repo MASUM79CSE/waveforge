@@ -2,6 +2,26 @@ import { defineConfig } from 'vitest/config';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// WF-004: set CSP_ENFORCE=1 to serve the FUTURE enforcing policy from the
+// dev/preview servers (used by the e2e suite to prove zero violations
+// before flipping the production header in vercel.json). Off by default —
+// local dev behaviour is unchanged.
+const CSP_ENFORCED = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "worker-src 'self' blob:",
+  "worklet-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "media-src 'self' blob: data:",
+  "connect-src 'self' data: blob:",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+  "form-action 'self'",
+].join('; ');
+
 export default defineConfig({
   // pre-bundle worker deps so first export never triggers a mid-session
   // dependency re-optimization (which force-reloads the page)
@@ -38,11 +58,13 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
     port: 5173,
+    ...(process.env.CSP_ENFORCE === '1' ? { headers: { 'Content-Security-Policy': CSP_ENFORCED } } : {}),
   },
   preview: {
     host: true,
     allowedHosts: true,
     port: 4173,
+    ...(process.env.CSP_ENFORCE === '1' ? { headers: { 'Content-Security-Policy': CSP_ENFORCED } } : {}),
   },
   build: {
     target: 'es2022',

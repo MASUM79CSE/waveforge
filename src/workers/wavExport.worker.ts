@@ -5,6 +5,7 @@
  * MP3/FLAC protocol, so the export service drives all three encoders
  * through one code path.
  */
+import '../core/zodConfig';
 import { z } from 'zod';
 import { encodeWavChunked, type WavEncoding } from '../io/wavEncoder';
 

@@ -34,7 +34,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-fake-media',
-      testIgnore: /offline\.spec\.ts$/,
+      testIgnore: /offline\.spec\.ts$|csp\.spec\.ts$/,
       use: {
         browserName: 'chromium',
         launchOptions: {
@@ -48,7 +48,7 @@ export default defineConfig({
     },
     {
       name: 'chromium-preview',
-      testMatch: /offline\.spec\.ts$/,
+      testMatch: /offline\.spec\.ts$|csp\.spec\.ts$/,
       use: {
         browserName: 'chromium',
         baseURL: 'http://localhost:4179',

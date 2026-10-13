@@ -5,6 +5,7 @@
  *  - measure-lufs → BS.1770-4 integrated/momentary/short-term
  * Every reply carries kernel timings — the §10 M5 profiling gate reads them.
  */
+import '../core/zodConfig';
 import { z } from 'zod';
 import { detectTempo, onsetEnvelope } from '../engine/bpm';
 import { integrateLoudness, momentaryTrack } from '../engine/lufs';
