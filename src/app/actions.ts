@@ -10,6 +10,7 @@ import { decodeBlob } from '../io/decode';
 import { parseId3 } from '../io/id3';
 import { t, tError } from '../i18n';
 import { installDoc, engine, renderer, getDoc } from './runtime';
+import { resetMarkers } from './markersActions';
 import { applyProjectLoopIfPlaying, projectPause, projectSeek, projectStop, projectTogglePlay } from './projectActions';
 import { stopPreview } from './preview';
 import * as S from './state';
@@ -167,6 +168,7 @@ function endLoading(): void {
 
 function finishLoad(buffer: AudioBuffer, name: string, sizeBytes: number, source: 'file' | 'url' | 'sample'): void {
   installDoc(new AudioDocument(buffer, { name, sizeBytes, source }));
+  resetMarkers(); // PF-01: markers are per-document
   S.welcomeOpen.value = false;
   toastInfo(t().toastLoaded(name));
 }

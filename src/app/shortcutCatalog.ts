@@ -21,6 +21,14 @@ export interface ShortcutGroup {
 
 export const shortcutCatalog: ShortcutGroup[] = [
   {
+    title: 'Markers',
+    rows: [
+      { key: 'B', label: 'Add marker (named)' },
+      { key: '[ / ]', label: 'Jump to previous / next marker' },
+      { key: 'Shift+[ / Shift+]', label: 'Select to previous / next marker' },
+    ],
+  },
+  {
     title: 'Playback',
     rows: [
       { key: 'Space', label: 'Play / Pause' },

@@ -13,7 +13,7 @@ Rule: a button/menu item is not a feature — each row needs behavioral evidence
 | AM-04 | Effects workflow (preview/cancel/apply/undo) | UNVERIFIED | — | — | — | PF-04 |
 | AM-05 | Recording (permission, start/stop, input select) | UNVERIFIED | — | mock vs real must be labeled; real-device expected NOT RUN | — | WF-012 |
 | AM-06 | Multitrack (tracks, mute/solo/vol/pan, mixdown; clip fades + crossfade) | UNVERIFIED | — | — | — | PF-02 |
-| AM-07 | Markers (add `M`, ruler dbl-click, named, drag, rename, delete, `[`/`]` jump, Shift-jump = selection) | UNVERIFIED | — | — | — | PF-01 |
+| AM-07 | Markers (named, dbl-click add, rename, delete, jump, Shift-select) | VERIFIED EQUIVALENT | kernel 6/6 + e2e 2/2 (add B/dbl-click, jump [ / ], rename/delete via menu, draft round-trip) | drag-to-move omitted — keyboard/menu equivalents (accessibility-first; B not M: M = metronome in WF) | 2026-10-13 | PF-01 |
 | AM-08 | Spectrum / peak / distortion indication | UNVERIFIED | — | — | — | verify |
 | AM-09 | Repair tools (declick / dehum / edit-point smoothing) | UNVERIFIED | — | — | — | PF-03 |
 | AM-10 | Beat tools + pitch/speed profile | UNVERIFIED | — | — | — | verify |

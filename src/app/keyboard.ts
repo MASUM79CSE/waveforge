@@ -101,6 +101,22 @@ export function bindKeyboard(): void {
       case '~':
         edit.deselect();
         break;
+      case 'b':
+      case 'B':
+        runCommand('marker.add'); // 'm' is taken: metronome (BandLab parity)
+        break;
+      case '[':
+        runCommand('marker.jumpPrev');
+        break;
+      case ']':
+        runCommand('marker.jumpNext');
+        break;
+      case '{': // Shift+[ — select back to the previous marker
+        runCommand('marker.selectPrev');
+        break;
+      case '}': // Shift+] — select forward to the next marker
+        runCommand('marker.selectNext');
+        break;
       default:
         break;
     }

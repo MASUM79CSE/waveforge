@@ -94,6 +94,7 @@
   --cv-selection-border: rgba(90, 242, 255, 0.55);
   --cv-pending: #101318;
   --cv-beat: rgba(90, 200, 250, 0.25);
+  --cv-marker: rgba(196, 140, 255, 0.8);
   --cv-clip-bg: rgba(255, 255, 255, 0.045);
   --cv-clip-border: rgba(255, 255, 255, 0.28);
   --cv-clip-edge: rgba(90, 242, 255, 0.5);

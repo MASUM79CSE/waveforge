@@ -466,6 +466,23 @@ export const en = {
     'WF-E501': 'A background worker restarted. If problems persist, reload the page.',
     'WF-E601': 'Something went wrong. Your audio is safe — autosave protects it.',
   } as Record<(typeof ERROR_CODES)[number], string>,
+  markerAdd: 'Add Marker',
+  markerRename: 'Rename Marker',
+  markerDelete: 'Delete Marker',
+  markerClear: 'Clear Markers',
+  markerJumpPrev: 'Previous Marker',
+  markerJumpNext: 'Next Marker',
+  markerSelectPrev: 'Select to Previous Marker',
+  markerSelectNext: 'Select to Next Marker',
+  markerGroup: 'Markers',
+  markerAddTitle: 'Add marker',
+  markerRenameTitle: 'Rename marker',
+  markerNameLabel: 'Marker name',
+  markerAdded: (name: string) => `Marker "${name}" added`,
+  markerRenamed: (name: string) => `Marker renamed to "${name}"`,
+  markerDeleted: (name: string) => `Marker "${name}" deleted`,
+  markerCleared: 'All markers cleared',
+  markerNoneNear: 'No marker near the cursor',
 } as const;
 
 export type Catalog = typeof en;

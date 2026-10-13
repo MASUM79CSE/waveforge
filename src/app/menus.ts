@@ -74,6 +74,18 @@ export const menus: MenuDef[] = [
       '-',
       'edit.selectAll',
       'edit.deselect',
+      '-',
+      {
+        header: () => t().markerGroup,
+        items: [
+          'marker.add',
+          'marker.rename',
+          'marker.delete',
+          'marker.clear',
+          'marker.jumpPrev',
+          'marker.jumpNext',
+        ],
+      },
     ],
   },
   {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { amplitudeAxis, docInfo, loadingActive, loadingLabel, loadingProgress, vzoom } from '../state';
 import { openFileObject, loadSample, pickAudioFile } from '../actions';
 import { renderer } from '../runtime';
+import { openMarkerAddPromptAt } from '../markersActions';
 import { ZoomBar } from './ViewBars';
 import { t } from '../../i18n';
 import { BrandMark } from './MenuBar';
@@ -17,8 +18,12 @@ export function CanvasPane() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    renderer.onCanvasDoubleClick = openMarkerAddPromptAt;
     renderer.attach(canvas);
-    return () => renderer.detach();
+    return () => {
+      renderer.onCanvasDoubleClick = null;
+      renderer.detach();
+    };
   }, []);
 
   useEffect(() => {

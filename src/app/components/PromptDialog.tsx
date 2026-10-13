@@ -72,3 +72,71 @@ export function PromptDialog({
     </Modal>
   );
 }
+
+
+interface TextPromptDialogProps {
+  open: boolean;
+  title: string;
+  label: string;
+  initialValue: string;
+  maxLength: number;
+  onConfirm: (value: string) => void;
+  onCancel: () => void;
+}
+
+/** Single text-field dialog (marker names, …). PF-01. */
+export function TextPromptDialog({
+  open,
+  title,
+  label,
+  initialValue,
+  maxLength,
+  onConfirm,
+  onCancel,
+}: TextPromptDialogProps) {
+  const [value, setValue] = useState(initialValue);
+
+  useEffect(() => {
+    if (open) setValue(initialValue);
+  }, [open, initialValue]);
+
+  if (!open) return null;
+
+  const confirm = (): void => {
+    const clean = value.trim().slice(0, maxLength);
+    if (clean) {
+      onCancel();
+      onConfirm(clean);
+    }
+  };
+
+  return (
+    <Modal title={title} onClose={onCancel}>
+      <div class="url-form">
+        <label class="url-hint" for="text-prompt-value">
+          {label}
+        </label>
+        <input
+          id="text-prompt-value"
+          class="url-input"
+          type="text"
+          maxlength={maxLength}
+          value={value}
+          onFocus={(e) => (e.target as HTMLInputElement).select()}
+          onInput={(e) => setValue((e.target as HTMLInputElement).value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') confirm();
+          }}
+        />
+        <div class="url-actions">
+          <button class="btn-secondary" onClick={onCancel}>
+            Cancel
+          </button>
+          <button class="btn-primary" onClick={confirm}>
+            Apply
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}

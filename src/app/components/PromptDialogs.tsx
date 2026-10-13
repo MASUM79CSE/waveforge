@@ -1,8 +1,9 @@
 import { closeGainPrompt, closeNormalizePrompt } from '../actions';
 import { applyGainDb, applyNormalize } from '../editActions';
-import { gainPromptOpen, normalizePromptOpen } from '../state';
+import { gainPromptOpen, markerPrompt, normalizePromptOpen } from '../state';
+import { closeMarkerPrompt, confirmMarkerPrompt } from '../markersActions';
 import { GAIN_MAX_DB, GAIN_MIN_DB, NORMALIZE_TARGET_DB } from '../../core/constants';
-import { PromptDialog } from './PromptDialog';
+import { PromptDialog, TextPromptDialog } from './PromptDialog';
 import { t } from '../../i18n';
 
 export function GainDialog() {
@@ -33,6 +34,21 @@ export function NormalizeDialog() {
       step={0.1}
       onConfirm={(db) => applyNormalize(db)}
       onCancel={closeNormalizePrompt}
+    />
+  );
+}
+
+export function MarkerNameDialog() {
+  const prompt = markerPrompt.value;
+  return (
+    <TextPromptDialog
+      open={prompt !== null}
+      title={prompt?.mode === 'rename' ? t().markerRenameTitle : t().markerAddTitle}
+      label={t().markerNameLabel}
+      initialValue={prompt?.initial ?? ''}
+      maxLength={200}
+      onConfirm={(label) => confirmMarkerPrompt(label, prompt)}
+      onCancel={closeMarkerPrompt}
     />
   );
 }

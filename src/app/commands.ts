@@ -9,6 +9,7 @@ import * as AN from './analysisActions';
 import * as CA from './clipActions';
 import * as RA from './recordActions';
 import { projectOpen, recStudio } from './state';
+import * as MK from './markersActions';
 import { toastInfo } from './toast';
 
 /**
@@ -44,8 +45,21 @@ export const commands: Command[] = [
     run: () => A.openExportDialog(),
     sep: true,
   },
+
   { id: 'file.draftSave', label: () => t().fileDraftSave, run: () => A.openSaveDraftDialog() },
   { id: 'file.draftOpen', label: () => t().fileDraftOpen, run: () => A.openDraftsDialog() },
+
+  // Markers (PF-01/AM-07) — keyboard-first, also in the Edit menu
+  { id: 'marker.add', label: () => t().markerAdd, run: () => MK.openMarkerAddPrompt() },
+  { id: 'marker.rename', label: () => t().markerRename, run: () => MK.openMarkerRenamePrompt() },
+  { id: 'marker.delete', label: () => t().markerDelete, run: () => MK.deleteMarkerNearCursor() },
+  { id: 'marker.clear', label: () => t().markerClear, run: () => MK.clearMarkers() },
+  { id: 'marker.jumpPrev', label: () => t().markerJumpPrev, run: () => MK.jumpToPrevMarker() },
+  { id: 'marker.jumpNext', label: () => t().markerJumpNext, run: () => MK.jumpToNextMarker() },
+  { id: 'marker.selectPrev', label: () => t().markerSelectPrev, run: () => MK.selectToPrevMarker() },
+  { id: 'marker.selectNext', label: () => t().markerSelectNext, run: () => MK.selectToNextMarker() },
+
+  // Edit
 
   // Edit
   { id: 'edit.undo', label: () => t().editUndo, kbd: () => HINTS.undo, run: () => EA.undo() },

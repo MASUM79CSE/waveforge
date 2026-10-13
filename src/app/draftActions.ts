@@ -22,7 +22,7 @@ import type { DraftSummary } from '../storage/DraftRepository';
 import { toastError, toastInfo } from './actions';
 import { exportProjectClips, exportProjectTracks, restoreProjectClips, restoreProjectTracks } from './projectActions';
 import { currentChannels } from './editActions';
-import { bufferFactory, getDoc, installDoc, engine } from './runtime';
+import { bufferFactory, getDoc, installDoc, engine, renderer } from './runtime';
 import * as S from './state';
 
 const STORAGE_PRESSURE = 0.9;
@@ -108,6 +108,10 @@ export async function confirmSaveDraft(name: string): Promise<void> {
       noisePrint: S.sessionNoisePrint.value
         ? Array.from(S.sessionNoisePrint.value)
         : undefined,
+      markers:
+        S.markers.value.length > 0
+          ? S.markers.value.map((m) => ({ id: m.id, t: m.t, label: m.label }))
+          : undefined,
       ...(S.projectOpen.value
         ? (() => {
             const payload = exportProjectClips()!;
@@ -144,6 +148,14 @@ export async function openDraft(id: string): Promise<void> {
       restoreProjectTracks(record.tracks); // M8e: lanes ride the draft
     }
     if (record.header.cursor !== undefined) engine.seek(record.header.cursor);
+    // PF-01: markers ride the draft
+    S.markers.value = (record.header.markers ?? []).map((m) => ({ ...m }));
+    renderer.setMarkers(
+      (record.header.markers ?? []).map((m) => ({
+        t: m.t / (record.header.sampleRate || 44_100),
+        label: m.label,
+      })),
+    );
     S.sessionNoisePrint.value = record.header.noisePrint
       ? Float32Array.from(record.header.noisePrint)
       : null;

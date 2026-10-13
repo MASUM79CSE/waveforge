@@ -17,6 +17,7 @@ import { t } from '../i18n';
 import { toastError, toastInfo } from './actions';
 import { getSharedContext } from '../io/decode';
 import { getDoc, engine, installDoc, performEdit } from './runtime';
+import { resetMarkers } from './markersActions';
 import {
   activeTrackTarget,
   addProjectTrack,
@@ -459,5 +460,6 @@ async function stopRecording(): Promise<void> {
     source: 'recording',
   });
   installDoc(doc); // adopts into the editor (fresh session)
+  resetMarkers(); // PF-01: markers are per-document
   toastInfo(t().recordReady);
 }

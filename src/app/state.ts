@@ -1,4 +1,5 @@
 import { createTakes, type TakesState } from '../engine/takes';
+import type { Marker } from '../engine/markers';
 import { signal } from '@preact/signals';
 import { STORAGE_PREFIX } from '../core/constants';
 
@@ -34,6 +35,16 @@ export const docInfo = signal<DocInfo | null>(null);
 export const playing = signal(false);
 export const looping = signal(false);
 export const cursorPos = signal(0);
+/** PF-01/AM-07: user markers (samples) — document-anchored annotations. */
+export const markers = signal<Marker[]>([]);
+/** Open marker-name prompt ('add' targets the cursor/selection start). */
+export const markerPrompt = signal<{
+  mode: 'add' | 'rename';
+  id?: string;
+  initial: string;
+  /** canvas double-click anchor (samples) — overrides cursor/selection */
+  anchor?: number;
+} | null>(null);
 
 // view
 export const viewSpp = signal(1024);
