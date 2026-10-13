@@ -72,7 +72,7 @@ architecture that makes that viable at production quality.
 | `src/fx` | 4,579 | Effect definitions + DSP kernels (registry `defs.ts`): dynamics, EQ, modulation, reverb, NR, stretch/pitch |
 | `src/io` | 651 | Decode, export service + format catalog, WAV writer, ID3v2, draft repository |
 | `src/workers` | 276 | MP3 export, analysis (LUFS/BPM/report), peaks mip builder |
-| `src/worklets` | 56 | `recorder.worklet` — real-time capture off the main thread |
+| `public/worklets` | 56 | `recorder.worklet` — real-time capture off the main thread (same-origin file: CSP `worklet-src 'self'`, no blob:/data: scripts) |
 | `public/workers` | — | FLAC export worker (libFLAC WASM), vendored runtimes |
 | `tests/` | 13,980 | 720 unit tests (86 files) + 59 Playwright e2e (incl. axe gate) |
 
@@ -179,15 +179,32 @@ and shortcuts behave deterministically with stacked dialogs.
   stay flat in memory.
 - Encode/analysis in workers → UI never blocks; Lighthouse TBT stays low.
 - Precached PWA (vite-plugin-pwa) → instant repeat loads, offline use.
-- Verified: Lighthouse **99 / 100 / 100 / 100** desktop, **99** mobile
-  performance; main JS ≈ 119.5 KB gzipped.
+- Verified (audit baseline + Phase 3 re-run, 2026-10-13): Lighthouse
+  desktop **100 / 100 / 100 / 91**, mobile **99 / 100 / 100 / 91**
+  (perf/a11y/best-practices/SEO); main JS entry ≈ 118 KB gzipped.
 
 ## 10. Security & privacy
 
-- **CSP** (Report-Only header via `vercel.json`): `default-src 'self'`;
-  `wasm-unsafe-eval` for libFLAC/RNNoise; `img-src 'self' data: blob:` —
-  no third-party script, style, image or connect origins (WF-011 audit:
-  the old avatar-CDN claim is obsolete; the mark is a local monogram).
+- **CSP** (ENFORCING header via `vercel.json`, all paths): `default-src
+  'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:;
+  worklet-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'
+  data: blob:; media-src 'self' blob: data:; connect-src 'self' data:
+  blob:; font-src 'self'; object-src 'none'; base-uri 'self';
+  frame-ancestors 'self'; form-action 'self'` — no third-party script,
+  style, image or connect origins. No `unsafe-eval`, and **no script
+  execution from `blob:`/`data:`**: the recorder AudioWorklet is served
+  as a real same-origin file (`/worklets/recorder.worklet.js`) and the
+  doctor probe loads that same asset (blob:-script probes would be
+  blocked); zod runs **jitless** (`src/core/zodConfig.ts`, imported per
+  realm) so its JIT never probes `new Function`. `'wasm-unsafe-eval'`
+  is scoped to the vendored libFLAC compile; classic FLAC worker +
+  bundled module workers are same-origin. Dev parity:
+  `CSP_ENFORCE=1 npm run dev/preview` injects the same header
+  (`vite.config.ts`). Proven by `tests/e2e/csp.spec.ts`: enforcing
+  header + zero `securitypolicyviolation` across load → edit →
+  WAV/FLAC export → worklet probe on the production build (WF-004;
+  DECISIONS D-A10). A hardened Report-Only policy (without
+  `'wasm-unsafe-eval'`) previews future tightening.
 - **No telemetry, no uploads** — structural, not policy: the app makes
   no network requests for user data, full stop. The former URL import
   was REMOVED in the WF-011 audit (it was the one feature that fetched
