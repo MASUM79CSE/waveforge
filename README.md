@@ -146,8 +146,8 @@ src/fx/         Effect definitions (registry) + DSP kernels and curves
 src/io/         Decode, export service + format catalog, WAV writer, ID3v2,
                 draft repository (IndexedDB)
 src/workers/    MP3 export, analysis, peaks workers
-src/worklets/   recorder.worklet (AudioWorklet capture)
-public/         Vendored runtimes (libFLAC WASM), PWA assets
+public/worklets/  recorder.worklet (AudioWorklet capture — same-origin file)
+public/         Vendored runtimes (libFLAC glue+wasm), PWA assets
 tests/          Vitest unit suites + Playwright e2e (incl. axe gate)
 docs/           Architecture, design, memory, database, breakdown docs
 scripts/        Deterministic sample generator, encoder validation
@@ -204,7 +204,7 @@ suite. Lighthouse is measured at release/audit time (desktop
 
 | Suite | Command | Coverage |
 |---|---|---|
-| **Unit** | `npm run test` | 720 tests across 86 files — pure DSP kernels with analytic anchors (true-peak, RBJ, RT60, WOLA, SNR), edit/history byte economics, storage round-trips, catalogs, reducer state |
+| **Unit** | `npm run test` | 765 tests across 93 files — pure DSP kernels with analytic anchors (true-peak, RBJ, RT60, WOLA, SNR), edit/history byte economics, storage round-trips, catalogs, reducer state |
 | **End-to-end** | `npm run e2e` | Playwright in Chromium with fake media — full user flows (load → edit → effect → export, record, drafts, shortcuts) plus a permanent **axe-core WCAG 2.1 AA zero-violations** gate |
 | **Quality gates** | `lint` / `typecheck` / `build` / coverage thresholds / bundle budget | ESLint 0 findings, strict tsc, production build; Lighthouse measured **100/100/100/91** desktop, **99/100/100/91** mobile (perf/a11y/BP/SEO, 2026-10-13) |
 
