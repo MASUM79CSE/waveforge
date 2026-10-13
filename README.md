@@ -10,7 +10,7 @@ studio flow (count-in, monitoring, punch in/out), masters against streaming
 loudness targets, and exports WAV/MP3/FLAC — with **no uploads, no accounts,
 no tracking**. Your audio never leaves your machine.
 
-[![Preact](https://img.shields.io/badge/Preact-11-673AB8?logo=preact&logoColor=white)](https://preactjs.com)
+[![Preact](https://img.shields.io/badge/Preact-10-673AB8?logo=preact&logoColor=white)](https://preactjs.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![CI](https://github.com/MASUM79CSE/waveforge/actions/workflows/ci.yml/badge.svg)](https://github.com/MASUM79CSE/waveforge/actions/workflows/ci.yml)
@@ -94,7 +94,7 @@ no tracking**. Your audio never leaves your machine.
 
 | Layer | Technology |
 |---|---|
-| UI | [Preact 11](https://preactjs.com) + `@preact/signals` (fine-grained updates, tiny runtime) |
+| UI | [Preact 10](https://preactjs.com) + `@preact/signals` (fine-grained updates, tiny runtime) |
 | Language | TypeScript (strict mode) |
 | Build | [Vite 8](https://vitejs.dev) + `vite-plugin-pwa` (Workbox precache) |
 | Audio engine | [Web Audio API](https://developer.mozilla.org/docs/Web/API/Web_Audio_API) + AudioWorklet capture |

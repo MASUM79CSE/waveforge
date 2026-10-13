@@ -73,6 +73,22 @@ describe('dependency provenance hygiene', () => {
     expect(existsSync(resolve(root, 'public/vendor/libflac.min.wasm.wasm'))).toBe(false);
   });
 
+  it('docs naming a Preact major version agree with the declared dependency', () => {
+    // WF-006 guard: README/ARCHITECTURE once claimed "Preact 11" while
+    // package.json declared ^10.29.8. Any "Preact <major>" mention in
+    // the docs must match the declared major.
+    const deps = readJson('package.json').dependencies as Record<string, string>;
+    const declared = /^[^\d]*(\d+)/.exec(String(deps.preact ?? ''))?.[1] ?? '';
+    expect(declared).toMatch(/^\d+$/);
+    for (const doc of ['README.md', 'docs/ARCHITECTURE.md']) {
+      const text = readFileSync(resolve(root, doc), 'utf8');
+      const claimed = [...text.matchAll(/Preact (\d+)/g)].map((m) => m[1]);
+      for (const c of claimed) {
+        expect(c, `${doc} claims Preact ${c}, package.json declares ${declared}`).toBe(declared);
+      }
+    }
+  });
+
   it('README does not credit phantom npm packages', () => {
     const readme = readFileSync(resolve(root, 'README.md'), 'utf8');
     expect(readme).not.toContain('@echogarden/rnnoise-wasm');
