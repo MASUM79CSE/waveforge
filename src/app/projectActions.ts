@@ -26,6 +26,7 @@ import { resolveFxTarget } from './fxTarget';
 import { getErrorMessage, makeError } from '../core/errors';
 import { toastInfo } from './toast';
 import { t, tError } from '../i18n';
+import { audioFileSchema, fileMetaSchema } from '../core/schemas';
 import * as S from './state';
 import { pickUndoTarget, type UndoTarget } from './undoPolicy';
 
@@ -158,6 +159,15 @@ export function resyncDocTrack(): void {
 
 /** Import an audio file as a NEW lane (decode → own copies → add). */
 export async function importToTrack(file: File): Promise<void> {
+  // WF-009: same boundary as the document import (type + size caps)
+  if (!audioFileSchema.safeParse(file).success) {
+    toastInfo(tError('WF-E101'));
+    return;
+  }
+  if (!fileMetaSchema.safeParse({ name: file.name, size: file.size }).success) {
+    toastInfo(tError('WF-E103'));
+    return;
+  }
   try {
     const buffer = await decodeBlob(file);
     let channels: Float32Array[] = [];

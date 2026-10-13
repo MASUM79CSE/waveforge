@@ -9,7 +9,8 @@
 export const ERROR_CODES = [
   'WF-E101', // unsupported file type/extension
   'WF-E102', // decode failed (corrupt/unsupported)
-  'WF-E103', // file beyond memory guard
+  'WF-E103', // file beyond memory guard (import cap or decoded budget)
+  'WF-E104', // decode timed out (watchdog)
   'WF-E201', // URL fetch network error
   'WF-E202', // CORS blocked
   'WF-E301', // AudioContext blocked by autoplay policy

@@ -462,6 +462,7 @@ export const en = {
     'WF-E101': 'This format is not supported by your browser.',
     'WF-E102': 'Could not decode this file — it may be corrupt or unsupported.',
     'WF-E103': 'This file is too large for this device.',
+    'WF-E104': 'Decoding this file took too long and was stopped.',
     'WF-E201': 'Could not reach that URL. Check the address and your connection.',
     'WF-E202': 'That server does not allow browser access (CORS).',
     'WF-E301': 'The browser blocked audio — click anywhere once, then press play.',
