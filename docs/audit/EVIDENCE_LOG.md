@@ -179,3 +179,15 @@ One entry per verification. Fields: ID · date/time (Asia/Dhaka, UTC+6) · Git S
 - **Remaining gaps (owned):** Lighthouse-in-CI remains intentionally absent (documented choice: flaky per-push browser runs; measured at release instead). Static test-count badges removed rather than maintained by hand.
 - **Reviewer:** agent (self), independent diff re-read per 5.2-G
 - **Limitations:** the modified ci.yml cannot be executed end-to-end in this sandbox (no GitHub runner); its steps were each executed locally (typecheck/lint/coverage/build/bundle-check all pass) — runner behavior = NOT RUN.
+
+
+## E-016 — WF-008 reproducible install: one install command everywhere (npm ci)
+- **ID/task:** WF-008 · **Date:** 2026-10-13 (Phase 4) · **SHA:** see git log (install-parity commit on `audit/remediation`)
+- **Found (RED-equivalent — claim contradicted by runtime):** README quickstart instructed `npm install --legacy-peer-deps` with the claim "peer-dep pinning is intentional". Reproduced before fix: `npm install --dry-run` (no flag) resolves the full tree cleanly, exit 0, no ERESOLVE (the flagged variant also exit 0) — **no peer conflict exists**; the instruction was cargo-cult. `vercel.json` left `installCommand` unset (Vercel default behavior depends on lockfile detection → nondeterministic vs CI's `npm ci`).
+- **Fix:** README quickstart → `npm ci` ("the same command CI and Vercel run"); `vercel.json` → explicit `"installCommand": "npm ci"` alongside the existing `buildCommand`. Install parity now: local docs = CI (`.github/workflows/ci.yml` `npm ci`) = production deploys (Vercel) — all pinned to the lockfile.
+- **Commands + results:** `npm install --dry-run` → exit 0 (no peer conflict; disproves the README claim) · `npm ci` → exit 0 (re-measured again this session after env reset) · `vercel.json` JSON-valid (node JSON.parse) · README/vercel diff minimal (1 line + 1 key).
+- **Acceptance criteria:** single documented install command across README/CI/Vercel ✓ · that command is the deterministic lockfile install ✓ · false peer-dep claim removed ✓ · no dependency tree changes (no package.json/lockfile edits in this task) ✓.
+- **Gap & Error Sweep (H):** criteria ✓; adversarial — checked engines pin (`node >=20` in package.json, CI node 20, sandbox v20.20.2 — consistent) ✓; checked for other legacy-flag occurrences in docs (grep: zero remain) ✓; verified vercel.json still parses and keeps prior keys (SPA rewrites/caching/CSP untouched) ✓; consistency ✓ (README ↔ ci.yml ↔ vercel.json); diff hygiene ✓.
+- **Remaining gaps (owned):** none for WF-008. (Vercel dashboard project settings themselves cannot be inspected from the sandbox — the repo-level config is now explicit, which overrides dashboard defaults.)
+- **Reviewer:** agent (self), independent diff re-read per 5.2-G
+- **Limitations:** actual Vercel deploy behavior with the new installCommand = NOT RUN (no deploy from sandbox); the command itself is the same `npm ci` measured green locally and in CI.
