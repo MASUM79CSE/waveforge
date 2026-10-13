@@ -32,8 +32,8 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | WF-010 | Export format/extension/MIME consistency | P1/P2 | VERIFIED | (this commit) | catalog = authority (mime/container/limitations + quality gate WF-E105); octet-stream eliminated; dup maps derived; signatures already e2e-proven; 763/763 + 61/61; see E-009 |
 | WF-011 | External origins vs CSP vs privacy claims | P1/P2 | VERIFIED | `92f9735` | inventory complete (self-only); URL import REMOVED (D-A8); avatar/img-src docs corrected; egress helper + permanent e2e (same-origin, zero bodies); 759/759 + 63/63; see E-010 |
 | WF-012 | Production smoke + deployment traceability | P1 | VERIFIED | (this commit) | npm run test:smoke → 3/3 against live prod; traceability: deterministic bundle hash proves prod serves `22b6aba` (index-ajTvOWzM.js match); CSP mode recorded (report-only today, tighten after merge); separate config/dir — standard suite still 64; see E-012 |
-| WF-013 | RNNoise provenance | P2 | OPEN | — | vendored `src/vendor/rnnoise/`, README credits wrong package |
-| WF-014 | Codec/licence hygiene (lamejs LGPL, dup libFLAC) | P2 | OPEN | — | two libflac wasm copies in precache glob |
+| WF-013 | Dependency provenance (rnnoise) | P2 | VERIFIED | (this commit) | phantom `@echogarden/rnnoise-wasm` credit removed from README+NOTICES; vendored build + COPYING documented; full npm dep table with licences (LGPL lamejs pinned); depsHygiene test guards notices↔package.json agreement; 763/763; see E-013 |
+| WF-014 | Duplicate/vendored FLAC runtime | P2 | VERIFIED | (this commit) | `libflacjs` npm dep removed (imported nowhere); dead duplicate `public/vendor/libflac.min.wasm.wasm` removed (live path `/workers/…` proven by request capture); fake-indexeddb → devDeps; depsHygiene test RED→GREEN ×2; 763/763 + 64/64; see E-014, D-A11 |
 | WF-015 | Dep/repo hygiene (fake-indexeddb, @types/node, .claude) | P3 | OPEN | — | all three confirmed present; `.claude` content benign |
 | WF-016 | Performance claims re-measurement | P2 | OPEN | — | baseline measured; docs update pending |
 | PF-01 | Markers (AM-07) | P1 | OPEN | — | Phase 5 |
