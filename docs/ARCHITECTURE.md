@@ -185,10 +185,16 @@ and shortcuts behave deterministically with stacked dialogs.
 ## 10. Security & privacy
 
 - **CSP** (Report-Only header via `vercel.json`): `default-src 'self'`;
-  `wasm-unsafe-eval` for libFLAC/RNNoise; `img-src` includes the avatar
-  CDN; no third-party script/style origins.
+  `wasm-unsafe-eval` for libFLAC/RNNoise; `img-src 'self' data: blob:` —
+  no third-party script, style, image or connect origins (WF-011 audit:
+  the old avatar-CDN claim is obsolete; the mark is a local monogram).
 - **No telemetry, no uploads** — structural, not policy: the app makes
-  no network requests for user data; URL import is user-initiated fetch.
+  no network requests for user data, full stop. The former URL import
+  was REMOVED in the WF-011 audit (it was the one feature that fetched
+  cross-origin, and it could not coexist with an enforcing
+  `connect-src 'self'`; intentional AudioMass difference — DECISIONS
+  D-A8). Verified by `tests/e2e/egress.spec.ts` (same-origin only,
+  zero request bodies across load/import/edit/export).
 - Drafts live in origin-scoped IndexedDB; cleared client-side only.
 
 ## 11. Extensibility

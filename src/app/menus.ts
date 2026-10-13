@@ -47,7 +47,7 @@ export const menus: MenuDef[] = [
     id: 'file',
     title: () => t().menuFile,
     items: [
-      { header: () => t().menuGroupImport, items: ['file.open', 'file.url', 'file.sample'] },
+      { header: () => t().menuGroupImport, items: ['file.open', 'file.sample'] },
       { header: () => t().menuGroupRecord, items: ['file.recordSettings', 'record.toggle', 'record.punch', 'record.monitor', 'record.metronome'] },
       { header: () => t().menuGroupExport, items: ['file.export'] },
       { header: () => t().menuGroupDrafts, items: ['file.draftSave', 'file.draftOpen'] },

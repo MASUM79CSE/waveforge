@@ -18,7 +18,6 @@ import {
   exportOpen,
   recordSettingsOpen,
   shortcutsOpen,
-  urlOpen,
   welcomeOpen,
 } from './state';
 
@@ -38,7 +37,6 @@ export function bindKeyboard(): void {
       if (effectDialogId.value) closeEffectDialog();
       else if (recordSettingsOpen.value) closeRecordSettings();
       else if (exportOpen.value) closeExportDialog();
-      else if (urlOpen.value) urlOpen.value = false;
       else if (doctorOpen.value) closeDoctor();
       else if (shortcutsOpen.value) closeShortcuts();
       else if (aboutOpen.value) aboutOpen.value = false;

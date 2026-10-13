@@ -5,7 +5,6 @@ import { TransportBar } from './TransportBar';
 import { StatusBar } from './StatusBar';
 import { Toasts } from './Toasts';
 import { AboutDialog, WelcomeDialog } from './Dialogs';
-import { UrlDialog } from './UrlDialog';
 import { GainDialog, NormalizeDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
 import { FxRackDialog } from './FxRackDialog';
@@ -50,7 +49,6 @@ export function App() {
       <Toasts />
       <WelcomeDialog />
       <AboutDialog />
-      <UrlDialog />
       <GainDialog />
       <NormalizeDialog />
       {effectDialogId.value === 'fx.pgeq8' ? (

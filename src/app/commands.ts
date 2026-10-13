@@ -28,7 +28,6 @@ export interface Command {
 export const commands: Command[] = [
   // File
   { id: 'file.open', label: () => t().fileOpen, kbd: () => HINTS.open, run: () => A.pickAudioFile() },
-  { id: 'file.url', label: () => t().fileUrl, run: () => A.openUrlDialog() },
   { id: 'file.sample', label: () => t().fileSample, run: () => void A.loadSample() },
   {
     id: 'file.recordSettings',

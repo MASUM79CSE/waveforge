@@ -236,7 +236,7 @@ HTTPS, or `localhost` for local development.
 | **MP3/FLAC export** fails in a hardened browser | WASM compilation requires `wasm-unsafe-eval`; some corporate browsers block it. Allow WASM for the site, or export WAV (no WASM needed). |
 | **Crash-recovery banner** appeared | Autosave found a newer snapshot than your last manual save — choose **Restore** or **Discard**. Recovery is never auto-applied. |
 | Drafts don't appear on another device/browser | By design: IndexedDB is per-origin and per-browser, and drafts never leave the device. |
-| Avatar shows an **"MM" monogram** instead of the photo | The developer avatar loads from an external CDN; offline or blocked it falls back to the monogram by design. |
+| Avatar shows an **"MM" monogram** instead of the photo | By design: the avatar is a local monogram mark — no external avatar/CDN request exists. |
 | `Port already in use` on dev/preview | Another dev or preview server is still running — stop it, or pass a different `--port`. |
 
 ## 📚 Documentation

@@ -55,7 +55,6 @@ export const doctorOpen = signal(false);
 export const shortcutsOpen = signal(false);
 /** E6a noise print held across the session; persisted in draft headers (M7). */
 export const sessionNoisePrint = signal<Float32Array | null>(null);
-export const urlOpen = signal(false);
 export const gainPromptOpen = signal(false);
 export const normalizePromptOpen = signal(false);
 

@@ -16,7 +16,6 @@ export const en = {
   menuHelp: 'Help',
 
   fileOpen: 'Open File…',
-  fileUrl: 'Load From URL…',
   fileSample: 'Load Sample',
   fileExport: 'Export / Download…',
   fileDraftSave: 'Save Draft Locally',
@@ -362,11 +361,6 @@ export const en = {
   close: 'Close',
 
   // url dialog
-  urlTitle: 'Load From URL',
-  urlHint: 'The file must be served over https and allow cross-origin access (CORS).',
-  urlPlaceholder: 'https://example.com/song.mp3',
-  urlLoad: 'Load',
-  urlCancel: 'Cancel',
 
   // canvas / empty state
   dropHint: 'Drag & drop an audio file here',
@@ -375,7 +369,6 @@ export const en = {
 
   // loading + toasts
   loadingFile: (name: string) => `Decoding ${name}…`,
-  loadingUrl: 'Downloading…',
   loadingSample: 'Loading sample…',
   toastLoaded: (name: string) => `Loaded ${name}`,
   loopOn: 'Loop on',
