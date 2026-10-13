@@ -31,7 +31,7 @@
 | **Cloud / M12** (MongoDB Atlas + Vercel serverless, sync, auth) | Parked by owner | Starts on explicit request; design ready in `docs/DATABASE.md` §3 |
 | **CSP is Report-Only** | Deliberate (safe rollout) | Flip to enforcing after production observation |
 | **Cross-browser**: Firefox/WebKit pass is environment-limited (44/45, 43/45) | Documented (Y3) | Only if a real user base demands non-Chromium parity |
-| **Files > 400 lines** (projectActions 729, fx/defs 482, i18n/en 477, recordActions 463) | Documented debt | Refactor in a dedicated series — cosmetic, zero behavior gain; not pre-deploy work |
+| **Files > 400 lines** (projectActions 739, fx/defs 482, i18n/en 471, recordActions 463, projectPlayback 459, FxRackDialog 419) | Documented debt | Refactor in a dedicated series — cosmetic, zero behavior gain; not pre-deploy work |
 | **`og:image`** absent | Needs a deployed domain + hosted preview image | Add after first deploy |
 | **Git history** contains pre-scrub reference naming | Owner decision | Requires destructive force-push; current tree + dist are clean |
 
@@ -39,8 +39,10 @@
 
 - **Security**: `npm audit` 0 prod vulnerabilities; CSP allows only self +
   wasm + avatar CDN; no secrets, no env surface; audio never leaves the device.
-- **Quality gates**: 720/720 unit (86 files), 59/59 e2e incl. axe WCAG 2.1 AA
-  zero-violations, lint 0, strict tsc, LH 97/100/100/100 desktop & 99 mobile
+- **Quality gates**: 765/765 unit (93 files), 64/64 e2e incl. axe WCAG 2.1 AA
+  zero-violations + egress + CSP-enforcement gates, coverage thresholds,
+  bundle budget, lint 0, strict tsc, LH 100/100/100/91 desktop & 99/100/100/91 mobile
+  (2026-10-13 re-measurement; audit branch)
   (perf run-variance 97–99, gate ≥95).
 - **PWA**: manifest + precached SW in `dist/`; update banner flow; offline e2e.
 - **Docs**: root set + `docs/` consistent with reality (versions, gate

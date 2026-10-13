@@ -228,3 +228,21 @@ One entry per verification. Fields: ID · date/time (Asia/Dhaka, UTC+6) · Git S
 - **Remaining gaps (owned):** none for WF-016. (Production-URL LH runs remain a Phase-6/release option; per D-A6 the audit measures the build being audited.)
 - **Reviewer:** agent (self), independent diff re-read per 5.2-G
 - **Limitations:** 1 run per form factor (baseline method; not a statistical measurement); sandbox resources noted in E-014 did not affect these runs.
+
+
+## E-020 — WF-005 full docs-vs-code sweep (README, ARCHITECTURE, GAP_ANALYSIS, PROJECT_BREAKDOWN, MEMORY)
+- **ID/task:** WF-005 · **Date:** 2026-10-13 (Phase 4) · **SHA:** see git log (docs-sweep commit on `audit/remediation`)
+- **Named baseline findings — all already resolved in earlier tasks, re-verified:** avatar-CDN claim → fixed WF-011 (README monogram row; grep: no CDN refs) · "Lighthouse CI gates" claim → fixed WF-007 (README describes real CI; E-015) · URL-import claim → resolved WF-011 (feature REMOVED, docs rewritten, D-A8).
+- **Found this sweep (stale counts/figures contradicting the tree):**
+  1. README Testing table "720 tests across 86 files" → **765/93**.
+  2. README project structure still listed `src/worklets/` (moved to `public/worklets/` under WF-004) and `public/` described as "Vendored runtimes (libFLAC WASM)" → corrected (glue+wasm split across public/vendor + public/workers).
+  3. ARCHITECTURE structure-table line counts drifted (code changed by the audit itself): src/app 12,600→**12,494**, engine 5,130→**5,133**, fx 4,579→**4,578**, io 651→**887**, workers 276→**336**, tests 13,980→**15,171**; tests row "720 unit (86) + 59 e2e" → **765 (93) + 64 e2e incl. axe/egress/CSP + 3 production smoke**.
+  4. PROJECT_BREAKDOWN: top table tests/performance rows, "Current status" line, launch-checklist LH entry, and two release-gate lines — all carried 720/59 + "LH 99/100/100/100" + "≈119.5 KB gz" → synced to 765/64, 100/100/100/91 + 99/100/100/91 (dated), 118,171 B gz (+ CI budget).
+  5. GAP_ANALYSIS quality-gates line (720/59, "LH 97/100/100/100") → current gates incl. the new coverage/bundle/CSP/egress gates; files->400-lines debt row re-measured (projectActions 739, +projectPlayback 459 + FxRackDialog 419 joined the list).
+- **Verified-accurate (no change):** "30+ effects in 9 organized sections" — Effects menu really is 30 items across 9 groups (dynamics 4, noise 3, EQ 4, reverb/delay 3, modulation 5, distortion 1, time/pitch 2, amplitude 5, special 3 — read from `src/app/menus.ts`); 5 menus; i18n = English v1 with `setLocale` seam (no Bengali claim exists in the docs — bn catalog is feat-branch work); PROJECT_BREAKDOWN §4 anchor-evolution reference from README is valid; MEMORY.md economics rows (rewritten WF-002, decode budget WF-009, bundle row E-019).
+- **Commands + results:** line-count drift measured via `find | xargs wc -l` vs table (table above) · effect/menu counts read from `src/app/menus.ts` + `src/fx/defs.ts` + `src/i18n/en.ts` · residual grep "720/720|59/59|86 files" outside docs/audit/ → **0** · tsc ✓ lint ✓ (doc-only diff).
+- **Acceptance criteria:** no doc claim contradicts the tree on: test counts, suite contents, structure paths, line counts, performance figures, CI contents, feature taxonomy ✓ — every number in README/ARCHITECTURE/GAP_ANALYSIS/PROJECT_BREAKDOWN/MEMORY now traces to a measured command or the code itself.
+- **Gap & Error Sweep (H):** criteria ✓; adversarial — specifically tried to CATCH remaining contradictions (line counts vs wc, menu counts vs menus.ts, i18n claims vs i18n/) rather than trusting earlier fixes ✓; audit-trail historical values deliberately exempt ✓; consistency ✓ (all five docs agree); diff hygiene ✓ (doc strings only).
+- **Remaining gaps (owned):** none for WF-005. (Line-count table will drift again with future work — acceptable: it is a snapshot metric, now freshly synced.)
+- **Reviewer:** agent (self), independent diff re-read per 5.2-G
+- **Limitations:** sweep covers every numeric/structural claim found by pattern + section review; prose-only architectural descriptions were not re-litigated (covered by phases 1-3 behavior proofs).

@@ -67,14 +67,14 @@ architecture that makes that viable at production quality.
 
 | Module | LOC | Responsibility |
 |---|---|---|
-| `src/app` | 12,600 | UI shell: signals, actions, command registry, menus, keyboard, dialogs, transport/menu components, i18n, brand |
-| `src/engine` | 5,130 | Pure audio core: documents, edits, history, projects/clips, transport, recorder/punch/takes, meters, analysis kernels |
-| `src/fx` | 4,579 | Effect definitions + DSP kernels (registry `defs.ts`): dynamics, EQ, modulation, reverb, NR, stretch/pitch |
-| `src/io` | 651 | Decode, export service + format catalog, WAV writer, ID3v2, draft repository |
-| `src/workers` | 276 | MP3 export, analysis (LUFS/BPM/report), peaks mip builder |
+| `src/app` | 12,494 | UI shell: signals, actions, command registry, menus, keyboard, dialogs, transport/menu components, i18n, brand |
+| `src/engine` | 5,133 | Pure audio core: documents, edits, history, projects/clips, transport, recorder/punch/takes, meters, analysis kernels |
+| `src/fx` | 4,578 | Effect definitions + DSP kernels (registry `defs.ts`): dynamics, EQ, modulation, reverb, NR, stretch/pitch |
+| `src/io` | 887 | Decode, export service + format catalog, WAV writer, ID3v2, draft repository |
+| `src/workers` | 336 | MP3 export, analysis (LUFS/BPM/report), peaks mip builder |
 | `public/worklets` | 56 | `recorder.worklet` — real-time capture off the main thread (same-origin file: CSP `worklet-src 'self'`, no blob:/data: scripts) |
 | `public/workers` | — | FLAC export worker (libFLAC WASM), vendored runtimes |
-| `tests/` | 13,980 | 720 unit tests (86 files) + 59 Playwright e2e (incl. axe gate) |
+| `tests/` | 15,171 | 765 unit tests (93 files) + 64 Playwright e2e incl. axe, egress and CSP-enforcement gates + 3 production smoke tests |
 
 ## 4. Key data flows
 
