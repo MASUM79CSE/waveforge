@@ -191,3 +191,16 @@ One entry per verification. Fields: ID · date/time (Asia/Dhaka, UTC+6) · Git S
 - **Remaining gaps (owned):** none for WF-008. (Vercel dashboard project settings themselves cannot be inspected from the sandbox — the repo-level config is now explicit, which overrides dashboard defaults.)
 - **Reviewer:** agent (self), independent diff re-read per 5.2-G
 - **Limitations:** actual Vercel deploy behavior with the new installCommand = NOT RUN (no deploy from sandbox); the command itself is the same `npm ci` measured green locally and in CI.
+
+
+## E-017 — WF-006 Preact version claim corrected + permanent version-drift guard
+- **ID/task:** WF-006 · **Date:** 2026-10-13 (Phase 4) · **SHA:** see git log (preact-version commit on `audit/remediation`)
+- **Found (RED via new guard):** README badge + README stack table + ARCHITECTURE diagram all claimed **"Preact 11"**; package.json declares `^10.29.8`, lockfile and installed package are **10.29.8** (re-measured: `require('preact/package.json').version` = 10.29.8). A major-version claim one ahead of reality.
+- **Fix:** all three spots → "Preact 10". New permanent guard in `tests/unit/depsHygiene.test.ts`: every "Preact <major>" mention in README/ARCHITECTURE must equal the declared dependency's major — this kills the whole class of version-drift claims for the headline UI dep.
+- **RED→GREEN:** guard added first → RED ("expected '11' to be '10'" path: docs claim ≠ declared) → docs fixed → **GREEN 5/5**.
+- **Commands + results:** `npx vitest run tests/unit/depsHygiene.test.ts` → RED 1 failed (version guard) → **GREEN 5 passed** · grep "Preact 11|Preact-11" across README/docs/src → **0** · tsc ✓ lint ✓.
+- **Acceptance criteria:** no Preact version claim contradicts package.json ✓ (test-pinned for README + ARCHITECTURE) · badge, stack table and architecture diagram all show the real major ✓.
+- **Gap & Error Sweep (H):** criteria ✓; adversarial — checked the version-string guard's regex against forms "Preact 11", "Preact-11" badge URL, and prose; badge alt text covered, "preactjs.com" links unaffected ✓; sibling search: MEMORY/ADR docs carry no Preact major claims (grep) ✓; full unit file green ✓; consistency ✓; diff hygiene ✓ (3 doc strings + 1 test).
+- **Remaining gaps (owned):** none for WF-006.
+- **Reviewer:** agent (self), independent diff re-read per 5.2-G
+- **Limitations:** guard covers Preact (the dep with a history of drift); generalizing to every dep mention would false-positive on prose — depsHygiene test 1 already covers import-level truth for all deps.

@@ -30,7 +30,7 @@ architecture that makes that viable at production quality.
 ```
 ┌────────────────────────────────── Browser ───────────────────────────────┐
 │                                                                          │
-│  ┌── UI shell (Preact 11 + @preact/signals) ─────────────────────────┐  │
+│  ┌── UI shell (Preact 10 + @preact/signals) ─────────────────────────┐  │
 │  │  MenuBar (grouped)   TransportBar (zones)   LaneStack / Strips    │  │
 │  │  Dialogs (welcome, export, record, effects, about, shortcuts…)    │  │
 │  │  WaveCanvas (canvas renderer + envelope overlays)                 │  │
