@@ -30,7 +30,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | WF-008 | Reproducible install / CI parity | P2 | OPEN | — | `npm ci` works (measured); README/vercel reconciliation pending |
 | WF-009 | Decode limits + failure handling | P1 | VERIFIED | `c51c983` | PARTIALLY PRESENT at audit: file cap/typed errors/spinner-clear existed; added decoded budget (512 MiB), 60 s watchdog (WF-E104), importToTrack + IR-path guards; 8 unit RED→GREEN + 2 permanent e2e; 758/758 + 61/61; see E-008 |
 | WF-010 | Export format/extension/MIME consistency | P1/P2 | VERIFIED | (this commit) | catalog = authority (mime/container/limitations + quality gate WF-E105); octet-stream eliminated; dup maps derived; signatures already e2e-proven; 763/763 + 61/61; see E-009 |
-| WF-011 | External origins vs CSP vs privacy claims | P1/P2 | OPEN | — | README avatar claim stale; ARCHITECTURE img-src claim false; CORRECTION: a URL-import feature DOES exist on main (SSRF-guarded, `file.url`) — Phase-0 note 'no URL-import' was wrong, BASELINE corrected at E-008 |
+| WF-011 | External origins vs CSP vs privacy claims | P1/P2 | VERIFIED | `92f9735` | inventory complete (self-only); URL import REMOVED (D-A8); avatar/img-src docs corrected; egress helper + permanent e2e (same-origin, zero bodies); 759/759 + 63/63; see E-010 |
 | WF-012 | Production smoke + deployment traceability | P1 | OPEN | — | none exist; `playwright.other.config.ts` explained |
 | WF-013 | RNNoise provenance | P2 | OPEN | — | vendored `src/vendor/rnnoise/`, README credits wrong package |
 | WF-014 | Codec/licence hygiene (lamejs LGPL, dup libFLAC) | P2 | OPEN | — | two libflac wasm copies in precache glob |
