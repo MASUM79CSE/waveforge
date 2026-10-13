@@ -22,7 +22,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | --- | --- | --- | --- | --- | --- |
 | WF-001 | Export cancellation + resource cleanup | P0 | VERIFIED | `c737d67` | RED 6 fail → GREEN 10/10; zero timers on all terminal paths; suite 730/730 + e2e 59/59; see E-005 |
 | WF-002 | Buffer ownership/copies/transfer lists | P0 | VERIFIED | `6bd43b3` | ownership documented (MEMORY §5 rewritten); opt-in transfer for exclusive range slices (measured 71.8→22.1 ms); canonical data clone-protected (tests); 738/738 + 59/59; see E-006 |
-| WF-003 | WAV encoding on main thread | P0 | OPEN | — | static: `encodeWav` inline (`exportService.ts:45-51`) |
+| WF-003 | WAV encoding on main thread | P0 | VERIFIED | `356099c` | module worker + real progress + working cancel; byte-identity golden + independent decoders (python wave + RIFF parser); longtask 225 ms → 0; 750/750 + 59/59; see E-007 |
 | WF-004 | CSP Report-Only, no reporting, missing directives | P1 | OPEN | — | live-confirmed header |
 | WF-005 | Architecture/memory docs vs code | P2 | OPEN | — | avatar + URL-import + "LH CI gates" already contradict code |
 | WF-006 | Preact version discrepancy | P2 | OPEN | — | README says 11; declared+installed 10.29.8 |
