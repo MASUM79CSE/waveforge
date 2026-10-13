@@ -34,7 +34,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | WF-012 | Production smoke + deployment traceability | P1 | VERIFIED | (this commit) | npm run test:smoke → 3/3 against live prod; traceability: deterministic bundle hash proves prod serves `22b6aba` (index-ajTvOWzM.js match); CSP mode recorded (report-only today, tighten after merge); separate config/dir — standard suite still 64; see E-012 |
 | WF-013 | Dependency provenance (rnnoise) | P2 | VERIFIED | (this commit) | phantom `@echogarden/rnnoise-wasm` credit removed from README+NOTICES; vendored build + COPYING documented; full npm dep table with licences (LGPL lamejs pinned); depsHygiene test guards notices↔package.json agreement; 763/763; see E-013 |
 | WF-014 | Duplicate/vendored FLAC runtime | P2 | VERIFIED | (this commit) | `libflacjs` npm dep removed (imported nowhere); dead duplicate `public/vendor/libflac.min.wasm.wasm` removed (live path `/workers/…` proven by request capture); fake-indexeddb → devDeps; depsHygiene test RED→GREEN ×2; 763/763 + 64/64; see E-014, D-A11 |
-| WF-015 | Dep/repo hygiene (fake-indexeddb, @types/node, .claude) | P3 | OPEN | — | all three confirmed present; `.claude` content benign |
+| WF-015 | Dep/repo hygiene (fake-indexeddb, @types/node, .claude) | P3 | OPEN | — | fake-indexeddb placement FIXED under WF-014 (now devDependencies, test-pinned); @types/node + `.claude` disposition pending (Phase 4) |
 | WF-016 | Performance claims re-measurement | P2 | OPEN | — | baseline measured; docs update pending |
 | PF-01 | Markers (AM-07) | P1 | OPEN | — | Phase 5 |
 | PF-02 | Clip fades + crossfade (AM-06) | P1 | OPEN | — | Phase 5 |
@@ -48,4 +48,9 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 
 ## Phases 1-6
 
-Not started (strictly sequential; Phase 1 = WF-001 only, then WF-002, WF-003).
+- **Phase 1 (WF-001..003): COMPLETE — PCA PASS** (`6bd43b3`..docs; see E-005..E-007).
+- **Phase 2 (WF-009, WF-010): COMPLETE — PCA PASS** (`c51c983`, `43e3c2c`; see E-008, E-009).
+- **Phase 3 (WF-011, WF-004, WF-012, WF-013, WF-014): COMPLETE — tasks all VERIFIED; PCA run at `b3a2475`** (clean rebuild: unit 763/763, e2e 64/64, csp-under-enforce 1/1, prod smoke 3/3, validate:encoders, io 43/43, build, LH desktop 100/100/100/91, entry 118,171 B gz; see E-010..E-014, D-A8..D-A11).
+- **Phase 4 (WF-007 → WF-008 → WF-006 → WF-015 → WF-016 → WF-005): next — awaits explicit `PROCEED TO PHASE 4`.**
+- **Phase 5 (PF-01..08 + AM matrix): pending.**
+- **Phase 6 (release readiness): pending.**

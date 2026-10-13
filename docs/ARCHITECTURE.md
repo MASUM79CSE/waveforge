@@ -203,8 +203,10 @@ and shortcuts behave deterministically with stacked dialogs.
   (`vite.config.ts`). Proven by `tests/e2e/csp.spec.ts`: enforcing
   header + zero `securitypolicyviolation` across load → edit →
   WAV/FLAC export → worklet probe on the production build (WF-004;
-  DECISIONS D-A10). A hardened Report-Only policy (without
-  `'wasm-unsafe-eval'`) previews future tightening.
+  DECISIONS D-A10). The Report-Only header mirrors the enforcing
+  policy (`worklet-src` omitted — it falls back to `script-src`),
+  so any RO report is a genuinely new violation a future tightening
+  would block, without flagging the shipped encoders.
 - **No telemetry, no uploads** — structural, not policy: the app makes
   no network requests for user data, full stop. The former URL import
   was REMOVED in the WF-011 audit (it was the one feature that fetched
