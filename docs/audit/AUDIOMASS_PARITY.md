@@ -9,8 +9,8 @@ Rule: a button/menu item is not a feature — each row needs behavioral evidence
 | --- | --- | --- | --- | --- | --- | --- |
 | AM-01 | Audio import and waveform | UNVERIFIED | — | — | — | WF-009 |
 | AM-02 | Zoom, pan, selection | UNVERIFIED | — | — | — | PF-07 |
-| AM-03 | Core destructive edits (cut/copy/paste/trim/silence/reverse/invert/normalize/fades) | UNVERIFIED | — | — | — | PF-04 |
-| AM-04 | Effects workflow (preview/cancel/apply/undo) | UNVERIFIED | — | — | — | PF-04 |
+| AM-03 | Core destructive edits (cut/copy/paste/trim/silence/reverse/invert/normalize/fades) | PARTIALLY VERIFIED | gain −6 dB ×0.5 ±5 %, fade-in/out head/tail ramps, undo restores — proven on exported WAV bytes (pcm24 decoded); effects.spec 3/3 (E-022) | remaining ops (cut/copy/paste/trim/silence/reverse/invert/normalize) in AM matrix close-out | 2026-10-14 | PF-04 |
+| AM-04 | Effects workflow (preview/cancel/apply/undo) | PARTIALLY VERIFIED | apply+undo via menu flows for Gain/Fade In/Fade Out/Delay on real bytes; Delay apply toast + duration growth + undo (E-022) | dialog preview/A-B + cancel flows in AM matrix close-out | 2026-10-14 | PF-04 |
 | AM-05 | Recording (permission, start/stop, input select) | UNVERIFIED | — | mock vs real must be labeled; real-device expected NOT RUN | — | WF-012 |
 | AM-06 | Multitrack (tracks, mute/solo/vol/pan, mixdown; clip fades + crossfade) | UNVERIFIED | — | — | — | PF-02 |
 | AM-07 | Markers (named, dbl-click add, rename, delete, jump, Shift-select) | VERIFIED EQUIVALENT | kernel 6/6 + e2e 2/2 (add B/dbl-click, jump [ / ], rename/delete via menu, draft round-trip) | drag-to-move omitted — keyboard/menu equivalents (accessibility-first; B not M: M = metronome in WF) | 2026-10-13 | PF-01 |

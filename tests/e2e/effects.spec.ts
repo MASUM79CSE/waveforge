@@ -221,3 +221,159 @@ test('effects menu is organized into labelled sections', async ({ page }) => {
     timeout: 10_000,
   });
 });
+
+
+// ---- PF-04 / AM-03+AM-04: gain, fades, delay flows ----
+// The editOps path (gain/fades) commits through performEdit WITHOUT the
+// 'Applied' toast (that belongs to the FX-dialog path), and the initial
+// document load already occupies a history slot, so commit is proven the
+// strongest way: by parsing the EXPORTED WAV bytes before/after the edit.
+// The default WAV export is PCM-24 (exportFormats.ts defaultQuality), so
+// the parser reads bitsPerSample from the fmt chunk and decodes pcm16,
+// pcm24 and float32 (fmt tag 3) accordingly.
+
+import { readFileSync } from 'node:fs';
+
+interface WavStats {
+  peak: number;
+  headMean: number;
+  tailMean: number;
+}
+
+/** Decode one sample of the given width/sign from the data section. */
+function sampleAt(view: DataView, offset: number, tag: number, bits: number): number {
+  if (tag === 3 && bits === 32) return view.getFloat32(offset, true);
+  if (bits === 16) return view.getInt16(offset, true) / 32768;
+  if (bits === 24) {
+    const raw =
+      view.getUint8(offset) | (view.getUint8(offset + 1) << 8) | (view.getUint8(offset + 2) << 16);
+    return ((raw << 8) >> 8) / 8388608; // sign-extend 24 -> 32 bits
+  }
+  throw new Error(`unsupported wav sample format: tag=${tag} bits=${bits}`);
+}
+
+/** Export the doc as WAV (default format) and compute level stats from the bytes. */
+async function exportWavStats(page: import('@playwright/test').Page): Promise<WavStats> {
+  await page.getByRole('button', { name: 'File' }).click();
+  await page.getByRole('menuitem', { name: /export/i }).click();
+  const panel = page.getByRole('dialog');
+  await expect(panel).toBeVisible();
+  const download = page.waitForEvent('download');
+  await panel.getByRole('button', { name: /export/i }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(/\.wav$/i);
+  const bytes = readFileSync(await file.path());
+  // minimal RIFF walk: fmt (tag, channels, bits) + data
+  let pos = 12;
+  let tag = 1;
+  let bits = 16;
+  let dataOffset = -1;
+  let dataLen = 0;
+  while (pos + 8 <= bytes.length) {
+    const id = bytes.subarray(pos, pos + 4).toString('ascii');
+    const size = bytes.readUInt32LE(pos + 4);
+    if (id === 'fmt ') {
+      tag = bytes.readUInt16LE(pos + 8);
+      bits = bytes.readUInt16LE(pos + 22); // fmt+14: tag, ch, rate, byteRate, align, then bits
+    }
+    if (id === 'data') {
+      dataOffset = pos + 8;
+      dataLen = size;
+      break;
+    }
+    pos += 8 + size + (size % 2);
+  }
+  expect(dataOffset).toBeGreaterThan(0);
+  expect([16, 24, 32]).toContain(bits);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const frameBytes = (bits / 8) * 2; // stereo
+  const n = Math.floor(dataLen / frameBytes);
+  let peak = 0;
+  let head = 0;
+  let tail = 0;
+  const edge = Math.min(4410, n); // ~100 ms
+  const tailStart = n - edge;
+  for (let i = 0; i < n; ++i) {
+    const a = Math.abs(sampleAt(view, dataOffset + i * frameBytes, tag, bits));
+    if (a > peak) peak = a;
+    if (i < edge) head += a;
+    if (i >= tailStart) tail += a;
+  }
+  await page.keyboard.press('Escape'); // the export dialog stays open on success
+  await expect(panel).toBeHidden();
+  return { peak, headMean: head / edge, tailMean: tail / edge };
+}
+
+async function openEffectsMenu(page: import('@playwright/test').Page, label: RegExp): Promise<void> {
+  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: label }).click();
+}
+
+test('effects: Gain −6 dB halves the exported levels, undo restores them (AM-03/AM-04)', async ({
+  page,
+}) => {
+  await loadSample(page);
+  const before = await exportWavStats(page);
+  await page.keyboard.press('Control+a');
+  await openEffectsMenu(page, /^Gain$/);
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.locator('#prompt-value').fill('-6');
+  await dialog.getByRole('button', { name: 'Apply' }).click();
+  await page.waitForTimeout(400); // edit commits synchronously; settle menus
+  const after = await exportWavStats(page);
+  // −6 dB = ×0.5012; the demo is full-scale so the negative direction is clip-free
+  expect(after.peak).toBeGreaterThan(before.peak * 0.476);
+  expect(after.peak).toBeLessThan(before.peak * 0.526);
+  expect(after.headMean).toBeGreaterThan(before.headMean * 0.476);
+  expect(after.headMean).toBeLessThan(before.headMean * 0.526);
+  await page.keyboard.press('Control+z');
+  await page.waitForTimeout(400);
+  const restored = await exportWavStats(page);
+  expect(Math.abs(restored.peak - before.peak)).toBeLessThan(before.peak * 0.01);
+  expect(Math.abs(restored.headMean - before.headMean)).toBeLessThan(before.headMean * 0.01);
+});
+
+test('effects: Fade In silences the head, Fade Out the tail; undo restores (AM-03)', async ({
+  page,
+}) => {
+  await loadSample(page);
+  const before = await exportWavStats(page);
+  expect(before.headMean).toBeGreaterThan(0.005); // demo starts loud
+  expect(before.tailMean).toBeGreaterThan(0.005);
+
+  await page.keyboard.press('Control+a');
+  await openEffectsMenu(page, /^Fade In$/); // instant destructive edit — no dialog
+  await page.waitForTimeout(400);
+  const fadedIn = await exportWavStats(page);
+  expect(fadedIn.headMean).toBeLessThan(before.headMean / 5); // head ramped toward 0
+  expect(fadedIn.tailMean).toBeGreaterThan(before.tailMean * 0.95); // tail untouched
+  await page.keyboard.press('Control+z');
+  await page.waitForTimeout(400);
+
+  await page.keyboard.press('Control+a');
+  await openEffectsMenu(page, /^Fade Out$/);
+  await page.waitForTimeout(400);
+  const fadedOut = await exportWavStats(page);
+  expect(fadedOut.tailMean).toBeLessThan(before.tailMean / 5); // tail ramped toward 0
+  expect(fadedOut.headMean).toBeGreaterThan(before.headMean * 0.95); // head untouched
+  await page.keyboard.press('Control+z');
+  await page.waitForTimeout(400);
+  const restored = await exportWavStats(page);
+  expect(restored.headMean).toBeGreaterThan(before.headMean * 0.99);
+  expect(restored.tailMean).toBeGreaterThan(before.tailMean * 0.99);
+});
+
+test('effects: Delay grows the region by its feedback tail and undoes (AM-04)', async ({ page }) => {
+  await loadSample(page);
+  await page.keyboard.press('Control+a');
+  await openEffectsMenu(page, /^Delay$/);
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Apply' }).click(); // defaults: 0.3 s, fb 0.35
+  await expect(page.locator('.toast-msg').last()).toContainText(/Applied/i, { timeout: 15_000 });
+  // 9.27 s demo + delay tail (0.3 s x ~7 repeats @ fb 0.35) -> duration leaves 9.27
+  await expect(page.getByText(/9\.27 s/)).toBeHidden({ timeout: 15_000 });
+  await page.keyboard.press('Control+z');
+  await expect(page.getByText(/9\.27 s/)).toBeVisible({ timeout: 8000 });
+});

@@ -39,7 +39,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | PF-01 | Markers (AM-07) | P1 | VERIFIED | (this commit) | kernel+commands+keys (B/[/]/Shift)+dbl-click+draft persistence; e2e 2/2 + kernel 6/6; 3 own bugs caught (unit mismatch, prompt race, consumed draft commands); see E-021 |
 | PF-02 | Clip fades + crossfade (AM-06) | P1 | OPEN | — | Phase 5 |
 | PF-03 | Repair tools: click/hum/edit-point (AM-09) | P1 | OPEN | — | Phase 5 |
-| PF-04 | Gain/fade in/out/delay verification (AM-03/04) | P2 | OPEN | — | Phase 5 |
+| PF-04 | Gain/fade in/out/delay verification (AM-03/04) | P2 | VERIFIED | (this commit) | exported-WAV byte proof (pcm16/24/f32 parser); Gain −6 dB ×0.5 ±5 % + undo; Fade In/Out head/tail + undo; Delay tail + undo; effects.spec 13/13; RED root-caused as test-side 24-bit misparse (E-022) |
 | PF-05 | Portable project file (AM-12) | P2 | OPEN | — | Phase 5 |
 | PF-06 | Seamless-loop maker (AM-11) | P2 | OPEN | — | Phase 5 |
 | PF-07 | Touch/mobile gestures (AM-02/06) | P2 | OPEN | — | Phase 5; real-device = NOT RUN expected |
