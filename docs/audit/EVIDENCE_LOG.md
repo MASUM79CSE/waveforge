@@ -348,3 +348,13 @@ One entry per verification. Fields: ID · date/time (Asia/Dhaka, UTC+6) · Git S
 - **Gap & Error Sweep (H):** command registry 85→86 counted ✓; no doc/state invariants touched (view-only flag) ✓; privacy unchanged ✓; keyboard unchanged (reference has no shortcut for it — none added) ✓; i18n en ✓.
 - **Reviewer:** agent (self), independent diff re-read per 5.2-G.
 - **Limitations:** lines drawn only in bucket mode (spp ≥ 1) — sample-level zoom shows actual samples, separators are meaningless there; e2e pixel-prove rather than exact line-coordinate assert (geometry follows the shared amp scale, unit-covered by vzoom clamps).
+
+## E-029 — AM-14 closure: reference key bindings (X crossfade, Ctrl/Shift+S export)
+- **ID/task:** AM-14 disposition (verify queue) · **Date:** 2026-10-14 (Phase 5) · **SHA:** see git log
+- **Found (RED):** reference key map (engine.js KeyCrossfade [88], KeyModSave/KeyShiftSave [83]) had no WF equivalents — `tests/unit/shortcuts.test.ts` extended first (2 new tests RED: bare X + Ctrl/Shift+S resolved null; stale 'plain letters' assertion updated to the new truth).
+- **Built:** `shortcuts.ts`: union += `clip.crossfade` + `file.export`; mod branch case 's' → file.export (KeyModSave — SPA browser save dialog is useless); arrangement branch case 'x' → clip.crossfade (KeyCrossfade); legacy shift branch case 's' → file.export (KeyShiftSave). No keyboard.ts change (resolved commands run generically). Tab deliberately NOT bound — recorded as an intentional AM-14 difference (a11y focus traversal).
+- **Commands + results:** shortcuts unit 16/16 RED→GREEN · e2e keybindings 2/2 (Ctrl+S opens the export dialog; project-mode bare X reaches the crossfade command — 'No adjacent clip to crossfade' toast on a single clip) · full unit 819/819 (96 files) · tsc ✓ lint ✓ (bundle: shortcuts.ts is a tiny pure module inside the main chunk; +~100 B raw — gate re-checked at next phase close).
+- **Classification:** parity-gap closure (additive key bindings). NOT a defect fix.
+- **Gap & Error Sweep (H):** no new commands (both ids existed: clip.crossfade PF-02, file.export pre-audit) ✓; typing guards unchanged (isTypingTarget before resolution) ✓; Alt combos still browser-owned ✓; legacy Shift+X = cut preserved ✓; i18n n/a (no new UI strings) ✓; privacy unchanged ✓.
+- **Reviewer:** agent (self), independent diff re-read per 5.2-G.
+- **Limitations:** bare-X crossfade fires the same command as the Edit menu (selection semantics identical, PF-02 evidence applies); no per-key e2e for Shift+S (unit-covered; the Ctrl+S e2e proves the shared file.export wiring).
