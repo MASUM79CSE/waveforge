@@ -8,7 +8,7 @@ Rule: a button/menu item is not a feature — each row needs behavioral evidence
 | ID | Feature area | Status | Evidence | Limitations | Test date | Linked |
 | --- | --- | --- | --- | --- | --- | --- |
 | AM-01 | Audio import and waveform | UNVERIFIED | — | — | — | WF-009 |
-| AM-02 | Zoom, pan, selection | UNVERIFIED | — | — | — | PF-07 |
+| AM-02 | Zoom, pan, selection | VERIFIED EQUIVALENT | +/−/0 keys, ctrl+wheel anchored zoom, wheel pan, zoom bar, drag selection + readouts + Clear(Q), zero-cross snap (default on, beats priority), Center to Cursor, Follow Cursor — all behaviorally proven (×zoom readout + canvas pixel diffs); touch: single-finger select/tap-seek, two-finger pinch zoom + pan (E-024) | touch evidence is EMULATED (Playwright hasTouch + CDP) — real-device NOT RUN; reference Center key = Tab, WF uses the View menu (Tab reserved for focus navigation — intentional) | 2026-10-14 | PF-07 |
 | AM-03 | Core destructive edits (cut/copy/paste/trim/silence/reverse/invert/normalize/fades) | PARTIALLY VERIFIED | gain −6 dB ×0.5 ±5 %, fade-in/out head/tail ramps, undo restores — proven on exported WAV bytes (pcm24 decoded); effects.spec 3/3 (E-022) | remaining ops (cut/copy/paste/trim/silence/reverse/invert/normalize) in AM matrix close-out | 2026-10-14 | PF-04 |
 | AM-04 | Effects workflow (preview/cancel/apply/undo) | PARTIALLY VERIFIED | apply+undo via menu flows for Gain/Fade In/Fade Out/Delay on real bytes; Delay apply toast + duration growth + undo (E-022) | dialog preview/A-B + cancel flows in AM matrix close-out | 2026-10-14 | PF-04 |
 | AM-05 | Recording (permission, start/stop, input select) | UNVERIFIED | — | mock vs real must be labeled; real-device expected NOT RUN | — | WF-012 |
