@@ -205,6 +205,15 @@ export const beats = signal<number[]>([]); // seconds, ascending
 export const analysisBusy = signal<'bpm' | 'lufs' | 'report' | null>(null);
 export const analysisPanelOpen = signal(readStoredBool('analysis', false));
 export const beatsShown = signal(readStoredBool('beats', true));
+/** PF-08: the analysis panel runs detached (floating) — session-only. */
+export const analysisDetached = signal(false);
+/** PF-08: floating position (css px); null = not yet placed (default spot). */
+export const analysisPanelPos = signal<{ x: number; y: number } | null>(null);
+
+export function setAnalysisDetached(value: boolean): void {
+  analysisDetached.value = value;
+  if (!value) analysisPanelPos.value = null;
+}
 
 export function setAnalysisPanelOpen(value: boolean): void {
   analysisPanelOpen.value = value;

@@ -1396,6 +1396,55 @@
   gap: 4px;
 }
 
+/* PF-08: detached floating panel + its header/drag handle */
+.analysis-panel-float {
+  position: fixed;
+  z-index: 60;
+  left: 8px;
+  top: 8px;
+  width: min(560px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  border: 1px solid #232b36;
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 55%);
+}
+.analysis-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+}
+.analysis-panel-title {
+  flex: 1;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8fa3b0;
+  user-select: none;
+}
+.analysis-panel-float .analysis-panel-head {
+  cursor: grab;
+  touch-action: none;
+}
+.analysis-panel-handle {
+  border: 1px solid #232b36;
+  border-radius: 4px;
+  background: #10161f;
+  color: #8fa3b0;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+}
+.analysis-panel-handle[hidden] {
+  display: none;
+}
+.analysis-panel-handle:focus-visible {
+  outline: 2px solid #3ddad0;
+}
+
 .analysis-spectrum {
   display: block;
   width: 100%;
