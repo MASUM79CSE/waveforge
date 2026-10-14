@@ -242,10 +242,16 @@ export async function openFileObject(file: File): Promise<void> {
 export function pickAudioFile(): void {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'audio/*,.mp3,.wav,.flac,.ogg,.oga,.opus,.m4a,.aac,.aif,.aiff,.webm';
+  input.accept = 'audio/*,.amss,.mp3,.wav,.flac,.ogg,.oga,.opus,.m4a,.aac,.aif,.aiff,.webm';
   input.onchange = () => {
     const file = input.files?.[0];
-    if (file) void openFileObject(file);
+    if (!file) return;
+    // PF-05: portable session files ride the same open path (reference accept)
+    if (/\.amss$/i.test(file.name)) {
+      void import('./sessionActions').then((m) => m.openSessionFile(file));
+      return;
+    }
+    void openFileObject(file);
   };
   input.click();
 }
