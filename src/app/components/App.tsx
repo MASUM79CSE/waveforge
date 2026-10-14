@@ -5,7 +5,7 @@ import { TransportBar } from './TransportBar';
 import { StatusBar } from './StatusBar';
 import { Toasts } from './Toasts';
 import { AboutDialog, WelcomeDialog } from './Dialogs';
-import { ClipFadesDialog, GainDialog, MarkerNameDialog, NormalizeDialog, SeamlessLoopDialog } from './PromptDialogs';
+import { AudioRepairDialog, ClipFadesDialog, GainDialog, MarkerNameDialog, NormalizeDialog, SeamlessLoopDialog } from './PromptDialogs';
 import { EffectDialog } from './EffectDialog';
 import { FxRackDialog } from './FxRackDialog';
 import { Pgeq8Dialog } from './Pgeq8Dialog';
@@ -52,6 +52,7 @@ export function App() {
       <GainDialog />
       <SeamlessLoopDialog />
       <ClipFadesDialog />
+      <AudioRepairDialog />
       <NormalizeDialog />
       <MarkerNameDialog />
       {effectDialogId.value === 'fx.pgeq8' ? (

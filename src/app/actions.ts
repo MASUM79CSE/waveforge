@@ -165,6 +165,16 @@ export function closeNormalizePrompt(): void {
   S.normalizePromptOpen.value = false;
 }
 
+/** Open the Audio Repair dialog (PF-03). */
+export function openRepairPrompt(): void {
+  S.repairPromptOpen.value = true;
+}
+
+/** Close the Audio Repair dialog without applying. */
+export function closeRepairPrompt(): void {
+  S.repairPromptOpen.value = false;
+}
+
 export function toggleZeroCross(): void {
   S.setZeroCrossEnabled(!S.zeroCrossEnabled.value);
 }

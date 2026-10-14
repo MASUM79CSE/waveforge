@@ -72,6 +72,8 @@ export const seamlessOpen = signal(false);
 /** PF-02/AM-06: clip fade dialog. */
 export const clipFadesOpen = signal(false);
 export const normalizePromptOpen = signal(false);
+/** Open Audio Repair dialog (PF-03, doc mode only). */
+export const repairPromptOpen = signal(false);
 
 // editing
 export const canUndo = signal(false);

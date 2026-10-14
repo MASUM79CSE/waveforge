@@ -4,7 +4,7 @@ import { signal } from '@preact/signals';
 import { Modal } from './Modal';
 import { closeGainPrompt, closeNormalizePrompt, closeSeamlessLoop } from '../actions';
 import { applyGainDb, applyNormalize, applySeamlessLoop } from '../editActions';
-import { clipFadesOpen, gainPromptOpen, markerPrompt, normalizePromptOpen, seamlessOpen } from '../state';
+import { clipFadesOpen, gainPromptOpen, markerPrompt, normalizePromptOpen, repairPromptOpen, seamlessOpen } from '../state';
 import { closeMarkerPrompt, confirmMarkerPrompt } from '../markersActions';
 import { GAIN_MAX_DB, GAIN_MIN_DB, NORMALIZE_TARGET_DB } from '../../core/constants';
 import { PromptDialog, TextPromptDialog } from './PromptDialog';
@@ -154,5 +154,16 @@ export function ClipFadesDialog() {
   const open = clipFadesOpen.value;
   const Impl = fadesImpl.value;
   if (open && !Impl) void import('../clipFadeOps').then((m) => (fadesImpl.value = m.ClipFadesDialog));
+  return open && Impl ? <Impl /> : null;
+}
+
+/** PF-03: the repair dialog + kernels live in the lazy clipFadeOps-style
+ * chunk (WF-007 budget); this shim mounts it on demand. */
+const repairImpl = signal<null | ComponentType>(null);
+
+export function AudioRepairDialog() {
+  const open = repairPromptOpen.value;
+  const Impl = repairImpl.value;
+  if (open && !Impl) void import('../repairOps').then((m) => (repairImpl.value = m.AudioRepairDialog));
   return open && Impl ? <Impl /> : null;
 }

@@ -101,6 +101,13 @@ export const commands: Command[] = [
   { id: 'fx.reverse', label: () => t().fxReverse, run: () => EA.applyReverse() },
   { id: 'fx.invert', label: () => t().fxInvert, run: () => EA.applyInvert(), sep: true },
   { id: 'fx.removeSilence', label: () => t().fxRemoveSilence, run: () => EA.applyRemoveSilence() },
+  {
+    id: 'fx.repair',
+    label: () => t().fxRepair,
+    // reference parity: Audio Repair is a single-editor tool (the lazy
+    // chunk refuses in project mode); kernels stay off the startup path
+    run: () => void import('./repairOps').then((m) => m.repairFromCommand(projectOpen.value)),
+  },
   { id: 'fx.compressor', label: () => t().fxCompressor, run: () => A.openEffectDialog('fx.compressor') },
   { id: 'fx.limiter', label: () => t().fxLimiter, run: () => A.openEffectDialog('fx.limiter') },
   { id: 'fx.pgeq8', label: () => t().fxPgeq8, run: () => A.openEffectDialog('fx.pgeq8') },

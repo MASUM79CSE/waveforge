@@ -105,7 +105,7 @@ export const menus: MenuDef[] = [
       { header: () => t().fxGroupDistortion, items: ['fx.distortion'] },
       { header: () => t().fxGroupTimePitch, items: ['fx.rate', 'fx.stretch'] },
       { header: () => t().fxGroupAmplitude, items: ['fx.gain', 'fx.fadeIn', 'fx.fadeOut', 'fx.normalize', 'fx.normalizeLufs'] },
-      { header: () => t().fxGroupSpecial, items: ['fx.reverse', 'fx.invert', 'fx.removeSilence'] },
+      { header: () => t().fxGroupSpecial, items: ['fx.repair', 'fx.reverse', 'fx.invert', 'fx.removeSilence'] },
     ],
   },
   {
