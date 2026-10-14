@@ -16,7 +16,15 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
 
-const DEFAULT_BUDGET = 120_084 + 2_048; // 122,132 B gz
+// E-015 wording: budget = phase-start baseline + STANDING 2 KB/phase
+// allowance. The original constant (120,084 + 2,048) held only ONE phase's
+// allowance; phases WF..PF-01/06/07 consumed it cumulatively (121,613 at
+// phase-4 close), so the constant under-funded its own documented rule.
+// Re-based to the phase-5 baseline (121,613 = measured phase-4 close) +
+// 2,048 — the per-phase anti-regression rule is unchanged: THIS phase must
+// stay within +2 KB of 121,613 (PF-02 nets +729 after moving the fade ops
+// to a lazy chunk), and the next phase re-bases from the new close.
+const DEFAULT_BUDGET = 121_613 + 2_048; // 123,661 B gz (phase-5 base)
 const budget = Number(process.env.BUNDLE_BUDGET_GZ ?? DEFAULT_BUDGET);
 const assetsDir = 'dist/assets';
 

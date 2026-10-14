@@ -69,6 +69,8 @@ export const sessionNoisePrint = signal<Float32Array | null>(null);
 export const gainPromptOpen = signal(false);
 /** PF-06/AM-11: seamless-loop maker dialog. */
 export const seamlessOpen = signal(false);
+/** PF-02/AM-06: clip fade dialog. */
+export const clipFadesOpen = signal(false);
 export const normalizePromptOpen = signal(false);
 
 // editing

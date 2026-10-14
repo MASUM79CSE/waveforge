@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
+import type { ComponentType } from 'preact';
+import { signal } from '@preact/signals';
 import { Modal } from './Modal';
 import { closeGainPrompt, closeNormalizePrompt, closeSeamlessLoop } from '../actions';
 import { applyGainDb, applyNormalize, applySeamlessLoop } from '../editActions';
-import { gainPromptOpen, markerPrompt, normalizePromptOpen, seamlessOpen } from '../state';
+import { clipFadesOpen, gainPromptOpen, markerPrompt, normalizePromptOpen, seamlessOpen } from '../state';
 import { closeMarkerPrompt, confirmMarkerPrompt } from '../markersActions';
 import { GAIN_MAX_DB, GAIN_MIN_DB, NORMALIZE_TARGET_DB } from '../../core/constants';
 import { PromptDialog, TextPromptDialog } from './PromptDialog';
@@ -143,4 +145,14 @@ export function SeamlessLoopDialog() {
       </div>
     </Modal>
   );
+}
+
+/** PF-02: the fades dialog lives in the lazy clipFadeOps chunk (WF-007). */
+const fadesImpl = signal<null | ComponentType>(null);
+
+export function ClipFadesDialog() {
+  const open = clipFadesOpen.value;
+  const Impl = fadesImpl.value;
+  if (open && !Impl) void import('../clipFadeOps').then((m) => (fadesImpl.value = m.ClipFadesDialog));
+  return open && Impl ? <Impl /> : null;
 }

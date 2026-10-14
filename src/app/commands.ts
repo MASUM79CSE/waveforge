@@ -229,6 +229,19 @@ export const commands: Command[] = [
     },
   },
   {
+    id: 'clip.fades',
+    label: () => t().clipFades,
+    run: () => {
+      if (CA.selectedClip()) A.openClipFades();
+      else if (projectOpen.value) toastInfo(t().clipNone);
+    },
+  },
+  {
+    id: 'clip.crossfade',
+    label: () => t().clipCrossfadeMenu,
+    run: () => void import('./clipFadeOps').then((FO) => FO.crossfadeFromCommand()),
+  },
+  {
     id: 'clip.delete',
     label: () => t().clipDelete,
     kbd: () => 'Del',

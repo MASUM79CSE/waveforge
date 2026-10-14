@@ -1,3 +1,4 @@
+import { crossfadeClips, setClipFades, uncrossfadeClips } from '../../src/engine/clipFadesKernels';
 import { describe, expect, test } from 'vitest';
 import {
   clipEnd,
@@ -214,5 +215,184 @@ describe('M9a render kernels — bit anchors', () => {
     );
     expect(singleMs).toBeLessThan(500); // budget 120 uninstrumented (smoke)
     expect(tiledMs).toBeLessThan(1500); // budget 400 uninstrumented (ADR 009 smoke)
+  });
+});
+
+// ---- PF-02 / AM-06: clip fades + crossfade ----
+describe('clip fades + crossfade (PF-02)', () => {
+  test('RED: kernels exist', () => {
+    expect(setClipFades).toBeTypeOf('function');
+    expect(crossfadeClips).toBeTypeOf('function');
+    expect(uncrossfadeClips).toBeTypeOf('function');
+  });
+
+  test('setClipFades clamps fi+fo to the clip length and zeroes sub-5 ms values', () => {
+    const first = clip(0, SR); // 1 s clip
+    const track = { clips: [first] };
+    const out = setClipFades(track, first.id, 1000, SR - 400);
+    const c = out.clips[0]!;
+    expect(c.fadeIn).toBe(1000);
+    expect(c.fadeOut).toBe(SR - 1000); // fo clamped so fi+fo <= duration
+    const tiny = setClipFades(track, first.id, 220, 220); // < 5 ms @ 44.1 kHz
+    expect(tiny.clips[0]!.fadeIn).toBe(0);
+    expect(tiny.clips[0]!.fadeOut).toBe(0);
+  });
+
+  test('fade gains are quadratic (p²) like the reference fadeGain', () => {
+    const a = asset('a1', SR, 0.25);
+    const fi = Math.round(SR / 100); // 10 ms
+    const fo = Math.round(SR / 100);
+    const c = { ...clip(0, SR), fadeIn: fi, fadeOut: fo };
+    const [L] = renderClipTrack({ clips: [c] }, new Map([['a1', a]]));
+    expect(L?.[0]).toBeCloseTo(0, 6); // p=0
+    const i = Math.round(fi / 2);
+    expect(L?.[i]).toBeCloseTo(0.25 * (i / fi) ** 2, 5); // quadratic p²
+    expect(L?.[fi - 1]).toBeCloseTo(0.25 * ((fi - 1) / fi) ** 2, 5); // p→1
+    // fade-out: gain ((fo-j)/fo)²
+    const j = Math.round(fo / 2);
+    expect(L?.[SR - fo + j]).toBeCloseTo(0.25 * ((fo - j) / fo) ** 2, 5);
+    expect(L?.[SR - 1]).toBeCloseTo(Math.pow(1 / fo, 2) * 0.25, 6); // j = fo-1
+    // body untouched
+    expect(L?.[fi + 100]).toBeCloseTo(0.25, 6);
+  });
+
+  test('crossfadeClips extends the earlier clip and marks the pair on the later clip', () => {
+    const a = asset('a1', SR, 0.5); // headroom beyond the 1000-sample window
+    const b = asset('a2', SR, -0.25);
+    const first = clip(0, 1000, 0, 'a1');
+    const second = clip(1000, 1000, 0, 'a2');
+    const track = { clips: [first, second] };
+    const len = 441; // 10 ms — above the 5 ms activation floor
+    const out = crossfadeClips(track, second.id, len, new Map([['a1', a], ['a2', b]]));
+    const earlier = out.clips[0]!;
+    const later = out.clips[1]!;
+    expect(earlier.duration).toBe(1000 + len); // extended over the boundary
+    expect(earlier.start).toBe(first.start);
+    expect(later.xfadeWith).toBe(earlier.id);
+    expect(clipEnd(earlier)).toBe(1441); // overlap [1000, 1441)
+  });
+
+  test('crossfadeClips falls back to slipping the later clip earlier (split clips)', () => {
+    // earlier: asset a1 fully consumed (no headroom); later: offset 1000
+    const a1 = asset('a1', 1000, 0.5);
+    const a2 = asset('a2', 2000, 0.25);
+    const map = new Map([['a1', a1], ['a2', a2]]);
+    const later = clip(1000, 1000, 1000, 'a2');
+    const track = { clips: [clip(0, 1000, 0, 'a1'), later] };
+    const out = crossfadeClips(track, later.id, 441, map);
+    const earlier = out.clips[0]!;
+    const slipped = out.clips[1]!;
+    expect(earlier.duration).toBe(1000); // untouched
+    expect(slipped.start).toBe(1000 - 441); // slipped over the boundary
+    expect(slipped.offset).toBe(1000 - 441); // asset audio exists there
+    expect(slipped.xfadeWith).toBe(earlier.id);
+    const [L] = renderClipTrack(out, map);
+    expect(L![800]!).toBeCloseTo(0.5 * Math.cos(((800 - 559) / 441) * (Math.PI / 2)) + 0.25 * Math.sin(((800 - 559) / 441) * (Math.PI / 2)), 5);
+  });
+
+  test('crossfadeClips refuses sub-5 ms overlaps', () => {
+    const map = new Map([['a1', asset('a1', SR, 0.5)], ['a2', asset('a2', SR, 0.25)]]);
+    const track = { clips: [clip(0, 1000, 0, 'a1'), clip(1000, 1000, 0, 'a2')] };
+    expect(() => crossfadeClips(track, track.clips[1]!.id, 200, map)).toThrow(); // 200 < 220.5
+  });
+
+  test('crossfadeClips refuses non-adjacent pairs and insufficient asset headroom', () => {
+    const a = asset('a1', 1000, 0.5); // NO headroom beyond the first clip
+    const b = asset('a2', SR, -0.25);
+    const map = new Map([['a1', a], ['a2', b]]);
+    const adjacent = { clips: [clip(0, 1000, 0, 'a1'), clip(1000, 1000, 0, 'a2')] };
+    expect(() => crossfadeClips(adjacent, adjacent.clips[1]!.id, 441, map)).toThrow();
+    const gapped = { clips: [clip(0, 1000, 0, 'a1'), clip(2000, 1000, 0, 'a2')] };
+    const gappedMap = new Map([['a1', asset('a1', SR, 0.5)], ['a2', b]]);
+    expect(() => crossfadeClips(gapped, gapped.clips[1]!.id, 200, gappedMap)).toThrow(); // gap > 5 ms
+  });
+
+  test('render: equal-power cos/sin gains across the overlap; edges exact', () => {
+    const a = asset('a1', SR, 0.5);
+    const b = asset('a2', SR, -0.25);
+    const map = new Map([['a1', a], ['a2', b]]);
+    const second = clip(1000, 1000, 0, 'a2');
+    const track = { clips: [clip(0, 1000, 0, 'a1'), second] };
+    const len = 441; // 10 ms
+    const out = crossfadeClips(track, second.id, len, map);
+    const [L] = renderClipTrack(out, map);
+    // overlap [1000, 1441): earlier (a1, 0.5) gets cos(p·π/2); later (a2,
+    // −0.25) gets sin(p·π/2); assert the closed-form gains at probed indices
+    const at = (i: number): number => {
+      const p = i / len;
+      return 0.5 * Math.cos((p * Math.PI) / 2) - 0.25 * Math.sin((p * Math.PI) / 2);
+    };
+    expect(L![1000]!).toBeCloseTo(0.5, 5); // p=0: cos=1, sin=0
+    expect(L![1000 + 220]!).toBeCloseTo(at(220), 5);
+    expect(L![1000 + 440]!).toBeCloseTo(at(440), 5);
+    expect(L![1440]!).toBeCloseTo(-0.25 * Math.sin((440 / 441) * (Math.PI / 2)) + 0.5 * Math.cos((440 / 441) * (Math.PI / 2)), 5);
+    // outside the overlap: pure sources
+    expect(L![500]).toBe(0.5);
+    expect(L![1500]).toBe(-0.25);
+  });
+
+  test('xfade overrides fi/fo inside the overlap; fades still apply outside it', () => {
+    const a = asset('a1', SR, 0.5);
+    const b = asset('a2', SR, 0.25);
+    const map = new Map([['a1', a], ['a2', b]]);
+    const first = clip(0, 1000, 0, 'a1');
+    const second = clip(1000, 1000, 0, 'a2');
+    const track = { clips: [first, second] };
+    const fi = 441; // 10 ms — above the sub-5 ms snap floor
+    const out = crossfadeClips(track, second.id, 441, map);
+    const withFades = setClipFades(out, first.id, fi, 0); // earlier clip fades in
+    const [L] = renderClipTrack(withFades, map);
+    // inside the fi window but BEFORE the overlap: quadratic applies (t < 1000)
+    expect(L![100]!).toBeCloseTo(0.5 * Math.pow(100 / fi, 2), 4);
+    // inside the overlap: xfade wins (constant 0.5 at p=0)
+    expect(L![1000]).toBeCloseTo(0.5, 4);
+    // later clip has no fades outside the overlap
+    expect(L![1500]).toBeCloseTo(0.25, 5);
+  });
+
+  test('dangling xfadeWith (partner removed) renders as plain fades', () => {
+    const a = asset('a1', SR, 0.5);
+    const b = asset('a2', SR, 0.25);
+    const map = new Map([['a1', a], ['a2', b]]);
+    const track = { clips: [clip(0, 1000, 0, 'a1'), clip(1000, 1000, 0, 'a2')] };
+    const x = crossfadeClips(track, track.clips[1]!.id, 441, map);
+    const removed = removeClip(x, track.clips[0]!.id);
+    const [L] = renderClipTrack(removed, map);
+    expect(L![1000]).toBeCloseTo(0.25, 5); // later clip head plays at full gain
+    expect(L![500]).toBe(0); // earlier clip gone
+  });
+
+  test('fast render stays bit-equal to the slow reference with fades + xfade', () => {
+    const a = asset('a1', SR, 0.5);
+    const b = asset('a2', SR, 0.25);
+    const map = new Map([['a1', a], ['a2', b]]);
+    const track = { clips: [clip(0, 1000, 0, 'a1'), clip(1000, 1000, 0, 'a2')] };
+    const x = crossfadeClips(track, track.clips[1]!.id, 441, map);
+    const f = setClipFades(x, track.clips[0]!.id, 150, 0);
+    const fast = renderClipTrack(f, map);
+    const slow = renderClipTrackReference(f, map);
+    expect(Array.from(fast[0]!)).toEqual(Array.from(slow[0]!));
+    expect(Array.from(fast[1]!)).toEqual(Array.from(slow[1]!));
+  });
+
+  test('renderRegion honors clip fades', () => {
+    const a = asset('a1', SR, 0.25);
+    const fi = 200;
+    const c = { ...clip(0, 1000, 0, 'a1'), fadeIn: fi };
+    const [L] = renderRegion({ clips: [c] }, new Map([['a1', a]]), 0, 500);
+    expect(L?.[0]).toBeCloseTo(0, 6);
+    expect(L?.[100]).toBeCloseTo(0.25 * Math.pow(100 / fi, 2), 5);
+    expect(L?.[300]).toBeCloseTo(0.25, 5);
+  });
+
+  test('uncrossfadeClips clears the marker and keeps the geometry', () => {
+    const map = new Map([['a1', asset('a1', SR, 0.5)], ['a2', asset('a2', SR, 0.25)]]);
+    const track = { clips: [clip(0, 1000, 0, 'a1'), clip(1000, 1000, 0, 'a2')] };
+    const x = crossfadeClips(track, track.clips[1]!.id, 441, map);
+    const u = uncrossfadeClips(x, track.clips[1]!.id);
+    expect(u.clips[0]!.duration).toBe(1441); // geometry kept (reference keeps it too)
+    expect(u.clips[1]!.xfadeWith).toBeUndefined();
+    const [L] = renderClipTrack(u, map);
+    expect(L![1100]).toBeCloseTo(0.75, 5); // plain additive mix again
   });
 });

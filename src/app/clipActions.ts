@@ -68,7 +68,7 @@ export function snapClipPosition(
 
 // ---- arrange cores (editor-explicit; one history entry per call) ----
 
-function clipEdit(
+export function clipEdit(
   ed: AudioProjectEditor,
   trackId: string,
   label: string,
@@ -262,3 +262,4 @@ export function deleteSelectedClip(): boolean {
 export function snapForDrag(sample: number, sampleRate: number, beats: readonly number[]): number {
   return snapClipPosition(sample, sampleRate, beats, snapToBeat.value);
 }
+

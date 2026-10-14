@@ -37,7 +37,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | WF-015 | Dep/repo hygiene (fake-indexeddb, @types/node, .claude) | P3 | VERIFIED | (this commit) | fake-indexeddb → devDeps (WF-014); @types/node 26→^20.19.43 aligned to engines/CI node 20 (guard RED→GREEN, 765/765); `.claude/` untracked+gitignored (D-A12); see E-018 |
 | WF-016 | Performance claims re-measurement | P2 | VERIFIED | (this commit) | fresh LH desktop 100/100/100/91 + mobile 99/100/100/91 on final build; entry 118,171 gz (−1,913 vs baseline); README/MEMORY numbers synced with method+date; see E-019 |
 | PF-01 | Markers (AM-07) | P1 | VERIFIED | (this commit) | kernel+commands+keys (B/[/]/Shift)+dbl-click+draft persistence; e2e 2/2 + kernel 6/6; 3 own bugs caught (unit mismatch, prompt race, consumed draft commands); see E-021 |
-| PF-02 | Clip fades + crossfade (AM-06) | P1 | OPEN | — | Phase 5 |
+| PF-02 | Clip fades + crossfade (AM-06) | P1 | VERIFIED | (this commit) | kernels (setClipFades clamp/snap, equal-power crossfadeClips extend/slip fallback + both-side gating in clipGainAt) 26/26; Edit ▸ Clip Fades… dialog + Crossfade clip (both-side pair resolution); realtime envelope in span-copy; e2e mixdown-byte overlap proof + undo byte-identical; ops live in a lazy chunk (bundle net +729 B gz); see E-025 |
 | PF-03 | Repair tools: click/hum/edit-point (AM-09) | P1 | OPEN | — | Phase 5 |
 | PF-04 | Gain/fade in/out/delay verification (AM-03/04) | P2 | VERIFIED | (this commit) | exported-WAV byte proof (pcm16/24/f32 parser); Gain −6 dB ×0.5 ±5 % + undo; Fade In/Out head/tail + undo; Delay tail + undo; effects.spec 13/13; RED root-caused as test-side 24-bit misparse (E-022) |
 | PF-05 | Portable project file (AM-12) | P2 | OPEN | — | Phase 5 |
@@ -53,5 +53,5 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 - **Phase 3 (WF-011, WF-004, WF-012, WF-013, WF-014): COMPLETE — tasks all VERIFIED; PCA run at `b3a2475`** (clean rebuild: unit 763/763, e2e 64/64, csp-under-enforce 1/1, prod smoke 3/3, validate:encoders, io 43/43, build, LH desktop 100/100/100/91, entry 118,171 B gz; see E-010..E-014, D-A8..D-A11).
 - **Phase 4 (WF-007, WF-008, WF-006, WF-015, WF-016, WF-005): COMPLETE — tasks all VERIFIED; PCA run at `2c801db`** (clean rebuild incl. npm ci: unit 765/765 + coverage thresholds exit 0, e2e 64/64, csp-under-enforce 1/1, prod smoke 3/3, validate:encoders, io 43/43, build + bundle gate PASS, LH desktop 100/100/100/91 + mobile 99/100/100/91; PCA CAUGHT the WF-015 @types/node peer-range regression breaking npm ci — fixed via overrides at `2c801db`; see E-015..E-020, D-A12).
 - **Phase 5 (PF-01..08 + AM matrix): next — awaits explicit `PROCEED TO PHASE 5`.**
-- **Phase 5 (PF-01..08 + AM matrix): pending.**
+- **Phase 5 (PF-01..08 + AM matrix): IN PROGRESS** — PF-01 ✓ PF-04 ✓ PF-06 ✓ PF-07 ✓ PF-02 ✓ (this commit); remaining: PF-03, PF-05, PF-08 (deferred), AM-08/10/14 dispositions + AM-05/AM-15 + matrix close-out.
 - **Phase 6 (release readiness): pending.**

@@ -67,6 +67,8 @@ export const menus: MenuDef[] = [
       '-',
       'clip.split',
       'clip.duplicate',
+      'clip.fades',
+      'clip.crossfade',
       'clip.delete',
       '-',
       'edit.trim',

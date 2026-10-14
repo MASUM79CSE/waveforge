@@ -115,6 +115,14 @@ export function closeSeamlessLoop(): void {
   S.seamlessOpen.value = false;
 }
 
+export function openClipFades(): void {
+  S.clipFadesOpen.value = true;
+}
+
+export function closeClipFades(): void {
+  S.clipFadesOpen.value = false;
+}
+
 export function openNormalizePrompt(): void {
   S.normalizePromptOpen.value = true;
 }

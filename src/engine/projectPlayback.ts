@@ -310,8 +310,18 @@ export class ProjectPlayback {
       const a1 = sc.asset.channels[1] ?? a0;
       const spanLen = Math.min(sc.spanLen, a0.length - sc.spanStart);
       const buffer = this.ctx.createBuffer(2, Math.max(1, spanLen), this.sampleRate);
-      buffer.getChannelData(0).set(a0.subarray(sc.spanStart, sc.spanStart + spanLen));
-      buffer.getChannelData(1).set(a1.subarray(sc.spanStart, sc.spanStart + spanLen));
+      const bL = buffer.getChannelData(0);
+      const bR = buffer.getChannelData(1);
+      const env = sc.envelope;
+      if (env) {
+        for (let i = 0; i < spanLen; ++i) {
+          bL[i] = a0[sc.spanStart + i]! * (env[i] ?? 1);
+          bR[i] = a1[sc.spanStart + i]! * (env[i] ?? 1);
+        }
+      } else {
+        bL.set(a0.subarray(sc.spanStart, sc.spanStart + spanLen));
+        bR.set(a1.subarray(sc.spanStart, sc.spanStart + spanLen));
+      }
       src.buffer = buffer;
 
       const splitter = this.ctx.createChannelSplitter(2);
