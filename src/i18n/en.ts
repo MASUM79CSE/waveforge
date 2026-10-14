@@ -300,6 +300,7 @@ export const en = {
   paramBand: 'Band gain',
   paramFactor: 'Rate factor',
   viewAmplitudeAxis: 'Amplitude Axis',
+  viewPeakLimits: 'Peak separators',
   viewLightTheme: 'Light Theme',
   viewAccent: 'Accent',
   zeroCrossSnap: 'Zero-Cross Selection',

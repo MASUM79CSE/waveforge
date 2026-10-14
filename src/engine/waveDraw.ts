@@ -131,6 +131,8 @@ export interface WaveDrawCtx {
   axis: boolean;
   /** D5: vertical zoom amplitude scale (0.5..3) */
   vzoom: number;
+  /** AM-08: draw full-scale (0 dBFS) peak-separator lines per lane */
+  limits: boolean;
   /** schedule a redraw (rAF-coalesced in the renderer) */
   requestDraw: () => void;
 }
@@ -252,6 +254,15 @@ function drawLanes(ctx: FullCtx, lanesH: number): void {
     g.fillRect(rail, y0, laneW, laneH);
     g.fillStyle = currentTheme().center;
     g.fillRect(rail, Math.round(mid), laneW, 1);
+    if (ctx.limits && ctx.view.spp >= 1) {
+      // AM-08: full-scale separator lines at ±1.0 sample (the amp scale),
+      // only meaningful when the lane renders from peak buckets (spp ≥ 1)
+      g.fillStyle = currentTheme().center;
+      const top = Math.round(mid - amp);
+      const bot = Math.round(mid + amp);
+      if (top > y0) g.fillRect(rail, top, laneW, 1);
+      if (bot < y0 + laneH - 1) g.fillRect(rail, bot, laneW, 1);
+    }
 
     if (ctx.view.spp < 1) {
       missing = drawRawLane(ctx, ch, y0, laneH, mid, amp) || missing;

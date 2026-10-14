@@ -48,6 +48,14 @@ export function toggleAmplitudeAxis(): void {
   S.setAmplitudeAxis(!S.amplitudeAxis.value);
 }
 
+export function isWaveLimitsOn(): boolean {
+  return S.waveLimits.value;
+}
+
+export function toggleWaveLimits(): void {
+  S.setWaveLimits(!S.waveLimits.value);
+}
+
 // ---- dialogs ----
 
 export function openWelcome(): void {

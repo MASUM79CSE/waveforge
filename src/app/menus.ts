@@ -126,7 +126,7 @@ export const menus: MenuDef[] = [
     items: [
       { header: () => t().menuGroupZoom, items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', 'view.center'] },
       { header: () => t().menuGroupCursor, items: ['view.follow', 'view.zerocross', 'view.axis'] },
-      { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent'] },
+      { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent', 'view.limits'] },
     ],
   },
   {

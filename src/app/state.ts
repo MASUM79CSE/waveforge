@@ -275,6 +275,8 @@ function writeStoredBool(key: string, value: boolean): void {
 export const zeroCrossEnabled = signal(readStoredBool('zerocross', true));
 /** D4: amplitude axis + channel rail along the canvas edges (reference parity). */
 export const amplitudeAxis = signal(readStoredBool('amplitudeaxis', true));
+/** AM-08: full-scale (0 dBFS) peak-separator lines on the waveform (reference parity). */
+export const waveLimits = signal(readStoredBool('wavelimits', false));
 /** D5: vertical zoom — wave amplitude scale, clamped 0.5..3 (reference parity). */
 export const VZOOM_MIN = 0.5;
 export const VZOOM_MAX = 3;
@@ -301,6 +303,11 @@ export function setZeroCrossEnabled(value: boolean): void {
 export function setAmplitudeAxis(value: boolean): void {
   amplitudeAxis.value = value;
   writeStoredBool('amplitudeaxis', value);
+}
+
+export function setWaveLimits(value: boolean): void {
+  waveLimits.value = value;
+  writeStoredBool('wavelimits', value);
 }
 
 // toasts

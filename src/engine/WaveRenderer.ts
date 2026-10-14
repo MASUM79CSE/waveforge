@@ -33,6 +33,7 @@ export class WaveRenderer {
   private dpr = 1;
   private frameQueued = false;
   private axis = true;
+  private limits = false;
   private vzoom = 1;
   private pendingRaw = new Map<number, Float32Array>();
   private drag: { mode: 'scrub' | 'select'; anchor: number; startX: number } | null = null;
@@ -138,6 +139,12 @@ export class WaveRenderer {
     this.requestDraw();
   }
 
+  /** AM-08: toggle full-scale peak-separator lines (reference parity). */
+  setLimits(visible: boolean): void {
+    this.limits = visible;
+    this.requestDraw();
+  }
+
   /** D5: vertical zoom — wave amplitude scale (0.5..3). */
   setVZoom(scale: number): void {
     this.vzoom = scale;
@@ -207,6 +214,7 @@ export class WaveRenderer {
       markers: this.markers,
       pendingRaw: this.pendingRaw,
       axis: this.axis,
+      limits: this.limits,
       vzoom: this.vzoom,
       requestDraw: () => this.requestDraw(),
     });

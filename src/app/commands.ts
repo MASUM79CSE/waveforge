@@ -182,6 +182,13 @@ export const commands: Command[] = [
     check: true,
     isChecked: () => A.isAmplitudeAxisOn(),
   },
+  {
+    id: 'view.limits',
+    label: () => t().viewPeakLimits,
+    run: () => A.toggleWaveLimits(),
+    check: true,
+    isChecked: () => A.isWaveLimitsOn(),
+  },
   // Analyze (M5)
   {
     id: 'analyze.report',
