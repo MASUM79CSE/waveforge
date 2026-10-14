@@ -67,6 +67,8 @@ export const shortcutsOpen = signal(false);
 /** E6a noise print held across the session; persisted in draft headers (M7). */
 export const sessionNoisePrint = signal<Float32Array | null>(null);
 export const gainPromptOpen = signal(false);
+/** PF-06/AM-11: seamless-loop maker dialog. */
+export const seamlessOpen = signal(false);
 export const normalizePromptOpen = signal(false);
 
 // editing

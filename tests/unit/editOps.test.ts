@@ -19,6 +19,7 @@ import {
   removeRange,
   removeSilenceRanges,
   reverseRange,
+  seamlessLoopRange,
   silenceRanges,
   sliceRegion,
   writeRange,
@@ -293,5 +294,123 @@ describe('composite outcomes (round-trip)', () => {
     const original = ch([1, 2, 3]);
     const outcome = makeRemoveSilence(original, []);
     roundTrip(original, outcome, [[1, 2, 3]]);
+  });
+});
+
+// ---- PF-06 / AM-11: seamless loop kernel ----
+describe('seamlessLoopRange', () => {
+  const SR = 1000; // 1 kHz sample rate keeps sample math obvious in tests
+  // 1000-sample sine whose period does NOT divide the region: the wrap clicks.
+  const src = new Float32Array(1200);
+  for (let i = 0; i < src.length; ++i) src[i] = Math.sin((2 * Math.PI * 13.37 * i) / SR);
+  const stereo = [
+    src.slice(),
+    src.map((v) => v * 0.5),
+  ];
+
+  test('RED: the kernel exists (module export)', () => {
+    expect(seamlessLoopRange).toBeTypeOf('function');
+  });
+
+  test('region is replaced by the len−fade loop; audio outside it is kept', () => {
+    const outcome = seamlessLoopRange(stereo, 100, 1000, { fadeMs: 10, repeat: 1, trim: false, snap: false, sampleRate: SR });
+    const loopLen = 1000 - 10; // 10 ms @ 1 kHz = 10 samples
+    // doc = [0..100) + loop(990) + [1100..1200)
+    expect(outcome.channels[0]?.length).toBe(1200 - 1000 + loopLen);
+    expect(outcome.channels[1]?.length).toBe(1200 - 1000 + loopLen);
+  });
+
+  test('equal-power fold: head blends tail→head, body keeps original samples', () => {
+    const fade = 10;
+    const outcome = seamlessLoopRange([src.slice()], 0, 1000, { fadeMs: 10, repeat: 1, trim: false, snap: false, sampleRate: SR });
+    const a = arr(outcome.channels);
+    const loopLen = 990;
+    // body (i >= fade, inside the loop) must equal src[i] exactly
+    for (let i = fade; i < loopLen; ++i) expect(a[i]).toBeCloseTo(src[i] ?? 0, 6);
+    // tail beyond the region is preserved untouched
+    for (let j = 0; j < 200; j += 37) expect(a[loopLen + j]).toBeCloseTo(src[1000 + j] ?? 0, 6);
+    // blend start p=0: cos(0)=1 → tail sample; blend end p=1: sin(π/2)=1 → head sample
+    expect(a[0]).toBeCloseTo(src[1000 - fade] ?? 0, 6); // src[end-fade]
+    expect(a[fade - 1]).toBeCloseTo(src[fade - 1] ?? 0, 6); // pure head by p→1
+    // mid-blend: kernel phase p = i/(fade-1); weights are equal-power sin/cos
+    const i = 5;
+    const p = i / (fade - 1);
+    const expectVal = (src[i] ?? 0) * Math.sin(p * (Math.PI / 2)) + (src[1000 - fade + i] ?? 0) * Math.cos(p * (Math.PI / 2));
+    expect(a[i]).toBeCloseTo(expectVal, 5);
+  });
+
+  test('seam at the wrap is continuous: out[last] → out[0] follows source flow', () => {
+    const fade = 10;
+    const outcome = seamlessLoopRange([src.slice()], 0, 1000, { fadeMs: 10, repeat: 1, trim: false, snap: false, sampleRate: SR });
+    const a = arr(outcome.channels);
+    // source at the seam position flows src[end-fade-1] -> src[end-fade];
+    // the loop flows out[last]=src[end-fade-1] -> out[0]=src[end-fade]. Same pair.
+    expect(a[989]).toBeCloseTo(src[1000 - fade - 1] ?? 0, 6);
+  });
+
+  test('repeat tiles the loop N times', () => {
+    const outcome = seamlessLoopRange([src.slice()], 0, 1000, { fadeMs: 10, repeat: 3, trim: false, snap: false, sampleRate: SR });
+    const a = arr(outcome.channels);
+    const loopLen = 990;
+    expect(a.length).toBe(loopLen * 3 + 200); // 3 tiles + the preserved tail
+    for (let n = 1; n < 3; ++n) {
+      for (let i = 0; i < loopLen; i += 97) {
+        expect(a[n * loopLen + i]).toBeCloseTo(a[i] ?? 0, 6);
+      }
+    }
+  });
+
+  test('input channels are never mutated (immutable doc invariant)', () => {
+    const before = Array.from(src);
+    const alias = [src]; // same reference the kernel receives
+    seamlessLoopRange(alias, 0, 1000, { fadeMs: 10, repeat: 1, trim: false, snap: false, sampleRate: SR });
+    expect(Array.from(src)).toEqual(before);
+  });
+
+  test('fade larger than a quarter of the region is clamped', () => {
+    const outcome = seamlessLoopRange([src.slice()], 0, 100, { fadeMs: 500, repeat: 1, trim: false, snap: false, sampleRate: SR });
+    // fade clamps to len>>2 = 25 → doc = 75 loop + 1100 preserved tail
+    expect(outcome.channels[0]?.length).toBe(1200 - 100 + 75);
+  });
+
+  test('trim removes leading/trailing near-silence (with 1 ms pad)', () => {
+    const quiet = new Float32Array(1000);
+    for (let i = 200; i < 800; ++i) quiet[i] = Math.sin((2 * Math.PI * 20 * i) / SR);
+    const outcome = seamlessLoopRange([quiet.slice()], 0, 1000, { fadeMs: 0, repeat: 1, trim: true, snap: false, sampleRate: SR });
+    // doc length is unchanged (overwrite) — the observable is WHERE the
+    // region now sits: non-silent core 600 samples + 1 ms pad per side
+    const replace = outcome.redoOps[0] as { at: number; len: number };
+    expect(replace.at).toBeGreaterThanOrEqual(199);
+    expect(replace.at + replace.len).toBeLessThanOrEqual(802);
+    expect(replace.len).toBeGreaterThanOrEqual(600);
+    expect(replace.len).toBeLessThanOrEqual(604);
+  });
+
+  test('snap moves edges to matched-slope zero crossings', () => {
+    // 2 Hz sine @1 kHz: gentle slope so a crossing sample is numerically ~0;
+    // rising crossings at i=0, 500 (period 500). Knock the start off its
+    // crossing (crossing slides to i=1) and end the region past the i=500
+    // crossing so the backward scan (window 10 ms = 10 samples) finds it.
+    const z = new Float32Array(1000);
+    for (let i = 0; i < z.length; ++i) z[i] = Math.sin((2 * Math.PI * 2 * i) / SR);
+    z[0] = -0.4; // start: crossing moves to i=1 (rising, same slope family)
+    const outcome = seamlessLoopRange([z.slice()], 0, 505, { fadeMs: 0, repeat: 1, trim: false, snap: true, sampleRate: SR });
+    // snapped region starts at the crossing one sample in (i=1) and its end
+    // lands on the rising crossing near i=500 (float-sin may shift ±1 sample)
+    const replace = outcome.redoOps[0] as { at: number; len: number };
+    expect(replace.at).toBe(1);
+    expect(replace.len).toBeGreaterThanOrEqual(495);
+    expect(replace.len).toBeLessThanOrEqual(505);
+    const a = arr(outcome.channels);
+    expect(Math.abs(a[1] ?? 1)).toBeLessThan(0.05); // starts on a rising zero
+    expect(Math.abs(a[replace.at + replace.len - 1] ?? 1)).toBeLessThan(0.05); // ends on one
+  });
+
+  test('outcome composes overwrite-paste ops (undo restores the original region)', () => {
+    const outcome = seamlessLoopRange([src.slice()], 0, 1000, { fadeMs: 10, repeat: 1, trim: false, snap: false, sampleRate: SR });
+    expect(outcome.undoOps.length).toBeGreaterThan(0);
+    const undone = applyOps(outcome.channels, outcome.undoOps as SliceOp[]);
+    expect(undone[0]?.length).toBe(1200);
+    expect(Array.from(undone[0] ?? [])).toEqual(Array.from(src));
   });
 });

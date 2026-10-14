@@ -17,7 +17,7 @@ Rule: a button/menu item is not a feature — each row needs behavioral evidence
 | AM-08 | Spectrum / peak / distortion indication | UNVERIFIED | — | — | — | verify |
 | AM-09 | Repair tools (declick / dehum / edit-point smoothing) | UNVERIFIED | — | — | — | PF-03 |
 | AM-10 | Beat tools + pitch/speed profile | UNVERIFIED | — | — | — | verify |
-| AM-11 | Seamless loop | UNVERIFIED | — | — | — | PF-06 |
+| AM-11 | Seamless loop | VERIFIED EQUIVALENT | Edit ▸ Seamless Loop; dialog defaults 10 ms/×1/snap-on/trim-off; equal-power tail→head fold (len−fade), repeat 1–64 tiling; apply = overwrite-paste (undoable) + loop re-selected; whole-doc target when no selection; unit 10/10 + e2e duration/undo proof (E-023) | intentional: no preview canvas/Preview Loop button (behavior proven at kernel/byte level), no Open-in-New-Editor (single-window), no apply toast (WF editOps convention) | 2026-10-14 | PF-06 |
 | AM-12 | Portable project save/open (`.amss` vs WaveForge draft-only) | UNVERIFIED | — | — | — | PF-05 |
 | AM-13 | Export formats (every advertised format/settings/filename/MIME/bytes) | UNVERIFIED | — | — | — | WF-010 |
 | AM-14 | Shortcuts + context menus | UNVERIFIED | — | — | — | verify |

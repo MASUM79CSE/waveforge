@@ -41,7 +41,7 @@ Rule: a row only leaves OPEN/UNVERIFIED with evidence in `EVIDENCE_LOG.md` + com
 | PF-03 | Repair tools: click/hum/edit-point (AM-09) | P1 | OPEN | — | Phase 5 |
 | PF-04 | Gain/fade in/out/delay verification (AM-03/04) | P2 | VERIFIED | (this commit) | exported-WAV byte proof (pcm16/24/f32 parser); Gain −6 dB ×0.5 ±5 % + undo; Fade In/Out head/tail + undo; Delay tail + undo; effects.spec 13/13; RED root-caused as test-side 24-bit misparse (E-022) |
 | PF-05 | Portable project file (AM-12) | P2 | OPEN | — | Phase 5 |
-| PF-06 | Seamless-loop maker (AM-11) | P2 | OPEN | — | Phase 5 |
+| PF-06 | Seamless-loop maker (AM-11) | P2 | VERIFIED | (this commit) | equal-power fold kernel (trim+snap+fade clamp, repeat 1–64) via makeOverwritePaste; Edit ▸ Seamless Loop dialog (defaults 10 ms/1×/snap on); e2e exact duration math + undo; unit 10/10; bundle +1.3 KB within budget; see E-023 |
 | PF-07 | Touch/mobile gestures (AM-02/06) | P2 | OPEN | — | Phase 5; real-device = NOT RUN expected |
 | PF-08 | Dockable detached panels | P3 | OPEN | — | DEFERRED by default; implement only on `APPROVE PF-08` |
 | AM-01..AM-16 | Parity matrix rows | — | UNVERIFIED | — | see AUDIOMASS_PARITY.md |

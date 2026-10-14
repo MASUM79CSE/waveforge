@@ -70,6 +70,7 @@ export const menus: MenuDef[] = [
       'clip.delete',
       '-',
       'edit.trim',
+      'edit.seamlessLoop',
       'edit.silence',
       '-',
       'edit.selectAll',

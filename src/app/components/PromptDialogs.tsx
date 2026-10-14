@@ -1,6 +1,8 @@
-import { closeGainPrompt, closeNormalizePrompt } from '../actions';
-import { applyGainDb, applyNormalize } from '../editActions';
-import { gainPromptOpen, markerPrompt, normalizePromptOpen } from '../state';
+import { useEffect, useState } from 'preact/hooks';
+import { Modal } from './Modal';
+import { closeGainPrompt, closeNormalizePrompt, closeSeamlessLoop } from '../actions';
+import { applyGainDb, applyNormalize, applySeamlessLoop } from '../editActions';
+import { gainPromptOpen, markerPrompt, normalizePromptOpen, seamlessOpen } from '../state';
 import { closeMarkerPrompt, confirmMarkerPrompt } from '../markersActions';
 import { GAIN_MAX_DB, GAIN_MIN_DB, NORMALIZE_TARGET_DB } from '../../core/constants';
 import { PromptDialog, TextPromptDialog } from './PromptDialog';
@@ -50,5 +52,95 @@ export function MarkerNameDialog() {
       onConfirm={(label) => confirmMarkerPrompt(label, prompt)}
       onCancel={closeMarkerPrompt}
     />
+  );
+}
+
+export function SeamlessLoopDialog() {
+  const open = seamlessOpen.value;
+  const [fadeMs, setFadeMs] = useState(10);
+  const [repeat, setRepeat] = useState(1);
+  const [trim, setTrim] = useState(false);
+  const [snap, setSnap] = useState(true);
+
+  // reference defaults on every open: 10 ms crossfade, repeat 1, snap on
+  useEffect(() => {
+    if (open) {
+      setFadeMs(10);
+      setRepeat(1);
+      setTrim(false);
+      setSnap(true);
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <Modal title={t().seamlessLoop} onClose={closeSeamlessLoop}>
+      <div class="url-form">
+        <label class="url-hint" for="sloop-fade">
+          {t().sloopCrossfade}
+        </label>
+        <input
+          id="sloop-fade"
+          class="url-input"
+          type="number"
+          min={0}
+          max={500}
+          step={1}
+          value={fadeMs}
+          onInput={(e) => setFadeMs(Number((e.target as HTMLInputElement).value))}
+        />
+        <label class="url-hint" for="sloop-repeat">
+          {t().sloopRepeat}
+        </label>
+        <input
+          id="sloop-repeat"
+          class="url-input"
+          type="number"
+          min={1}
+          max={64}
+          step={1}
+          value={repeat}
+          onInput={(e) => setRepeat(Number((e.target as HTMLInputElement).value))}
+        />
+        <div class="fx-row">
+          <input
+            id="sloop-trim"
+            type="checkbox"
+            checked={trim}
+            onChange={(e) => setTrim((e.target as HTMLInputElement).checked)}
+          />
+          <label class="fx-label" for="sloop-trim">
+            {t().sloopTrim}
+          </label>
+        </div>
+        <div class="fx-row">
+          <input
+            id="sloop-snap"
+            type="checkbox"
+            checked={snap}
+            onChange={(e) => setSnap((e.target as HTMLInputElement).checked)}
+          />
+          <label class="fx-label" for="sloop-snap">
+            {t().sloopSnap}
+          </label>
+        </div>
+        <div class="url-actions">
+          <button class="btn-secondary" onClick={closeSeamlessLoop}>
+            Cancel
+          </button>
+          <button
+            class="btn-primary"
+            onClick={() => {
+              const request = { fadeMs, repeat, trim, snap }; // snapshot before closing
+              closeSeamlessLoop();
+              applySeamlessLoop(request);
+            }}
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }

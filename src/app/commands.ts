@@ -75,6 +75,7 @@ export const commands: Command[] = [
     sep: true,
   },
   { id: 'edit.trim', label: () => t().editTrim, run: () => EA.trimToSelection() },
+  { id: 'edit.seamlessLoop', label: () => t().seamlessLoop, run: () => A.openSeamlessLoop() },
   {
     id: 'edit.silence',
     label: () => t().editInsertSilence,

@@ -319,6 +319,7 @@ test('effects: Gain −6 dB halves the exported levels, undo restores them (AM-0
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await dialog.locator('#prompt-value').fill('-6');
+  await expect(dialog.locator('#prompt-value')).toHaveValue('-6'); // settle the controlled input
   await dialog.getByRole('button', { name: 'Apply' }).click();
   await page.waitForTimeout(400); // edit commits synchronously; settle menus
   const after = await exportWavStats(page);
@@ -376,4 +377,47 @@ test('effects: Delay grows the region by its feedback tail and undoes (AM-04)', 
   await expect(page.getByText(/9\.27 s/)).toBeHidden({ timeout: 15_000 });
   await page.keyboard.press('Control+z');
   await expect(page.getByText(/9\.27 s/)).toBeVisible({ timeout: 8000 });
+});
+
+test('effects: Seamless Loop folds the tail into the head, undo restores (AM-11)', async ({
+  page,
+}) => {
+  await loadSample(page);
+  // no selection first: the op targets the whole document (reference auto-selects)
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.getByRole('menuitem', { name: /Seamless Loop/i }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  // reference dialog defaults: crossfade 10 ms, repeat 1, snap on, trim off
+  await expect(dialog.locator('#sloop-fade')).toHaveValue('10');
+  await expect(dialog.locator('#sloop-repeat')).toHaveValue('1');
+  await expect(dialog.locator('#sloop-snap')).toBeChecked();
+  await expect(dialog.locator('#sloop-trim')).not.toBeChecked();
+  await dialog.getByRole('button', { name: 'Apply' }).click();
+  // 10 ms @ 44.1 kHz = 441 samples folded away: 9.272 s -> 9.262 s
+  // duration cell is the 4th status item (name, rate, channels, duration, ...);
+  // cursor/selection cells show the same figure — pin the index
+  const statusDuration = page.locator('.status-item').nth(3);
+  await expect(statusDuration).toHaveText(/9\.26 s/, { timeout: 8000 });
+  await expect(statusDuration).not.toHaveText(/9\.27 s/);
+  const sels = await page.locator('.sel-val').allTextContents();
+  expect(sels.join('|')).toContain('0:09.262'); // re-selected to the loop
+  await page.keyboard.press('Control+z');
+  await expect(page.getByText(/9\.27 s/)).toBeVisible({ timeout: 8000 });
+
+  // repeat 2 tiles the folded loop (fade 0 keeps the length)
+  await page.keyboard.press('Control+a');
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.getByRole('menuitem', { name: /Seamless Loop/i }).click();
+  const dialog2 = page.getByRole('dialog');
+  await expect(dialog2).toBeVisible();
+  await dialog2.locator('#sloop-fade').fill('0');
+  await dialog2.locator('#sloop-repeat').fill('2');
+  await dialog2.locator('#sloop-snap').uncheck(); // keep edges exact: 2 x docLen
+  await dialog2.getByRole('button', { name: 'Apply' }).click();
+  const statusDuration2 = page.locator('.status-item').nth(3);
+  // doc = 408,927 samples -> tile = 817,854 = 18.545 s -> displays '18.55 s'
+  await expect(statusDuration2).toHaveText(/18\.55 s/, { timeout: 8000 });
+  await page.keyboard.press('Control+z');
+  await expect(statusDuration2).toHaveText(/9\.27 s/, { timeout: 8000 });
 });

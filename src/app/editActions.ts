@@ -27,6 +27,8 @@ import {
   silenceRanges,
   sliceRegion,
   type EditOutcome,
+  seamlessLoopGeometry,
+  seamlessLoopRange,
 } from '../engine/editOps';
 import { getDoc, engine, performEdit, runRedo, runUndo } from './runtime';
 import { activeTrackTarget, commitTrackChannels } from './projectActions';
@@ -200,6 +202,32 @@ export function applyGainDb(db: number): void {
     const after = gainRange(channels, range.start, range.len, dbToGain(clamped));
     return makeRangeWrite(channels, range.start, before, after);
   }, t().opGain);
+}
+
+/** PF-06/AM-11: condition the selection (or whole doc) into a seamless loop. */
+export function applySeamlessLoop(opts: {
+  fadeMs: number;
+  repeat: number;
+  trim: boolean;
+  snap: boolean;
+}): void {
+  const doc = getDoc();
+  const range = targetRange();
+  if (!doc || !range || range.len < 64) return;
+  const sampleOpts = { ...opts, sampleRate: doc.sampleRate };
+  const geometry = seamlessLoopGeometry(currentChannels(), range.start, range.len, sampleOpts);
+  safeTrackEdit(
+    (channels) => seamlessLoopRange(channels, range.start, range.len, sampleOpts),
+    t().opSeamlessLoop,
+  );
+  // re-select the conditioned loop region (reference re-adds the region over
+  // the loop dims); doc-level selection only — project lanes keep theirs
+  if (!S.projectOpen.value) {
+    S.selection.value = {
+      start: geometry.s / doc.sampleRate,
+      end: (geometry.s + geometry.loopLen * geometry.repeat) / doc.sampleRate,
+    };
+  }
 }
 
 export function applyFadeIn(): void {

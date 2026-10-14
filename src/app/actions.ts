@@ -107,6 +107,14 @@ export function closeGainPrompt(): void {
   S.gainPromptOpen.value = false;
 }
 
+export function openSeamlessLoop(): void {
+  S.seamlessOpen.value = true;
+}
+
+export function closeSeamlessLoop(): void {
+  S.seamlessOpen.value = false;
+}
+
 export function openNormalizePrompt(): void {
   S.normalizePromptOpen.value = true;
 }
