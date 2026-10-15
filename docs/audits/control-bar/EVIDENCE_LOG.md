@@ -62,3 +62,12 @@ Format: date · commit · environment · command · result · criteria met/open 
   - Arm/roll toasts add small shifts: no-input CLS sum **0.012 @1280 / 0.064 @390** (largest single 0.050, toast-close).
   - **Verdict:** F-05 CONFIRMED and quantified; visible impact is width-dependent (hidden @1280 default view, visible jump @390). P2 backlog item "F-05 reserved meter slot" stands, now evidence-backed.
 - **Honesty notes:** count-in chip transient (if enabled in settings) was not separately staged — defaults measured; jitter probed at 2 of 6 widths (worst-case candidates: smallest + desktop), mono font argument covers the rest.
+
+## E-CB-008 — CB-0.4 supplemental: microphone-permission-DENIED behavior (closes H-09's NOT-RUN cell)
+- **Date:** 2026-10-15 · **Commit:** base app `3691995` · **Method:** `permission-denied-probe.mjs` (committed) — headless Chromium auto-denies the getUserMedia prompt when `--use-fake-ui-for-media-stream` is absent (fake device kept, so permission is the only variable); ground truth captured in-page: `navigator.mediaDevices.getUserMedia` → **`NotAllowedError: Permission denied`**. **Data:** `baseline/permission-denied.json`.
+- **Observed (1280 dark):**
+  - Arm click → error toast **"Microphone permission was denied"** (`toastError(t().recNoPermission)`, `recordActions.ts:144-145`); console `arming failed {detail: NotAllowedError}`.
+  - Button stays **un-armed**: `title="Record"`, no `aria-pressed`, `armed` class absent; meter block and rec-time never mount; Record zone width unchanged (**155 px before = after**).
+  - Recovery: second click → identical clean denial (no stuck arming state, toasts deduped to 2 total).
+- **Gaps recorded for v2 (feed P2 backlog):** feedback is a transient toast only — no persistent inline hint that recording is blocked; errors announce in the `role="status" aria-live="polite"` toast region (Toasts.tsx:6) rather than an assertive channel; no `aria-pressed`/state semantics to reflect anyway (H-04 family).
+- **Honesty notes:** `NotAllowedError` via headless auto-deny is the same DOM exception a real user's "Block" produces; a real OS-level blocked-site state and Safari's per-session prompt were NOT available (marked NOT RUN, not assumed).

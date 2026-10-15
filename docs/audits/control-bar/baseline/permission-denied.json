@@ -1,0 +1,49 @@
+{
+ "generated": "2026-10-15T04:22:44.252Z",
+ "commit": "d57dd47",
+ "gumError": "NotAllowedError: Permission denied",
+ "liveRegion": {
+  "role": "polite",
+  "ariaLive": "polite"
+ },
+ "before": {
+  "title": "Record",
+  "ariaPressed": null,
+  "cls": "tbtn rec-btn  ",
+  "meterVisible": false,
+  "recTimeVisible": false,
+  "lastToast": "Loaded demo.wav✕",
+  "toastCount": 1,
+  "zoneW": 155,
+  "liveRegion": "polite",
+  "liveRole": "status"
+ },
+ "afterDeny1": {
+  "title": "Record",
+  "ariaPressed": null,
+  "cls": "tbtn rec-btn  ",
+  "meterVisible": false,
+  "recTimeVisible": false,
+  "lastToast": "Microphone permission was denied✕",
+  "toastCount": 2,
+  "zoneW": 155,
+  "liveRegion": "polite",
+  "liveRole": "status"
+ },
+ "afterDeny2": {
+  "title": "Record",
+  "ariaPressed": null,
+  "cls": "tbtn rec-btn  ",
+  "meterVisible": false,
+  "recTimeVisible": false,
+  "lastToast": "Microphone permission was denied✕",
+  "toastCount": 2,
+  "zoneW": 155,
+  "liveRegion": "polite",
+  "liveRole": "status"
+ },
+ "consoleErrors": [
+  "arming failed {detail: NotAllowedError: Permission denied}",
+  "arming failed {detail: NotAllowedError: Permission denied}"
+ ]
+}
