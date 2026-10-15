@@ -24,9 +24,9 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', 'docs/audits/control-bar/*.mjs'],
     rules: {
-      // CLI scripts print to stdout by design
+      // CLI scripts and audit measurement instruments print progress to stdout by design
       'no-console': 'off',
     },
   },
