@@ -1,44 +1,34 @@
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
-let remounts = 0, toasts = [];
-for (let round = 0; round < 6; round++) {
-  const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
-  page.on('console', (m) => { const t = m.text(); if (t.startsWith('REMOUNT')) remounts++; });
-  await page.goto('http://localhost:5180/', { waitUntil: 'domcontentloaded' });
-  const w = page.getByRole('dialog', { name: /welcome/i });
-  await w.getByRole('button', { name: /load sample/i }).click();
+// 1) page h-scroll probe at narrow widths, flag ON
+for (const w of [1280, 390, 320]) {
+  const page = await (await browser.newContext({ viewport: { width: w, height: 800 } })).newPage();
+  await page.goto(`http://localhost:5175/?cbv2=1`, { waitUntil: 'domcontentloaded' });
+  const wl = page.getByRole('dialog', { name: /welcome/i });
+  await wl.getByRole('button', { name: /load sample/i }).click();
   await page.getByText('demo.wav', { exact: true }).waitFor({ timeout: 20000 });
   await page.waitForTimeout(400);
-  await page.keyboard.press('b');
-  const d1 = page.getByRole('dialog', { name: /add marker/i });
-  await d1.locator('#text-prompt-value').waitFor();
-  await d1.locator('#text-prompt-value').fill('chorus');
-  await d1.getByRole('button', { name: /apply/i }).click();
-  await page.waitForTimeout(250);
-  await page.getByRole('button', { name: 'Edit', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Rename Marker' }).click();
-  const d2 = page.getByRole('dialog', { name: /rename marker/i });
-  await d2.locator('#text-prompt-value').waitFor();
-  // track remounts of the input node
-  await page.evaluate(() => {
-    const inp = document.querySelector('#text-prompt-value');
-    window.__inp = inp;
-    window.__log2 = [];
-    new MutationObserver(() => {
-      const now = document.querySelector('#text-prompt-value');
-      if (now !== window.__inp) {
-        window.__log2.push('REMOUNT ' + performance.now().toFixed(0));
-        window.__inp = now;
-      }
-    }).observe(document.body, { childList: true, subtree: true });
-  });
-  await d2.locator('#text-prompt-value').fill('bridge');
-  const vAfterFill = await d2.locator('#text-prompt-value').inputValue();
-  await d2.getByRole('button', { name: /apply/i }).click();
-  await page.waitForTimeout(400);
-  const toast = await page.locator('.toast-msg').last().textContent().catch(() => 'NONE');
-  const valAtClick = await page.evaluate(() => window.__inp?.value ?? 'GONE');
-  console.log(`round ${round + 1}: afterFill="${vAfterFill}" valAtClickNode="${valAtClick}" toast=${toast?.trim()}`);
+  const r = await page.evaluate(() => ({
+    doc: document.documentElement.scrollWidth,
+    win: window.innerWidth,
+    bodyHScroll: document.documentElement.scrollWidth > window.innerWidth,
+  }));
+  console.log(`w=${w}: doc=${r.doc} win=${r.win} pageHScroll=${r.bodyHScroll}`);
   await page.context().close();
 }
+// 2) guarded localStorage flag path (no URL param)
+const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+await page.addInitScript(() => localStorage.setItem('ui.controlBarV2', '1'));
+await page.goto('http://localhost:5175/', { waitUntil: 'domcontentloaded' });
+const wl = page.getByRole('dialog', { name: /welcome/i });
+await wl.getByRole('button', { name: /load sample/i }).click();
+await page.getByText('demo.wav', { exact: true }).waitFor({ timeout: 20000 });
+console.log('localStorage=1 → cb2 present:', await page.getByTestId('cb2-root').count());
+const p2 = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+await p2.addInitScript(() => localStorage.setItem('ui.controlBarV2', '0'));
+await p2.goto('http://localhost:5175/', { waitUntil: 'domcontentloaded' });
+const wl2 = p2.getByRole('dialog', { name: /welcome/i });
+await wl2.getByRole('button', { name: /load sample/i }).click();
+await p2.getByText('demo.wav', { exact: true }).waitFor({ timeout: 20000 });
+console.log('localStorage=0 → v1 transport present:', await p2.locator('.transport').count(), '| cb2:', await p2.getByTestId('cb2-root').count());
 await browser.close();
