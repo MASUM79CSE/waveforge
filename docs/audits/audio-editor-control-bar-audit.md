@@ -127,3 +127,40 @@ Unit: `toolbar.test.tsx` (registry parity of the 15 tool buttons), `selectionBar
 **P3.** F-08 master volume as a signal (+ persistence decision) · optional group customization (stretch per brief) · pseudo-localization harness (H-12) · touch dock decision (≤600 px).
 
 **Engine-capability notes for CB-1.3 (verified in code):** sample rate (known per doc), samples-format time (trivial via `sampleRate`), bars+beats (needs `bpmResult` + assumed 4/4 — signature is NOT detected today), loop (exists, `looping`), metronome/count-in (exists, `record.metronome` + settings), master volume (engine `setVolume` exists; no signal), master *meter/meter bridge* (record-side metering exists; output meter NOT found in this pass — CB-1.3 will re-verify), follow-playhead (`view.follow` command exists).
+
+## 8. Phase 0 report (§7.5 template)
+
+**Phase goal:** establish ground truth before any Control Bar v2 work — repository/component map, exhaustive control inventory, machine-verifiable baseline (gates + visual/interaction matrix + perf), hypothesis triage, severity-ordered findings, and a prioritized backlog. No production changes.
+
+**Tasks closed:**
+
+| Task | Status | Evidence |
+|---|---|---|
+| CB-0.1 Capability check, env, branch, persistent ledger | VERIFIED | E-CB-001; branch `ui/control-bar-v2` from `main`@`3691995` |
+| CB-0.2 Repository map (file:lines for every top-area component) | VERIFIED | this doc §1 |
+| CB-0.3 Control inventory (62 rows: bindings, shortcuts, acc-name/state gaps, measured boxes) | VERIFIED | this doc §2; boxes from `baseline/measurements.json` |
+| CB-0.4 Baseline: gates + 60-config visual/interaction matrix + perf | VERIFIED | E-CB-002/003/004/006; `baseline-method.mjs`; 60 PNGs |
+| CB-0.5 Hypothesis triage H-01..H-12 + new findings F-01..F-10 | VERIFIED | this doc §4–5; E-CB-005 |
+| CB-0.6 Deliverable 1 (this document) | VERIFIED | this doc, §§1–7 |
+
+**Gate results (all at `3691995`, zero `src/` changes in Phase 0 — verified `git diff --stat 3691995..HEAD -- src/ tests/ scripts/ index.html package.json` = empty):**
+
+| Gate | Result |
+|---|---|
+| `npm run typecheck` | PASS |
+| `npm run lint` | PASS |
+| `npx vitest run` | **826/826 (98 files)** |
+| e2e (`--workers=1`) | **84 passed · 3 flaky (retry-green) · 0 failed**; `csp.spec.ts` requires `CSP_ENFORCE=1` (documented precondition, D-A10) — targeted idle re-run of all affected specs: 14 passed / 3 flaky / 0 failed |
+| `npm run build` + `check-bundle.mjs` | PASS, **53,620 B gz ≤ 123,661**; entry `index-5UAA3P5m.js` = production hash |
+| Lighthouse (local preview re-run, E-CB-006) | desktop P100/A100/BP100/S91 · mobile P97/A100/BP100/S91 — S91 = vite-preview robots.txt absence (env artifact; prod S100) |
+| Visual baseline | 60/60 configs, 0 errors (6 widths × 2 themes × 5 states; PNGs + `measurements.json` committed) |
+
+**Benchmark sources (plan §3):** NOT OPENED in Phase 0 — Phase 1 CB-1.1 opens them; anything unreachable will be recorded NOT RUN. No audiomass.co content was consulted or copied this phase (zero-trace rule holds; e2e guard in place from release audit).
+
+**Deviations & decisions:** CB-D1..CB-D6 in `control-bar/DECISIONS.md` (baseline branch, dev-server matrix with relative perf rows, method script location, discarded contaminated run, LH re-run supersedes NOT-RUN note, e2e classification).
+
+**Open gaps / open errors:** **zero.** Carry-over tickets are backlog items (§7), not gaps: CB-P3-1 (tighten 3 timing-sensitive e2e assertions), engine-capability notes for CB-1.3 (§7.4).
+
+**Phase 0 audit PASSED: zero open gaps and zero open errors.**
+
+**Awaiting `PROCEED TO PHASE 1`.**
