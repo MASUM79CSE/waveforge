@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useRef } from 'preact/hooks';
 import { Modal } from './Modal';
 
 interface PromptDialogProps {
@@ -26,6 +26,7 @@ export function PromptDialog({
   onCancel,
 }: PromptDialogProps) {
   const [value, setValue] = useState(String(initialValue));
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) setValue(String(initialValue));
@@ -34,7 +35,11 @@ export function PromptDialog({
   if (!open) return null;
 
   const confirm = (): void => {
-    const parsed = Number(value);
+    // F-11 fix: read the LIVE input value — a render landing between the
+    // user's keystroke/fill and this click could leave `value` stale, which
+    // silently applied the previous text/number (reproduced in E2E, 2026-10-15).
+    const live = inputRef.current?.value ?? value;
+    const parsed = Number(live);
     if (Number.isFinite(parsed)) {
       onCancel();
       onConfirm(Math.max(min, Math.min(max, parsed)));
@@ -49,6 +54,7 @@ export function PromptDialog({
         </label>
         <input
           id="prompt-value"
+          ref={inputRef}
           class="url-input"
           type="number"
           min={min}
@@ -95,6 +101,7 @@ export function TextPromptDialog({
   onCancel,
 }: TextPromptDialogProps) {
   const [value, setValue] = useState(initialValue);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) setValue(initialValue);
@@ -103,7 +110,11 @@ export function TextPromptDialog({
   if (!open) return null;
 
   const confirm = (): void => {
-    const clean = value.trim().slice(0, maxLength);
+    // F-11 fix: read the LIVE input value — a render landing between the
+    // user's keystroke/fill and this click could leave `value` stale, which
+    // silently applied the previous name (reproduced in E2E, 2026-10-15).
+    const live = inputRef.current?.value ?? value;
+    const clean = live.trim().slice(0, maxLength);
     if (clean) {
       onCancel();
       onConfirm(clean);
@@ -118,6 +129,7 @@ export function TextPromptDialog({
         </label>
         <input
           id="text-prompt-value"
+          ref={inputRef}
           class="url-input"
           type="text"
           maxlength={maxLength}

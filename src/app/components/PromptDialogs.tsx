@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ComponentType } from 'preact';
 import { signal } from '@preact/signals';
 import { Modal } from './Modal';
@@ -63,6 +63,8 @@ export function SeamlessLoopDialog() {
   const [repeat, setRepeat] = useState(1);
   const [trim, setTrim] = useState(false);
   const [snap, setSnap] = useState(true);
+  const fadeRef = useRef<HTMLInputElement>(null);
+  const repeatRef = useRef<HTMLInputElement>(null);
 
   // reference defaults on every open: 10 ms crossfade, repeat 1, snap on
   useEffect(() => {
@@ -84,6 +86,7 @@ export function SeamlessLoopDialog() {
         </label>
         <input
           id="sloop-fade"
+          ref={fadeRef}
           class="url-input"
           type="number"
           min={0}
@@ -97,6 +100,7 @@ export function SeamlessLoopDialog() {
         </label>
         <input
           id="sloop-repeat"
+          ref={repeatRef}
           class="url-input"
           type="number"
           min={1}
@@ -134,7 +138,15 @@ export function SeamlessLoopDialog() {
           <button
             class="btn-primary"
             onClick={() => {
-              const request = { fadeMs, repeat, trim, snap }; // snapshot before closing
+              // F-11 fix: read the LIVE inputs — a render landing between a
+              // keystroke/fill and this click could leave state stale, which
+              // silently applied the previous values (reproduced in E2E, 2026-10-15).
+              const request = {
+                fadeMs: Number(fadeRef.current?.value ?? fadeMs),
+                repeat: Number(repeatRef.current?.value ?? repeat),
+                trim,
+                snap,
+              }; // live values before closing
               closeSeamlessLoop();
               applySeamlessLoop(request);
             }}
