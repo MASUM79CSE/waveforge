@@ -14,7 +14,6 @@ import { execSync } from 'node:child_process';
 
 const BASE = process.argv[2] ?? 'http://localhost:5180';
 const OUT = process.argv[3] ?? 'docs/audits/control-bar/baseline/permission-denied.json';
-const r3 = (x) => Math.round(x * 1000) / 1000;
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROME_PATH || undefined,

@@ -12,4 +12,11 @@ Rule: a task only closes with evidence in EVIDENCE_LOG.md + commit SHA. Resume =
 | CB-0.5 | Hypothesis triage H-01..H-12 + new findings | VERIFIED | E-CB-005 | 7 CONFIRMED · 4 PARTIAL · 1 REFUTED · 1 NOT RUN; F-01..F-10 |
 | CB-0.6 | Deliverable 1: audit document | VERIFIED | E-CB-005 | `docs/audits/audio-editor-control-bar-audit.md` |
 
-Phases: 0 IN PROGRESS · 1..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).
+| CB-1.1 | Benchmark study (master prompt §3 sources) | VERIFIED | E-CB-009 | 6 official OPEN · BandLab NOT RUN (secondary labelled) · AudioMass ref-only |
+| CB-1.2 | v2 design decisions | VERIFIED | E-CB-009 | plan §2 — 10 decisions, each finding+benchmark traced |
+| CB-1.3 | Engine-capability matrix | VERIFIED | E-CB-010 | plan §1 — 16 rows file:line; output-meter note corrected; 3 MISSING→tickets |
+| CB-1.4 | Deliverable 2: implementation plan | VERIFIED | E-CB-009/010 | `docs/audits/audio-editor-control-bar-implementation-plan.md` |
+
+| CB-1.5 | (unplanned) F-11 hotfix: stale-input race in prompt dialogs | VERIFIED | E-CB-011 | 2 files, +44 B gz; gates green post-fix |
+
+Phases: 0 PASSED · **1 report issued (gates + PCA complete)** · 2..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).
