@@ -132,7 +132,8 @@
 | CB-2.6 Screenshots {v1,v2}×{dark,light}×6 widths + page h-scroll probes (FALSE at 1280/390/320 flag-ON) | VERIFIED | E-CB-014; `docs/screenshots/control-bar-v2/phase2/` (24 PNGs) |
 | CB-2.7 (unplanned) F-11 root fix: uncontrolled inputs + commit-time init (CB-D14) | VERIFIED | E-CB-013 |
 
-**Gate results (final tree, idle):** typecheck PASS · lint PASS · unit **99 files / 835 tests** · e2e plain **97 passed / 1 flaky (studioRecord — targeted 2× exit-0) / `csp.spec.ts` expected-red only** · enforced csp **PASS** · build ✓ · bundle **55,436 B gz (entry `index-_VX3_3Jk.js`) ≤ 123,661** (+1,816 vs Phase 1 = the v2 tree, hidden behind the flag) · LH desktop **P100/A100/BP100/S91** · mobile **P98/A100/BP100/S91** (S91 = vite-preview robots.txt artifact, unchanged) · axe zero violations on the v2 shell.
+**Gate results (final tree, idle):** typecheck PASS · lint PASS · unit **99 files / 835 tests** (99 files incl. clockState; see addendum) · e2e plain **97 passed / 1 flaky (studioRecord — targeted 2× exit-0) / `csp.spec.ts` expected-red only** · enforced csp **PASS** · build ✓ · bundle **55,449 B gz (entry `index-DLZ2_1Ur.js`) ≤ 123,661** · LH desktop **P100/A100/BP100/S91** · mobile **P98/A100/BP100/S91** (S91 = vite-preview robots.txt artifact) · axe zero violations on the v2 shell.
+**Bundle/LH correction (caught in the same-day continuation round):** the originally reported bundle (`index-_VX3_3Jk.js`, 55,436 B) and LH numbers were measured BEFORE the final flag-scoped h-scroll CSS/App changes landed; a rebuild of the exact committed tree gives `index-DLZ2_1Ur.js` (+13 B = the clip CSS). LH was re-run on the final build — scores unchanged. Unit/e2e gates had run on the final tree throughout; only the bundle byte-count and LH provenance needed correcting.
 
 **Deviations & decisions:** CB-D13 (v2 layout integration + flag-scoped width hardening), CB-D14 (F-11 root fix in-phase; supersedes the Phase-1 mitigation for the three fixed dialogs), CB-D15 (Space/Enter + arrows stop-propagation semantics).
 
@@ -141,5 +142,7 @@
 **Open gaps / open errors:** zero.
 
 **Phase 2 audit PASSED: zero open gaps and zero open errors.**
+
+**Addendum (same-day "continue" round, still Phase 2):** visual review caught the light-theme screenshots rendering dark → root cause: measurement scripts (including the Phase-0 method) set bare `theme` instead of the settings-prefixed `waveforge.theme`. Full baseline re-measured at the true baseline commit (`3691995`, worktree) — all layout/perf numbers reproduced identically (claims stand; only light PNGs change); methods fixed; audit §3 carries a correction row. Build-time flag path verified end-to-end (ON, URL-override, default OFF). New `clockState` persistence tests (6). Evidence: E-CB-015.
 
 **Awaiting `PROCEED TO PHASE 3`.**

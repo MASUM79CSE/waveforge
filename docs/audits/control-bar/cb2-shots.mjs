@@ -19,7 +19,7 @@ for (const theme of THEMES) {
   for (const width of WIDTHS) {
     for (const v2 of [false, true]) {
       const ctx = await browser.newContext({ viewport: { width, height: 800 } });
-      await ctx.addInitScript((t) => localStorage.setItem('theme', t), theme);
+      await ctx.addInitScript((t) => localStorage.setItem('waveforge.theme', t), theme);
       const page = await ctx.newPage();
       try {
         await page.goto(`${BASE}/?cbv2=${v2 ? 1 : 0}`, { waitUntil: 'domcontentloaded' });

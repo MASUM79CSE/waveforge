@@ -27,7 +27,7 @@ async function newPage(width) {
     viewport: { width, height: 800 },
     permissions: ['microphone'],
   });
-  await ctx.addInitScript((t) => localStorage.setItem('theme', t), 'dark');
+  await ctx.addInitScript((t) => localStorage.setItem('waveforge.theme', t), 'dark');
   const page = await ctx.newPage();
   return { ctx, page };
 }

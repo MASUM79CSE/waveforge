@@ -20,10 +20,10 @@ Rule: a task only closes with evidence in EVIDENCE_LOG.md + commit SHA. Resume =
 | CB-1.5 | (unplanned) F-11 hotfix: stale-input race in prompt dialogs | VERIFIED | E-CB-011 | 2 files, +44 B gz; gates green post-fix |
 
 | CB-2.1 | Feature flag + v2 shell (zones, tokens, grid integration) | VERIFIED | E-CB-012 | all 3 flag paths probed; default OFF; flag-OFF DOM identical |
-| CB-2.2 | Switchable clock (time/samples/bars-when-known) + RED→green formatters | VERIFIED | E-CB-012 | `clock.test.ts` 9/9; persistence; CB-D10 hiding verified |
+| CB-2.2 | Switchable clock (time/samples/bars-when-known) + RED→green formatters + persistence tests | VERIFIED | E-CB-012/015 | `clock.test.ts` 9/9; persistence; CB-D10 hiding verified |
 | CB-2.3 | Transport zone as APG toolbar (registry-routed, roving) | VERIFIED | E-CB-012 | 1 tab stop, arrows, Space no-double-fire, pressed from signals |
 | CB-2.4 | Overflow skeleton (⋮) with registry residents | VERIFIED | E-CB-012 | follow/monitor/clip-reset; monitor check-state added to registry |
 | CB-2.5 | Flag-OFF parity (full v1 suite green through the refactor) | VERIFIED | E-CB-014 | plain e2e 97 passed at final tree |
-| CB-2.6 | Screenshots 6 widths × 2 themes × v1/v2 + h-scroll probes | VERIFIED | E-CB-014 | 24 PNGs; page h-scroll FALSE at 1280/390/320 flag-ON |
+| CB-2.6 | Screenshots 6 widths × 2 themes × v1/v2 + h-scroll probes (theme-key corrected + re-captured) | VERIFIED | E-CB-014/015 | 24 PNGs; page h-scroll FALSE at 1280/390/320 flag-ON |
 
 Phases: 0 PASSED · 1 PASSED · **2 gates+PCA complete (report in plan §9)** · 3..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).

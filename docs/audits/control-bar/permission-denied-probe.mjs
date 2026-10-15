@@ -21,7 +21,7 @@ const browser = await chromium.launch({
   // NOTE: intentionally NO --use-fake-ui-for-media-stream → headless denies the mic prompt.
 });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-await ctx.addInitScript(() => localStorage.setItem('theme', 'dark'));
+await ctx.addInitScript(() => localStorage.setItem('waveforge.theme', 'dark'));
 const page = await ctx.newPage();
 const consoleErrors = [];
 page.on('console', (m) => {

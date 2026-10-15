@@ -122,7 +122,7 @@ for (const width of WIDTHS) {
         deviceScaleFactor: 1,
       });
       await context.addInitScript((theme) => {
-        localStorage.setItem('theme', theme);
+        localStorage.setItem('waveforge.theme', theme);
         window.__lt = 0;
         try {
           new PerformanceObserver((l) => {
