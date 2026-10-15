@@ -9,7 +9,7 @@ import { mkdirSync } from 'node:fs';
 
 const base = process.argv.find((a) => a.startsWith('--base='))?.slice(7) ?? 'http://localhost:5180';
 const shots = process.argv.find((a) => a.startsWith('--shots='))?.slice(8) ?? null;
-const WIDTHS = [1280, 1024, 768, 390, 320];
+const WIDTHS = [1440, 1280, 1024, 768, 390, 320];
 const THEMES = ['dark', 'light'];
 const CHROME = `${process.env.HOME}/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome`;
 

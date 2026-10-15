@@ -19,15 +19,17 @@ export function Clock() {
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // close on outside click / Escape while the menu is open
+  // close on outside press / Escape while the menu is open — pointerdown
+  // (not click): native-menu semantics, immune to canvas drag click-
+  // retargeting (same fix as OverflowZone, E-CB-019 sibling grep)
   useEffect(() => {
     if (!open) return;
-    const onDocClick = (e: MouseEvent): void => {
+    const onDocPointer = (e: PointerEvent): void => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener('click', onDocClick);
+    document.addEventListener('pointerdown', onDocPointer);
     return () => {
-      document.removeEventListener('click', onDocClick);
+      document.removeEventListener('pointerdown', onDocPointer);
     };
   }, [open]);
 
