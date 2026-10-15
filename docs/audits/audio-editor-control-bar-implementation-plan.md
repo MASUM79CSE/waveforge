@@ -76,6 +76,7 @@
 - **T-CB-3** Pseudo-localization harness (H-12).
 - **T-CB-4** Output meter via `getAnalyser()` (P3; engine hook verified).
 - **T-CB-5** Per-digit selection editing (Audacity-style) — optional refinement after CB-3.1.
+- **T-CB-6** Extend the F-11 live-value-confirm pattern to `EffectDialog`/`ExportDialog` (sibling-grep found the same theoretical state-read-on-confirm shape; sliders/radios only, no type-then-apply flow, no observed failure — fold into Phase 3 dialog work).
 - **CB-P3-1 — SUPERSEDED (Phase 1):** the "timing-sensitive assertions" diagnosis was wrong; the real cause was F-11 (stale-value race in prompt dialogs), FIXED in Phase 1. AM-11's status pattern (`18.55 s`) remains retry-sensitive; covered by the F-11 fix and standard retry budget.
 
 ## 8. Phase 1 report (§7.5 template)
