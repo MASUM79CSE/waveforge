@@ -9,6 +9,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { cursorPos, docInfo, selection } from '../state';
 import { selectRange } from '../runtime';
 import { runCommand } from '../commands';
+import { cmdTitle } from './tooltips';
 import { parseClockInput } from '../../core/clock';
 import { fmtClock } from '../../core/format';
 import { t } from '../../i18n';
@@ -151,8 +152,8 @@ export function SelectionZone() {
         <button
           class="sel-clear"
           tabIndex={-1}
-          title={`${t().editDeselect} (Q)`}
-          aria-label={`${t().editDeselect} (Q)`}
+          title={cmdTitle('edit.deselect')}
+          aria-label={cmdTitle('edit.deselect')}
           disabled={!sel}
           onClick={() => runCommand('edit.deselect')}
         >

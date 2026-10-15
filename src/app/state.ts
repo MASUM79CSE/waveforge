@@ -2,6 +2,7 @@ import { createTakes, type TakesState } from '../engine/takes';
 import type { Marker } from '../engine/markers';
 import { signal } from '@preact/signals';
 import { STORAGE_PREFIX } from '../core/constants';
+import { setLocale } from '../i18n';
 
 /**
  * Central UI state (Preact Signals). The engine layer never imports this —
@@ -164,6 +165,10 @@ export const accent = signal<AccentName>(
     ? (readStoredString('accent', 'cyan') as AccentName)
     : 'cyan',
 );
+// CB-4.4: locale is a plain local setting (`waveforge.locale`, values en/bn);
+// unknown values fall back to en inside setLocale. No persistence UI yet —
+// the switcher is a Phase 5/6 decision; bn is reachable + testable today.
+setLocale(readStoredString('locale', 'en'));
 
 export function setThemeName(value: ThemeName): void {
   theme.value = value;

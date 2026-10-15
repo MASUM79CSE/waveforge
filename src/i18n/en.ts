@@ -205,7 +205,7 @@ export const en = {
   recordFailed: 'Microphone unavailable',
   recordTooLong: 'Recording stopped — 10 minute limit',
   recNoPermission: 'Microphone permission was denied',
-  recArmed: 'Armed — check your level, press R to roll',
+  recArmed: 'Armed — check your level, press Record to roll',
   metronomeOn: 'Metronome on',
   metronomeOff: 'Metronome off',
   monitorOn: 'Input monitoring on',
@@ -217,8 +217,8 @@ export const en = {
   punchNeedsMonitor: 'Enable input monitoring (headphones!) to punch',
   punchDone: 'Punch recorded — one undo step',
   opPunch: 'Punch in/out',
-  punchIn: 'Punch in/out over the selection (P)',
-  monitorTitle: 'Input monitoring (M)',
+  punchIn: 'Punch in/out over the selection',
+  monitorTitle: 'Input monitoring',
   studioSection: 'Studio',
   studioCountIn: 'Count-in bars',
   studioMetronome: 'Metronome',
@@ -398,6 +398,7 @@ export const en = {
   selInvalid: 'Enter a time like 9.272 or 0:09.272',
   tempoZone: 'Tempo & grid',
   bpmTitle: 'Detected tempo (Analyze → BPM)',
+  menuBarLabel: 'Main menu',
   volume: 'Volume',
 
   // shell
@@ -554,4 +555,10 @@ export const en = {
   markerNoneNear: 'No marker near the cursor',
 } as const;
 
-export type Catalog = typeof en;
+/** Widened catalog shape: string literals widen to `string` so sibling
+ * catalogs (bn) satisfy the same contract; function keys keep signatures. */
+export type Catalog = {
+  -readonly [K in keyof typeof en]: (typeof en)[K] extends string
+    ? string
+    : (typeof en)[K];
+};

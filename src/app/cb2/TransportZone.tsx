@@ -6,6 +6,7 @@
  */
 import { playing, looping, recording, armed, docInfo } from '../state';
 import { runCommand } from '../commands';
+import { kbdOf } from './tooltips';
 import { t } from '../../i18n';
 import { Zone } from '../components/Zone';
 import { useRovingToolbar } from './useRovingToolbar';
@@ -39,7 +40,7 @@ export function TransportZone() {
         <button
           class={`tbtn tbtn-play-big ${playing.value ? 'playing' : ''}`}
           tabIndex={0}
-          title={playing.value ? `${t().pause} (Space)` : `${t().play} (Space)`}
+          title={`${playing.value ? t().pause : t().play}${kbdOf('transport.playPause')}`}
           aria-label={playing.value ? t().pause : t().play}
           aria-pressed={playing.value}
           data-testid="transport-play"
@@ -56,7 +57,7 @@ export function TransportZone() {
         <button
           class="tbtn"
           tabIndex={-1}
-          title={`${t().stop}`}
+          title={`${t().stop}${kbdOf('transport.stop')}`}
           aria-label={t().stop}
           data-testid="transport-stop"
           disabled={!doc}
@@ -68,7 +69,7 @@ export function TransportZone() {
         <button
           class={`tbtn rec-btn ${rec ? 'recording' : ''} ${isArmed ? 'armed' : ''}`}
           tabIndex={-1}
-          title={rec ? t().recordStop : isArmed ? t().recArmed : t().recordStart}
+          title={`${rec ? t().recordStop : isArmed ? t().recArmed : t().recordStart}${kbdOf('record.toggle')}`}
           aria-label={rec ? t().recordStop : isArmed ? t().recArmed : t().recordStart}
           aria-pressed={rec || isArmed}
           data-testid="record-toggle"
@@ -80,7 +81,7 @@ export function TransportZone() {
         <button
           class={`tbtn ${looping.value ? 'active' : ''}`}
           tabIndex={-1}
-          title={`${t().toggleLoop} (L)`}
+          title={`${t().toggleLoop}${kbdOf('transport.loop')}`}
           aria-label={t().toggleLoop}
           aria-pressed={looping.value}
           data-testid="cb2-loop"

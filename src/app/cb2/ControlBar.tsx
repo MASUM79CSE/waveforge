@@ -16,7 +16,7 @@ import { OverflowZone } from './OverflowZone';
 export function ControlBarV2() {
   return (
     <div class="cb2" data-testid="cb2-root">
-      <MenuBar />
+      <MenuBar apg />
       {/* .transport supplies the v1 zone layout; .cb2-row (loaded after
           app.css) overrides the hidden-scrollbar pattern with a visible
           affordance (F-01). */}

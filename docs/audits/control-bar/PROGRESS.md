@@ -37,3 +37,11 @@ Phases: 0 PASSED · 1 PASSED · **2 gates+PCA complete (report in plan §9)** ·
 Phase-3 flake classification: markers-persist + peakLimits flakes PROVEN pre-existing (clean `c4144ee` worktree reproduces) → tickets T-CB-8/T-CB-9, not v2 gaps.
 
 Phases: 0 PASSED · 1 PASSED · 2 PASSED · **3 gates+PCA complete (report in plan §10)** · 4..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).
+
+| CB-4.1 | APG menubar keyboard model (opt-in `apg` prop, CB-D17; roles, roving titles, arrows/Home/End/Enter/Escape/Tab, focus management) | VERIFIED | E-CB-018 | cb4.spec 11/11 + cb4adv 6/6; flag-OFF guard pins v1 stability |
+| CB-4.2 | StatusBar consolidation — single labelled secondary clock (F-06) | VERIFIED | E-CB-018 | title-labelled, both flags; format unification rides Phase-6 flag decision |
+| CB-4.3 | Tooltip system = name + shortcut from the registry (+ fabricated-hint purge) | VERIFIED | E-CB-018 | tooltips.ts; unit 6/6 pins registry derivation; (M)/(P)/R purge verified against keyboard.ts |
+| CB-4.4 | i18n bn pass — complete catalog, boot reachability, credit texts exact (CB-D18) | VERIFIED | E-CB-018 | bn completeness unit-enforced; bn render e2e; bundle +668 B gz |
+| CB-4.5 | (H-sweep) H-04 closure on v2: monitor/punch aria-labels; name/pressed sweep green | VERIFIED | E-CB-018 | cb4.spec name/pressed assertions; keyboard activation end-to-end |
+
+Phases: 0 PASSED · 1 PASSED · 2 PASSED · 3 PASSED · **4 gates+PCA complete (report in plan §11)** · 5..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).

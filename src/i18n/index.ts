@@ -4,8 +4,9 @@
  */
 import type { ErrorCode } from '../core/errors';
 import { en, type Catalog } from './en';
+import { bn } from './bn';
 
-const catalogs: Record<string, Catalog> = { en };
+const catalogs: Record<string, Catalog> = { en, bn };
 let active: Catalog = catalogs['en'] ?? en;
 
 export function t(): Catalog {

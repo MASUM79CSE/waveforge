@@ -172,3 +172,29 @@
 **Phase 3 audit PASSED: zero open gaps and zero open errors.**
 
 **Awaiting `PROCEED TO PHASE 4`.**
+
+## 11. Phase 4 report (§7.5 template)
+
+**Phase goal:** menubar + status — APG menubar keyboard model (H-11), StatusBar consolidation (F-06), registry-derived tooltips (CB-4.3), bn catalog pass (CB-4.4).
+
+**Tasks closed:**
+
+| Task | Status | Evidence |
+|---|---|---|
+| CB-4.1 APG menubar keyboard (Arrow/Enter/Escape per APG; roving titles, wrap, focus return, menu switching, Tab dismiss) — opt-in `apg` prop, v2-only (CB-D17) | VERIFIED | E-CB-018; `cb4.spec.ts` 11/11 + `cb4adv.spec.ts` 6/6 (races, wrap, activation, 320 px, bn) |
+| CB-4.2 StatusBar consolidation: single labelled secondary clock (both flags) | VERIFIED | E-CB-018; cb4.spec both-flag label assertions; format unification deferred to the Phase-6 flag decision (known-interim) |
+| CB-4.3 Tooltips = command name + shortcut from the registry; all v2 command buttons wired; fabricated hints ((M)/(P)/"press R") purged from catalog + tooltips | VERIFIED | E-CB-018; `tooltips.ts` unit 6/6 (registry derivation + no-invention); T-CB-10 opened for binding decisions |
+| CB-4.4 bn catalog: complete key-for-key Bengali (type-enforced), `waveforge.locale` boot read, credit texts exact (CB-D18) | VERIFIED | E-CB-018; completeness + fallback unit tests; bn-render e2e (menubar/transport/status/tooltip) |
+| CB-4.5 (unplanned) H-04 closure on v2: monitor/punch aria-labels; clip-led i18n | VERIFIED | E-CB-018; cb4.spec name/pressed sweep |
+
+**Gate results (final tree, idle, fresh build `index-BXgv4vVs.js`):** typecheck PASS · lint PASS · unit **101 files / 851 tests** · e2e plain **135 passed / 0 flaky / csp expected-red only (CB-D6 composition)** · enforced csp **2/2 PASS** · build ✓ · bundle **57,544 B gz ≤ 123,661 PASS** · LH desktop **P100/A100/BP100/S91** · mobile **P97/A100/BP100/S91** (P98→P97 = bn payload; a11y stays 100) · axe green on v2 (cb3 suite).
+
+**Deviations & decisions:** CB-D17 (opt-in APG menubar; v1 byte-stable — protects the frozen v1 suite and the parity stance), CB-D18 (complete bn; credit texts locked; Catalog type widened — type-level only). Catalog honesty purge ((M)/(P)/press R) is not a shortcut change (nothing was bound; hints removed) — binding decisions ticketed (T-CB-10).
+
+**Known-interim (declared, not gaps):** status clock format remains raw-seconds (labelled) until the Phase-6 flag decision unifies formats; bn has no in-app switcher yet (`waveforge.locale` local setting; switcher = Phase 5/6); bn long-label layout hardening belongs to CB-5.3 as planned.
+
+**Open gaps / open errors:** zero.
+
+**Phase 4 audit PASSED: zero open gaps and zero open errors.**
+
+**Awaiting `PROCEED TO PHASE 5`.**

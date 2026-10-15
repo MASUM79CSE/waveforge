@@ -29,7 +29,7 @@ export function StatusBar() {
       <span class="status-item" title="Samples per pixel">
         ×{spp < 1 ? spp.toFixed(2) : Math.round(spp)}
       </span>
-      <span class="status-item">{cursorPos.value.toFixed(3)} s</span>
+      <span class="status-item" title={t().cursorPosition}>{cursorPos.value.toFixed(3)} s</span>
       <span class="status-item status-meta">v{Brand.version}</span>
     </div>
   );

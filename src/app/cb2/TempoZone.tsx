@@ -6,6 +6,7 @@
  */
 import { bpmResult, beatsShown, snapToBeat, recStudio, countInBeat } from '../state';
 import { runCommand } from '../commands';
+import { cmdTitle } from './tooltips';
 import { t } from '../../i18n';
 import { Zone } from '../components/Zone';
 import { useRovingToolbar } from './useRovingToolbar';
@@ -34,7 +35,7 @@ export function TempoZone() {
           tabIndex={0}
           aria-pressed={beatsShown.value}
           aria-label={t().beatsToggle}
-          title={t().beatsToggle}
+          title={cmdTitle('view.beatsShown')}
           data-testid="cb2-beat"
           onClick={() => runCommand('view.beatsShown')}
           onKeyDown={stop}
@@ -46,7 +47,7 @@ export function TempoZone() {
           tabIndex={-1}
           aria-pressed={snapToBeat.value}
           aria-label={t().snapToggle}
-          title={t().snapToggle}
+          title={cmdTitle('view.snapToBeat')}
           data-testid="cb2-snap"
           onClick={() => runCommand('view.snapToBeat')}
           onKeyDown={stop}
@@ -64,7 +65,7 @@ export function TempoZone() {
           tabIndex={-1}
           aria-pressed={recStudio.value.metronome}
           aria-label={t().studioMetronome}
-          title={`${t().studioMetronome} (M)`}
+          title={cmdTitle('record.metronome')}
           data-testid="cb2-metronome"
           onClick={() => runCommand('record.metronome')}
           onKeyDown={stop}

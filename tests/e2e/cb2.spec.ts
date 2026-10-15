@@ -55,8 +55,8 @@ test.describe('flag ON (?cbv2=1)', () => {
     await expect(page.getByTestId('punch-button')).toBeVisible();
     await expect(page.getByTestId('clip-led')).toHaveCount(1);
     await expect(page.locator('.cb2 input[type="range"]').first()).toBeVisible();
-    // menus
-    await expect(page.getByRole('button', { name: 'File', exact: true })).toBeVisible();
+    // menus — APG mode (CB-D17): titles are menubar menuitems
+    await expect(page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true })).toBeVisible();
     // overflow
     await expect(page.getByTestId('cb2-overflow')).toBeVisible();
   });

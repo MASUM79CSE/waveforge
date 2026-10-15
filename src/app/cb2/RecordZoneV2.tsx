@@ -8,8 +8,9 @@
 import { clipLatched, countInBeat, peakHoldDb, recLevel, recSeconds, recStudio, recording, armed, selection } from '../state';
 import { punchRecord, resetClipLatch, setMonitoring } from '../recordActions';
 import { fmtClock } from '../../core/format';
-import { t } from '../../i18n';
 import { Zone, Svg } from '../components/Zone';
+import { cmdTitle } from './tooltips';
+import { t } from '../../i18n';
 
 /** dBFS → 0..100 meter width (-60 dB floor). */
 function meterPercent(peakDb: number): number {
@@ -24,7 +25,8 @@ export function RecordZoneV2() {
     <Zone label="Record">
       <button
         class={`tbtn ${recStudio.value.monitoring ? 'active' : ''}`}
-        title={t().monitorTitle}
+        title={cmdTitle('record.monitor')}
+        aria-label={t().monitorTitle}
         aria-pressed={recStudio.value.monitoring}
         data-testid="monitor-toggle"
         onClick={() => setMonitoring(!recStudio.value.monitoring)}
@@ -33,7 +35,8 @@ export function RecordZoneV2() {
       </button>
       <button
         class="tbtn"
-        title={t().punchIn}
+        title={cmdTitle('record.punch')}
+        aria-label={t().punchIn}
         data-testid="punch-button"
         disabled={rec || !selection.value}
         onClick={() => void punchRecord()}
@@ -52,8 +55,8 @@ export function RecordZoneV2() {
           />
           <button
             class={`rec-clip ${clipLatched.value ? 'latched' : ''}`}
-            title="Clip — click to reset"
-            aria-label="Clip indicator"
+            title={cmdTitle('record.clipReset')}
+            aria-label={t().clipReset}
             data-testid="clip-led"
             onClick={resetClipLatch}
           />
