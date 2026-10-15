@@ -223,3 +223,115 @@
   align-items: center;
   gap: 4px;
 }
+
+/* ---- Phase 5: priority panel (CB-5.1/CB-D19) + target sizes (CB-5.2) ---- */
+
+/* the ⋮ dialog panel hosting tucked zones + the command menu */
+.cb2-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 240px;
+  max-width: min(92vw, 620px);
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  padding: 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--bd-h);
+  border-radius: var(--r);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  outline: none;
+}
+.cb2-pop-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cb2-pop .cb2-pop-zones .tz {
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+}
+.cb2-pop-sep {
+  height: 1px;
+  background: var(--bd);
+}
+/* the menu list renders in-flow inside the panel */
+.cb2-pop .cb2-menu {
+  position: static;
+  box-shadow: none;
+  border: none;
+}
+
+/* CB-5.2: every interactive in the v2 bar measures ≥ 24 px (the visual
+   glyph may stay small — the HIT BOX is what grows). v1 DOM is untouched:
+   every rule below is scoped to .cb2. */
+.cb2 .menu-title {
+  min-height: 24px;
+}
+.cb2 .cb2-sel-in {
+  min-height: 24px;
+}
+.cb2 .sel-clear {
+  min-width: 24px;
+  min-height: 24px;
+}
+.cb2 [data-testid='cb2-beat'],
+.cb2 [data-testid='cb2-snap'] {
+  min-height: 24px;
+}
+/* clip LED: 24×24 hit area, the 10 px lamp stays the visual */
+.cb2 .rec-clip {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  position: relative;
+}
+.cb2 .rec-clip::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--bd-h);
+  background: transparent;
+}
+.cb2 .rec-clip.latched::before {
+  background: var(--danger);
+  border-color: transparent;
+  box-shadow: 0 0 8px var(--danger);
+}
+.cb2 .strip-slider {
+  height: 24px;
+}
+.cb2 [data-testid='cb2-master-vol'] {
+  min-height: 24px;
+}
+
+/* very narrow containers: tighten the row so transport+⋮ fit 320 px */
+@media (max-width: 371px) {
+  .cb2-row {
+    gap: 2px;
+  }
+  .cb2 .tz {
+    padding-inline: 8px;
+  }
+  .cb2 {
+    padding-inline: 6px;
+  }
+  /* 26 px hit boxes (still ≥ 24) so transport+clock+⋮ fit 320 px */
+  .cb2 .tbtn {
+    width: 26px;
+    min-width: 26px;
+  }
+  .cb2 .tz-body {
+    gap: 2px;
+  }
+  .cb2-overflow .cb2-overflow-btn {
+    width: 26px;
+    min-width: 26px;
+  }
+}

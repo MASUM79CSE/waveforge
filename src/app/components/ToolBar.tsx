@@ -6,6 +6,7 @@
 import { Fragment } from 'preact';
 import { commands, runCommand } from '../commands';
 import { docInfo } from '../state';
+import { t } from '../../i18n';
 import { toolbarDefs } from '../toolbarDefs';
 import { Icon } from './icons';
 
@@ -21,7 +22,7 @@ function titleFor(command: string): string {
 export function ToolBar() {
   const enabled = docInfo.value !== null;
   return (
-    <div class="toolbar" role="toolbar" aria-label="Quick tools">
+    <div class="toolbar" role="toolbar" aria-label={t().quickTools}>
       {toolbarDefs.map((group, gi) => (
         <Fragment key={gi}>
           {gi > 0 && <span class="toolbar-sep" aria-hidden="true" />}

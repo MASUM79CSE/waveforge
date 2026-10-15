@@ -399,6 +399,8 @@ export const en = {
   tempoZone: 'Tempo & grid',
   bpmTitle: 'Detected tempo (Analyze → BPM)',
   menuBarLabel: 'Main menu',
+  quickTools: 'Quick tools',
+  channelStrips: 'Channel strips',
   volume: 'Volume',
 
   // shell

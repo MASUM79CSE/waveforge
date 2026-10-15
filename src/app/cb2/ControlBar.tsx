@@ -1,8 +1,7 @@
 /**
- * Control Bar v2 shell (CB-2.1): one header row — menu bar, the v2 APG
- * transport zone, the v1 zone components that migrate in Phases 3–4
- * (carried verbatim so every control stays reachable at every commit),
- * and the overflow menu. Mounted only when the ui.controlBarV2 flag is ON.
+ * Control Bar v2 (flag `ui.controlBarV2`): the v2 transport row. Zones
+ * relocate between the row and the ⋮ panel at measured breakpoints
+ * (CB-5.1/CB-D19) — each zone renders exactly once.
  */
 import { MenuBar } from '../components/MenuBar';
 import { ToolBar } from '../components/ToolBar';
@@ -12,23 +11,34 @@ import { TempoZone } from './TempoZone';
 import { RecordZoneV2 } from './RecordZoneV2';
 import { MasterZoneV2 } from './MasterZoneV2';
 import { OverflowZone } from './OverflowZone';
+import { rowWidth, TUCK, trackRowWidth } from './rowWidth';
 
 export function ControlBarV2() {
+  const w = rowWidth.value;
+  const tuck = {
+    master: w < TUCK.master,
+    record: w < TUCK.record,
+    tempo: w < TUCK.tempo,
+    selection: w < TUCK.selection,
+    tool: w < TUCK.tool,
+  };
   return (
-    <div class="cb2" data-testid="cb2-root">
+    <div class="cb2" data-testid="cb2-root" ref={trackRowWidth}>
       <MenuBar apg />
-      {/* .transport supplies the v1 zone layout; .cb2-row (loaded after
-          app.css) overrides the hidden-scrollbar pattern with a visible
-          affordance (F-01). */}
       <div class="transport cb2-row">
         <TransportZone />
-        <ToolBar />
-        <SelectionZone />
-        <TempoZone />
+        {!tuck.tool && <ToolBar />}
+        {!tuck.selection && <SelectionZone />}
+        {!tuck.tempo && <TempoZone />}
         <div class="transport-spacer" />
-        <RecordZoneV2 />
-        <MasterZoneV2 />
-        <OverflowZone />
+        {!tuck.record && <RecordZoneV2 />}
+        {!tuck.master && <MasterZoneV2 />}
+        <OverflowZone tucked={tuck}>
+          {tuck.tempo && <TempoZone />}
+          {tuck.record && <RecordZoneV2 />}
+          {tuck.master && <MasterZoneV2 />}
+          {tuck.selection && <SelectionZone />}
+        </OverflowZone>
       </div>
     </div>
   );

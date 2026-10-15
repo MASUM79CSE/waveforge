@@ -15,6 +15,9 @@ async function loadV2(page: Page): Promise<void> {
 }
 
 test.describe('H: selection fields', () => {
+  // CB-5.1: run where all clusters are inline (the blur probe clicks the
+  // BPM chip in the tempo zone; narrow-panel editing is cb5.spec's ground)
+  test.use({ viewport: { width: 2300, height: 900 } });
   test('rapid Enter commits settle on the last value', async ({ page }) => {
     await loadV2(page);
     const start = page.getByTestId('cb2-sel-start');
@@ -32,6 +35,7 @@ test.describe('H: selection fields', () => {
     await loadV2(page);
     const start = page.getByTestId('cb2-sel-start');
     await page.keyboard.press('Control+a');
+    await expect(page.getByTestId('cb2-sel-end')).toHaveValue(/0:09\.2/); // field sync settled
     const before = await page.getByTestId('cb2-sel-end').inputValue();
     await start.fill('garbage');
     await start.press('Enter');
@@ -65,6 +69,7 @@ test.describe('H: selection fields', () => {
     await loadV2(page);
     const start = page.getByTestId('cb2-sel-start');
     await page.keyboard.press('Control+a');
+    await expect(page.getByTestId('cb2-sel-end')).toHaveValue(/0:09\.2/); // field sync settled
     const end = await page.getByTestId('cb2-sel-end').inputValue();
     await start.fill('');
     await start.press('Enter');
@@ -73,6 +78,7 @@ test.describe('H: selection fields', () => {
 });
 
 test.describe('H: toggles + slider', () => {
+  test.use({ viewport: { width: 2300, height: 900 } }); // CB-5.1: exercise the toggles inline
   test('rapid BEAT/SNAP/metro double-clicks end consistent (pressed == label state)', async ({
     page,
   }) => {
@@ -124,6 +130,10 @@ test.describe('H: responsive', () => {
     await page.setViewportSize({ width: 320, height: 640 });
     await loadV2(page);
     await page.keyboard.press('Control+a');
+    // CB-5.1: at 320 the editing clusters live in the ⋮ panel — same
+    // controls, relocated (the panel itself is axe- and target-checked
+    // in cb5.spec)
+    await page.getByTestId('cb2-overflow').click();
     await expect(page.getByTestId('cb2-sel-start')).toBeVisible();
     await expect(page.getByTestId('cb2-rec-slot').first()).toBeVisible();
     const m = await page.evaluate(() => ({
@@ -136,6 +146,7 @@ test.describe('H: responsive', () => {
   test('selection fields keep working at 390 px (mobile probe)', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 720 });
     await loadV2(page);
+    await page.getByTestId('cb2-overflow').click();
     const start = page.getByTestId('cb2-sel-start');
     await page.keyboard.press('Control+a');
     await start.fill('0:00.500');

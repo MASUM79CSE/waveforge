@@ -198,3 +198,29 @@
 **Phase 4 audit PASSED: zero open gaps and zero open errors.**
 
 **Awaiting `PROCEED TO PHASE 5`.**
+
+## 12. Phase 5 report (§7.5 template)
+
+**Phase goal:** responsive + a11y hardening — priority overflow at all widths, measured ≥24 px targets, zoom/reduced-motion/long-label/no-audio states, axe-clean everywhere, before/after screenshots.
+
+**Tasks closed:**
+
+| Task | Status | Evidence |
+|---|---|---|
+| CB-5.1 Priority overflow 1280/1024/768/390/320 — row internal overflow **1230–1871 px → 0 px at every width**; page h-scroll 0; ⋮ panel (role=dialog) hosts relocated zones single-instance and fully editable; compact 320 tier | VERIFIED | E-CB-019; `cb5.spec.ts` 18/18; before/after screenshots `docs/screenshots/control-bar-v2/phase5/` (10+10 PNGs) |
+| CB-5.2 Target sizes ≥24 — 18 sub-24 boxes → **0** (inputs, menu titles, clip-led hit area, sliders; visual glyphs preserved) | VERIFIED | E-CB-019; cb5.spec measured sweeps at 1280+320 |
+| CB-5.3 States: zoom 200/400% (emulated viewports — method documented), reduced-motion, bn long labels, no-audio, permission-denied | VERIFIED | E-CB-020; cb5.spec; `baseline/permission-denied.json` |
+| CB-5.4 axe zero violations at 5 widths × 2 themes, incl. panel-open | VERIFIED | E-CB-020; probe CLEAN everywhere |
+| CB-5.5 (unplanned) F-11 third instance — SelectionZone root-fixed uncontrolled (CB-D14 pattern); OverflowZone pointerdown-close + capture-Escape + transition-effect focus restore | VERIFIED | E-CB-019; deterministic probes → cb battery 65/65 ×3 |
+
+**Gate results (final tree, idle, fresh build `index-CnD1wQqI.js`):** typecheck PASS · lint PASS · unit **101 files / 851 tests** · e2e plain **153 passed / 0 flaky** (csp composition red only, CB-D6) · enforced csp **2/2 PASS** · build ✓ · bundle **57,952 B gz ≤ 123,661 PASS** · LH desktop P100/A100/**BP100**/S91 + mobile P97/A100/**BP100**/S91 at **flag OFF and flag ON** — **a11y 100 both flags (budget)**.
+
+**Deviations & decisions:** CB-D19 (measured-breakpoint relocation into a dialog panel; never-tuck set; compact tier). Test-literal updates for the intentional layout change are itemized in E-CB-019 (reachability via panel; all-inline suites at 2300 px; narrow suites exercise the panel). SelectionZone root fix supersedes the CB-D16 mitigation for the selection fields (same justification class as CB-D14; user may veto at STOP).
+
+**Known-interim (declared, not gaps):** the v2 MenuBar scrolls visibly at ≤~400 px (allowed pattern — visible scrollbar, titles ≥24); status clock format unification + bn switcher UI + shortcut ratification (T-CB-10) all ride the Phase-6 decision.
+
+**Open gaps / open errors:** zero.
+
+**Phase 5 audit PASSED: zero open gaps and zero open errors.**
+
+**Awaiting `PROCEED TO PHASE 6`.**

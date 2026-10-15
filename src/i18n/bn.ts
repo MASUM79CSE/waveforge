@@ -405,6 +405,8 @@ export const bn = {
   tempoZone: 'টেম্পো ও গ্রিড',
   bpmTitle: 'শনাক্ত টেম্পো (Analyze → BPM)',
   menuBarLabel: 'মূল মেনু',
+  quickTools: 'দ্রুত টুল',
+  channelStrips: 'চ্যানেল স্ট্রিপ',
   volume: 'ভলিউম',
 
   // shell

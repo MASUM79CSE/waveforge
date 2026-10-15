@@ -31,7 +31,7 @@ export function MasterZoneV2() {
   return (
     <Zone label="Master">
       {stereo && (
-        <div class="toolbar-group strips" role="group" aria-label="Channel strips">
+        <div class="toolbar-group strips" role="group" aria-label={t().channelStrips}>
           <ChannelStrip ch={0} label={t().channelLeft} mute={channelMutes.value[0] ?? false} />
           <ChannelStrip ch={1} label={t().channelRight} mute={channelMutes.value[1] ?? false} />
           <button

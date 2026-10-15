@@ -16,6 +16,9 @@ async function loadV2(page: Page): Promise<void> {
 }
 
 test.describe('selection fields (CB-3.1)', () => {
+  // CB-5.1: these tests prove the applied selection via the punch button
+  // (record zone — tucked below ~1540 px container), so run all-inline.
+  test.use({ viewport: { width: 2300, height: 900 } });
   test('mirrors the signal; Ctrl+A fills all three fields', async ({ page }) => {
     await loadV2(page);
     const start = page.getByTestId('cb2-sel-start');
@@ -86,6 +89,10 @@ test.describe('selection fields (CB-3.1)', () => {
 });
 
 test.describe('tempo cluster (CB-3.2)', () => {
+  // Phase 5 (CB-5.1): below ~2150 px container the tempo/record/master
+  // zones relocate into the ⋮ panel — these suites exercise them INLINE at
+  // an all-inline viewport; the panel itself is covered by cb5.spec.
+  test.use({ viewport: { width: 2300, height: 900 } });
   test('metronome + BEAT + SNAP toggles are registry-routed with pressed states', async ({
     page,
   }) => {
@@ -132,6 +139,7 @@ test.describe('tempo cluster (CB-3.2)', () => {
 });
 
 test.describe('record cluster — reserved slots (CB-3.3)', () => {
+  test.use({ viewport: { width: 2300, height: 900 } });
   test('arming does not change the Record zone geometry (F-05 = 0 px)', async ({ page }) => {
     await loadV2(page);
     const zoneBefore = await page.evaluate(() => {
@@ -162,6 +170,7 @@ test.describe('record cluster — reserved slots (CB-3.3)', () => {
 });
 
 test.describe('master zone (CB-3.4)', () => {
+  test.use({ viewport: { width: 2300, height: 900 } });
   test('slider is signal-bound; default 0.9; NOT persisted (CB-D9)', async ({ page }) => {
     await loadV2(page);
     const slider = page.getByTestId('cb2-master-vol');

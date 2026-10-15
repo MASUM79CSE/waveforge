@@ -45,3 +45,11 @@ Phases: 0 PASSED · 1 PASSED · 2 PASSED · **3 gates+PCA complete (report in pl
 | CB-4.5 | (H-sweep) H-04 closure on v2: monitor/punch aria-labels; name/pressed sweep green | VERIFIED | E-CB-018 | cb4.spec name/pressed assertions; keyboard activation end-to-end |
 
 Phases: 0 PASSED · 1 PASSED · 2 PASSED · 3 PASSED · **4 gates+PCA complete (report in plan §11)** · 5..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).
+
+| CB-5.1 | Priority overflow at 1280/1024/768/390/320 — row overflow 0 px everywhere (was ≤1871), ⋮ panel hosts relocated zones (single instance, editable), compact 320 tier | VERIFIED | E-CB-019 | rowWidth.ts + ControlBar relocation + panel; before/after 10+10 PNGs |
+| CB-5.2 | Target-size sweep — measured ≥24 for every .cb2 interactive (SUB-24 18 → 0; v1 DOM untouched via .cb2 scoping) | VERIFIED | E-CB-019/020 | cb5.spec sweep at 1280+320; probe tables |
+| CB-5.3 | zoom 200/400% (0 overflow), reduced-motion, bn long labels, no-audio, permission-denied states | VERIFIED | E-CB-020 | cb5.spec states; permission-denied.json |
+| CB-5.4 | axe zero violations at all widths incl. panel-open state | VERIFIED | E-CB-020 | cb5.spec ×{1280,768,320}; probe {5 widths×2 themes} CLEAN |
+| CB-5.5 | (H-sweep) F-11 third instance root-fixed in SelectionZone (uncontrolled fields); OverflowZone close/Escape/focus races fixed | VERIFIED | E-CB-019 | deterministic repro probes → 65/65 ×3 |
+
+Phases: 0 PASSED · 1 PASSED · 2 PASSED · 3 PASSED · 4 PASSED · **5 gates+PCA complete (report in plan §12)** · 6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).

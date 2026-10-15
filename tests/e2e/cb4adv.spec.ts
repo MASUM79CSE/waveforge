@@ -38,6 +38,7 @@ test('20 rapid ArrowRights always leave a focused title (wrap, no dead end)', as
 test('keyboard item activation runs the command (beat toggle flips) and closes', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 2300, height: 900 }); // beat toggle must be mounted (CB-5.1 tucks it at 1280)
   await loadV2(page);
   const beat = page.getByTestId('cb2-beat');
   const before = (await beat.getAttribute('aria-pressed')) === 'true';

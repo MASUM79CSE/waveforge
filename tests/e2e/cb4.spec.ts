@@ -140,6 +140,7 @@ test.describe('CB-4.2 status clock label (F-06)', () => {
 test.describe('CB-4.3 tooltips from the registry (flag ON)', () => {
   test('command buttons show name + registry shortcut', async ({ page }) => {
     await load(page, '?cbv2=1');
+    await page.getByTestId('cb2-overflow').click(); // tucked controls surface in the panel
     await expect(page.getByRole('button', { name: 'Play', exact: true })).toHaveAttribute(
       'title',
       'Play (Space)',
@@ -153,6 +154,7 @@ test.describe('CB-4.3 tooltips from the registry (flag ON)', () => {
 
   test('no fabricated shortcuts: metronome and record show names only', async ({ page }) => {
     await load(page, '?cbv2=1');
+    await page.getByTestId('cb2-overflow').click();
     const metro = page.getByTestId('cb2-metronome');
     await expect(metro).toHaveAttribute('title', 'Metronome');
     const rec = page.getByTestId('record-toggle');
@@ -167,6 +169,7 @@ test.describe('CB-4 H-04 closure: names + pressed states (flag ON)', () => {
     page,
   }) => {
     await load(page, '?cbv2=1');
+    await page.getByTestId('cb2-overflow').click(); // sweep covers row + panel surface
     const unnamed = await page.evaluate(() => {
       const out: string[] = [];
       for (const el of Array.from(document.querySelectorAll('.cb2 button, .cb2 input'))) {

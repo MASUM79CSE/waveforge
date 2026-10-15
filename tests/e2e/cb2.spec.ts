@@ -42,19 +42,25 @@ test.describe('flag ON (?cbv2=1)', () => {
     await expect(page.getByTestId('record-toggle')).toBeVisible();
     await expect(page.getByTestId('cb2-loop')).toBeVisible();
     await expect(page.getByTestId('cb2-clock')).toBeVisible();
-    // carried v1 controls — every control still reachable (Phase 3: the
-    // carried SelectionBar/BeatBar grew into the editable SelectionZone and
-    // the TempoZone; the Record/Master clusters are the v2 reserved-slot
-    // builds of the same controls — see cb3.spec.ts)
+    // carried v1 controls — every control still reachable. Phase 5
+    // (CB-5.1/CB-D19): the row never scrolls; at this width the tempo,
+    // record and master zones relocate into the ⋮ panel (single instance,
+    // same controls) — inline set asserted here, panel set opened below.
+    // The full inline cluster behavior lives in cb3.spec (2300 px).
     const toolButtons = page.locator('.cb2 .toolbtn');
     expect(await toolButtons.count()).toBe(15);
     await expect(page.getByTestId('cb2-selection')).toBeVisible();
+    await expect(page.getByTestId('cb2-overflow')).toBeVisible();
+    await page.getByTestId('cb2-overflow').click();
+    const panel = page.getByTestId('cb2-panel');
+    await expect(panel).toBeVisible();
     await expect(page.getByTestId('cb2-beat')).toBeVisible();
     await expect(page.getByTestId('cb2-snap')).toBeVisible();
     await expect(page.getByTestId('monitor-toggle')).toBeVisible();
     await expect(page.getByTestId('punch-button')).toBeVisible();
     await expect(page.getByTestId('clip-led')).toHaveCount(1);
     await expect(page.locator('.cb2 input[type="range"]').first()).toBeVisible();
+    await page.keyboard.press('Escape'); // close — later assertions need the row
     // menus — APG mode (CB-D17): titles are menubar menuitems
     await expect(page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true })).toBeVisible();
     // overflow
@@ -162,19 +168,24 @@ test.describe('flag ON (?cbv2=1)', () => {
 
   test('overflow: hosts registry commands (follow, monitor, clip-reset)', async ({ page }) => {
     await loadV2(page);
-    await page.getByTestId('cb2-overflow').click();
+    await page.getByTestId('cb2-overflow').click(); // CB-5.1: menu + tucked zones live in the panel
     const menu = page.getByRole('menu', { name: /more tools/i });
     await expect(menu).toBeVisible();
     await expect(menu.getByTestId('cb2-overflow-view-follow')).toBeVisible();
     await expect(menu.getByTestId('cb2-overflow-record-monitor')).toBeVisible();
     await expect(menu.getByTestId('cb2-overflow-record-clipReset')).toBeVisible();
     await menu.getByTestId('cb2-overflow-record-monitor').click();
-    // monitor state is real: toggling again shows the menu item checked-state flips
-    await expect(page.getByTestId('monitor-toggle')).toHaveClass(/active/);
+    // monitor state is real: reopen the panel — the zone lives there at
+    // this width (CB-5.1) — and read the button's active class
     await page.getByTestId('cb2-overflow').click();
+    await expect(page.getByTestId('monitor-toggle')).toHaveClass(/active/);
+    // the panel is still open (same open() as the class assert above) —
+    // fresh locator, the old menu element was unmounted by the earlier close
     await expect(
-      menu.getByTestId('cb2-overflow-record-monitor').getAttribute('aria-checked'),
-    ).resolves.toBe('true');
+      page
+        .getByRole('menu', { name: /more tools/i })
+        .getByTestId('cb2-overflow-record-monitor'),
+    ).toHaveAttribute('aria-checked', 'true');
   });
 });
 
