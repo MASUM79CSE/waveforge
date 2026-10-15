@@ -79,12 +79,13 @@ Method: `baseline-method.mjs` drives the real dev server at widths 1440/1280/102
 | Page-level horizontal scroll | **all 20 configs at 390/320** |
 | Controls below 24×24 CSS px | **15 distinct controls** (every config): 6 menu titles 23 px tall; Clear-Selection 25×21; BEAT 45×23; SNAP 48×23; master Volume 129×16; L/R vol+pan sliders **74×10**; clip LED **10×10**; (Add-track min-width 22) |
 | Long tasks during 5 s playback | 0 at all widths (idle-machine run; a parallel-load run showed 2-65 — environment noise, discarded) |
-| CLS during playback | **0.000** at all widths (the at-risk shift is the conditional rec-meter mount at ARM — structural finding F-05; arm-moment CLS number NOT MEASURED) |
+| CLS during playback | **0.000** at all widths (the at-risk shift is the conditional rec-meter mount at ARM — structural finding F-05; arm-moment shift measured separately, see the supplemental row below) |
+| Supplemental (E-CB-007, `jitter-method.mjs` → `baseline/jitter.json`) | **Clock jitter during playback: 0 px** over 301 rAF frames at 1280 & 390 dark — `.time-cursor` width constant 89.578 px (`--font-mono` + fixed `m:ss.mmm` 8-char format; `font-variant-numeric: normal`). **Arm-moment shift: Record zone +122 px** on arm, Master zone displaced **+122 px @1280** (inside hidden overflow — no CLS entry) and **all visible content jumps −22 px @390** (overflow container auto-scrolls to the armed control); rec-time mount adds no second shift (zone already widened). Arm/roll toasts add CLS 0.012 @1280 / 0.064 @390 (no-input sum). |
 | Typecheck / lint | PASS / PASS |
 | Unit suite | **826/826 (98 files)** (an earlier 823/826 run under artificial load had 1 contention failure — clean re-run green) |
 | Full e2e (incl. axe + CSP) | recorded in EVIDENCE_LOG (idle run; release-era gate at this build: 84 passed + 3 retry-green flakes, rc=0) |
 | Build + bundle | PASS — **53,620 B gz ≤ 123,661** (entry hash = production's `index-5UAA3P5m.js`) |
-| Lighthouse | desktop 100/100/100/100 · mobile 99/100/100/100 **vs production** (same build; 2026-10-14 release verification) — preview re-run NOT RUN in Phase 0 (identical build hash makes the prod numbers the build's numbers) |
+| Lighthouse | desktop 100/100/100/100 · mobile 99/100/100/100 **vs production** (same build; 2026-10-14 release verification); local preview re-run E-CB-006: desktop P100/A100/BP100/S91 · mobile P97/A100/BP100/S91 (S91 = vite-preview robots.txt absence, env artifact; prod S100) |
 
 ## 4. Hypothesis triage (H-01..H-12)
 
@@ -96,7 +97,7 @@ Method: `baseline-method.mjs` drives the real dev server at widths 1440/1280/102
 | H-04 icon-only naming/pressed/shortcut gaps | **PARTIALLY CONFIRMED** | Every control has *a* name (AL or T fallback), but loop/record/monitor/punch/swap are title-only; seek names omit shortcuts (titles include them); record/loop/monitor/swap lack `aria-pressed`. |
 | H-05 narrow-width clipping/h-scroll | **CONFIRMED** | Bar-level h-scroll at ALL widths (hidden scrollbar); page-level h-scroll at 390/320 (20 configs). |
 | H-06 targets below 24 px | **CONFIRMED** | 15 control types measured below 24×24 (sliders 10-16 px tall, clip LED 10×10, menu titles 23 px). |
-| H-07 clock jitter / over-render | **PARTIALLY CONFIRMED** | No `font-variant-numeric: tabular-nums` anywhere (grep); `TransportBar` reads `cursorPos.value` at component top → whole bar re-renders per clock tick (structural). Visual jitter measurement NOT RUN. |
+| H-07 clock jitter / over-render | **PARTIALLY CONFIRMED** (jitter component REFUTED by measurement, E-CB-007) | No `font-variant-numeric: tabular-nums` anywhere (grep); `TransportBar` reads `cursorPos.value` at component top → whole bar re-renders per clock tick (structural). But measured jitter is **0 px over 301 frames** at both probed widths — the mono font + fixed 8-char format already pin the clock width; `tabular-nums` is v2 design hardening (master-prompt requirement), not a defect fix. |
 | H-08 color-only state | **PARTIALLY CONFIRMED** | play/mute/BEAT/SNAP expose `aria-pressed`; loop/record/monitor/swap do not (class-based; record also changes title text — not color-*only*, but not programmatic). |
 | H-09 no inline engine/permission feedback | **PARTIALLY CONFIRMED** | No AudioContext running/suspended UI exists (grep: comments only). Mic-permission-denied inline behavior NOT RUN (denial not simulated in Phase 0). |
 | H-10 undo/redo tooltips | **REFUTED (as stated)** | The toolbar has no undo/redo buttons at all — nothing to tooltip (menus show kbd hints). Recorded as a *coverage gap* input for Phase 1, not a tooltip defect. |
@@ -109,7 +110,7 @@ Method: `baseline-method.mjs` drives the real dev server at widths 1440/1280/102
 - **F-02 (HIGH) — Sub-24×24 targets (WCAG 2.2 SC 2.5.8).** 15 control types: sliders 74×10, clip LED 10×10, master volume 129×16, menu titles/BEAT/SNAP 23 px tall, Clear 21 px tall, add-track 22 px wide.
 - **F-03 (MED) — No toolbar keyboard model.** 39 tab stops; `role="toolbar"` exists on ToolBar/ZoomBar but without roving tabindex/arrows (APG); menubar has no keyboard model at all.
 - **F-04 (MED) — Programmatic state gaps.** loop/record/monitor/swap lack `aria-pressed`; five+ controls named only via `title`; seek buttons' accessible names drop the shortcut that their tooltips show.
-- **F-05 (MED) — Arm-time layout shift (structural).** Rec meter + count-in chip are conditionally mounted (`TransportBar.tsx:198-216`) — the Record zone grows on arm; playback CLS measured 0.000, arm-moment CLS NOT MEASURED.
+- **F-05 (MED) — Arm-time layout shift (measured, E-CB-007).** Rec meter + count-in chip are conditionally mounted (`TransportBar.tsx:198-216`). Measured: arming widens the Record zone **+122 px**; the Master zone is displaced **+122 px @1280** (hidden-overflow region — invisible at default scroll but present), and at **390 the entire visible bar content jumps −22 px** as the overflow container auto-scrolls to keep the armed control in view. The subsequent rec-time mount causes no second shift (zone already widened). Arm/roll toast CLS is minor (no-input sum 0.012 @1280 / 0.064 @390). v2 guidance: reserve a stable Record-zone slot (or overlay the meter) so arming is shift-free at every width.
 - **F-06 (MED) — Clock is single-format and duplicated inconsistently.** m:ss.mmm in the bar; raw seconds in the status bar; no samples/bars+beats (both computable: sampleRate known; BPM from `bpmResult` when detected).
 - **F-07 (MED) — Selection is not numeric-editable** (read-only spans; Audacity/Reaper parity gap).
 - **F-08 (LOW) — Master volume is component-local state** (`useState(0.9)`): resets on remount, never persisted, invisible to other UI (v1 behavior — record only).
@@ -154,6 +155,7 @@ Unit: `toolbar.test.tsx` (registry parity of the 15 tool buttons), `selectionBar
 | `npm run build` + `check-bundle.mjs` | PASS, **53,620 B gz ≤ 123,661**; entry `index-5UAA3P5m.js` = production hash |
 | Lighthouse (local preview re-run, E-CB-006) | desktop P100/A100/BP100/S91 · mobile P97/A100/BP100/S91 — S91 = vite-preview robots.txt absence (env artifact; prod S100) |
 | Visual baseline | 60/60 configs, 0 errors (6 widths × 2 themes × 5 states; PNGs + `measurements.json` committed) |
+| Supplemental visual/perf (E-CB-007) | playback clock jitter **0 px** (301 frames × 2 widths) · arm-moment shift measured (+122 px zone displacement @1280, −22 px visible content jump @390) · toast CLS ≤0.064 — `jitter-method.mjs` + `baseline/jitter.json` committed |
 
 **Benchmark sources (plan §3):** NOT OPENED in Phase 0 — Phase 1 CB-1.1 opens them; anything unreachable will be recorded NOT RUN. No audiomass.co content was consulted or copied this phase (zero-trace rule holds; e2e guard in place from release audit).
 
