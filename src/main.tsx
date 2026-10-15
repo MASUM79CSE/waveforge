@@ -11,6 +11,7 @@ import { App } from './app/components/App';
 import { ErrorBoundary } from './app/components/ErrorBoundary';
 import { probeAutosave } from './app/draftActions';
 import * as S from './app/state';
+import { Analytics } from '@vercel/analytics/react';
 
 function bootstrap(): void {
   bindKeyboard();
@@ -35,6 +36,7 @@ function bootstrap(): void {
   render(
     <ErrorBoundary>
       <App />
+      <Analytics />
     </ErrorBoundary>,
     root,
   );
