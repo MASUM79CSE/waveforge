@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import type { ComponentType } from 'preact';
 import { signal } from '@preact/signals';
 import { Modal } from './Modal';
@@ -59,22 +59,33 @@ export function MarkerNameDialog() {
 
 export function SeamlessLoopDialog() {
   const open = seamlessOpen.value;
-  const [fadeMs, setFadeMs] = useState(10);
-  const [repeat, setRepeat] = useState(1);
   const [trim, setTrim] = useState(false);
   const [snap, setSnap] = useState(true);
   const fadeRef = useRef<HTMLInputElement>(null);
   const repeatRef = useRef<HTMLInputElement>(null);
 
-  // reference defaults on every open: 10 ms crossfade, repeat 1, snap on
-  useEffect(() => {
-    if (open) {
-      setFadeMs(10);
-      setRepeat(1);
-      setTrim(false);
-      setSnap(true);
+  // F-11 (v2): the two numeric fields are UNCONTROLLED with ref-callback
+  // init (synchronous with the commit — cannot race a fast fill; an effect
+  // init overwrote fills in e2e). Reference defaults reset on every open.
+  const trimRef = useRef(false);
+  if (!open) {
+    trimRef.current = false;
+    return null;
+  }
+  const attachFade = (el: HTMLInputElement | null): void => {
+    fadeRef.current = el;
+    if (el && !trimRef.current) {
+      el.value = '10';
+      if (repeatRef.current) repeatRef.current.value = '1';
     }
-  }, [open]);
+  };
+  const attachRepeat = (el: HTMLInputElement | null): void => {
+    repeatRef.current = el;
+    if (el && !trimRef.current) {
+      el.value = '1';
+      trimRef.current = true;
+    }
+  };
 
   if (!open) return null;
 
@@ -86,28 +97,24 @@ export function SeamlessLoopDialog() {
         </label>
         <input
           id="sloop-fade"
-          ref={fadeRef}
+          ref={attachFade}
           class="url-input"
           type="number"
           min={0}
           max={500}
           step={1}
-          value={fadeMs}
-          onInput={(e) => setFadeMs(Number((e.target as HTMLInputElement).value))}
         />
         <label class="url-hint" for="sloop-repeat">
           {t().sloopRepeat}
         </label>
         <input
           id="sloop-repeat"
-          ref={repeatRef}
+          ref={attachRepeat}
           class="url-input"
           type="number"
           min={1}
           max={64}
           step={1}
-          value={repeat}
-          onInput={(e) => setRepeat(Number((e.target as HTMLInputElement).value))}
         />
         <div class="fx-row">
           <input
@@ -142,8 +149,8 @@ export function SeamlessLoopDialog() {
               // keystroke/fill and this click could leave state stale, which
               // silently applied the previous values (reproduced in E2E, 2026-10-15).
               const request = {
-                fadeMs: Number(fadeRef.current?.value ?? fadeMs),
-                repeat: Number(repeatRef.current?.value ?? repeat),
+                fadeMs: Number(fadeRef.current?.value ?? '10'),
+                repeat: Number(repeatRef.current?.value ?? '1'),
                 trim,
                 snap,
               }; // live values before closing

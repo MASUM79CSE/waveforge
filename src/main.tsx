@@ -3,6 +3,7 @@ import { render } from 'preact';
 import './app/styles/tokens.css';
 import './app/styles/base.css';
 import './app/styles/app.css';
+import './app/styles/cb2.css';
 import { Brand } from './brand';
 import { logger } from './core/logger-instance';
 import { bindKeyboard } from './app/keyboard';

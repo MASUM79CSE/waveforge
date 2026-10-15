@@ -2,6 +2,8 @@ import { CanvasPane } from './CanvasPane';
 import { TrackLanes } from './TrackLanes';
 import { MenuBar } from './MenuBar';
 import { TransportBar } from './TransportBar';
+import { ControlBarV2 } from '../cb2/ControlBar';
+import { cbV2 } from '../cb2/flag';
 import { StatusBar } from './StatusBar';
 import { Toasts } from './Toasts';
 import { AboutDialog, WelcomeDialog } from './Dialogs';
@@ -36,10 +38,16 @@ import { UpdateBanner } from './UpdateBanner';
 export function App() {
   applyTheme(); // mirror persisted theme/accent onto <html> before first paint
   return (
-    <div class="shell">
+    <div class={cbV2 ? 'shell cb2-shell' : 'shell'}>
       <RestoreBanner />
-      <MenuBar />
-      <TransportBar />
+      {cbV2 ? (
+        <ControlBarV2 />
+      ) : (
+        <>
+          <MenuBar />
+          <TransportBar />
+        </>
+      )}
       <main class={`workspace ${projectOpen.value ? 'with-lanes' : ''}`}>
         <CanvasPane />
         <TrackLanes />

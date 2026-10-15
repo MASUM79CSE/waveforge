@@ -48,7 +48,7 @@ export const menus: MenuDef[] = [
     title: () => t().menuFile,
     items: [
       { header: () => t().menuGroupImport, items: ['file.open', 'file.sample'] },
-      { header: () => t().menuGroupRecord, items: ['file.recordSettings', 'record.toggle', 'record.punch', 'record.monitor', 'record.metronome'] },
+      { header: () => t().menuGroupRecord, items: ['file.recordSettings', 'record.toggle', 'record.punch', 'record.monitor', 'record.metronome', 'record.clipReset'] },
       { header: () => t().menuGroupExport, items: ['file.export'] },
       { header: () => t().menuGroupDrafts, items: ['file.draftSave', 'file.draftOpen'] },
     ],
@@ -126,6 +126,7 @@ export const menus: MenuDef[] = [
     items: [
       { header: () => t().menuGroupZoom, items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', 'view.center'] },
       { header: () => t().menuGroupCursor, items: ['view.follow', 'view.zerocross', 'view.axis'] },
+      { header: () => t().menuGroupBeat, items: ['view.beatsShown', 'view.snapToBeat'] },
       { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent', 'view.limits'] },
     ],
   },

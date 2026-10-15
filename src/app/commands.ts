@@ -8,7 +8,8 @@ import * as EA from './editActions';
 import * as AN from './analysisActions';
 import * as CA from './clipActions';
 import * as RA from './recordActions';
-import { projectOpen, recStudio } from './state';
+import { beatsShown, looping, projectOpen, recStudio, snapToBeat, setBeatsShown } from './state';
+import { resetClipLatch } from './recordActions';
 import * as MK from './markersActions';
 import { toastInfo } from './toast';
 
@@ -37,7 +38,13 @@ export const commands: Command[] = [
   },
   { id: 'record.toggle', label: () => t().recordStart, run: () => void RA.toggleRecord() },
   { id: 'record.punch', label: () => t().punchIn, run: () => void RA.punchRecord() },
-  { id: 'record.monitor', label: () => t().monitorTitle, run: () => RA.setMonitoring(!recStudio.value.monitoring) },
+  {
+    id: 'record.monitor',
+    label: () => t().monitorTitle,
+    run: () => RA.setMonitoring(!recStudio.value.monitoring),
+    check: true,
+    isChecked: () => recStudio.value.monitoring,
+  },
   { id: 'record.metronome', label: () => t().studioMetronome, run: () => RA.toggleMetronome() },
   {
     id: 'file.export',
@@ -276,6 +283,36 @@ export const commands: Command[] = [
   { id: 'help.about', label: () => t().helpAbout, run: () => A.openAbout() },
   { id: 'help.doctor', label: () => t().helpDoctor, run: () => A.openDoctor() },
   { id: 'help.shortcuts', label: () => t().helpShortcuts, run: () => A.openShortcuts() },
+
+  // Control Bar v2 (CB-2.3/2.4): transport + bar toggles promoted into the
+  // registry (F-09) so menus, shortcuts, and the bar share one command system.
+  { id: 'transport.playPause', label: () => t().play, kbd: () => 'Space', run: () => A.transport.togglePlay() },
+  { id: 'transport.stop', label: () => t().stop, run: () => A.transport.stop() },
+  {
+    id: 'transport.loop',
+    label: () => t().toggleLoop,
+    kbd: () => 'L',
+    run: () => A.transport.toggleLoop(),
+    check: true,
+    isChecked: () => looping.value,
+  },
+  {
+    id: 'view.beatsShown',
+    label: () => t().beatsToggle,
+    run: () => setBeatsShown(!beatsShown.value),
+    check: true,
+    isChecked: () => beatsShown.value,
+  },
+  {
+    id: 'view.snapToBeat',
+    label: () => t().snapToggle,
+    run: () => {
+      snapToBeat.value = !snapToBeat.value;
+    },
+    check: true,
+    isChecked: () => snapToBeat.value,
+  },
+  { id: 'record.clipReset', label: () => t().clipReset, run: () => resetClipLatch() },
 ];
 
 export function runCommand(id: string): void {

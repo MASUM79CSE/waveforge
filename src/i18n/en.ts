@@ -378,6 +378,19 @@ export const en = {
   pause: 'Pause',
   stop: 'Stop',
   toggleLoop: 'Toggle Loop',
+
+  // Control Bar v2 (CB-2)
+  zoneTransport: 'Transport',
+  clockFormat: 'Clock format',
+  clockTime: 'Time (m:ss.mmm)',
+  clockSamples: 'Samples',
+  clockBars: 'Bars & beats',
+  cursorPosition: 'Cursor position',
+  moreTools: 'More tools',
+  menuGroupBeat: 'Beat grid',
+  beatsToggle: 'Toggle beat markers',
+  snapToggle: 'Snap to beats',
+  clipReset: 'Reset clip indicator',
   volume: 'Volume',
 
   // shell

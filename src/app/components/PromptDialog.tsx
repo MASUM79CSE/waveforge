@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'preact/hooks';
+import { useRef } from 'preact/hooks';
 import { Modal } from './Modal';
 
 interface PromptDialogProps {
@@ -25,22 +25,34 @@ export function PromptDialog({
   onConfirm,
   onCancel,
 }: PromptDialogProps) {
-  const [value, setValue] = useState(String(initialValue));
+  // F-11 (v2): UNCONTROLLED input — the DOM owns the value while open and
+  // confirm reads it live. A controlled `value` here lets ANY concurrent
+  // render restore the stale vnode value inside the fill/keystroke→input
+  // event gap, silently reverting what the user typed (reproduced 2026-10-15:
+  // applied "chorus" while the field showed "bridge", ~2/6 attempts).
+  // Initialization happens in the ref callback — synchronous with the commit
+  // that makes the dialog visible, so it can never race a fast fill (an
+  // effect-based init overwrote programmatic fills in e2e).
   const inputRef = useRef<HTMLInputElement>(null);
+  const initRef = useRef(false);
 
-  useEffect(() => {
-    if (open) setValue(String(initialValue));
-  }, [open, initialValue]);
+  if (!open) {
+    initRef.current = false;
+    return null;
+  }
 
-  if (!open) return null;
+  const attach = (el: HTMLInputElement | null): void => {
+    inputRef.current = el;
+    if (el && !initRef.current) {
+      el.value = String(initialValue);
+      initRef.current = true;
+    }
+  };
 
   const confirm = (): void => {
-    // F-11 fix: read the LIVE input value — a render landing between the
-    // user's keystroke/fill and this click could leave `value` stale, which
-    // silently applied the previous text/number (reproduced in E2E, 2026-10-15).
-    const live = inputRef.current?.value ?? value;
+    const live = inputRef.current?.value ?? '';
     const parsed = Number(live);
-    if (Number.isFinite(parsed)) {
+    if (Number.isFinite(parsed) && live.trim() !== '') {
       onCancel();
       onConfirm(Math.max(min, Math.min(max, parsed)));
     }
@@ -54,14 +66,12 @@ export function PromptDialog({
         </label>
         <input
           id="prompt-value"
-          ref={inputRef}
+          ref={attach}
           class="url-input"
           type="number"
           min={min}
           max={max}
           step={step}
-          value={value}
-          onInput={(e) => setValue((e.target as HTMLInputElement).value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') confirm();
           }}
@@ -100,20 +110,25 @@ export function TextPromptDialog({
   onConfirm,
   onCancel,
 }: TextPromptDialogProps) {
-  const [value, setValue] = useState(initialValue);
+  // F-11 (v2): uncontrolled — same rationale + ref-callback init as above.
   const inputRef = useRef<HTMLInputElement>(null);
+  const initRef = useRef(false);
 
-  useEffect(() => {
-    if (open) setValue(initialValue);
-  }, [open, initialValue]);
+  if (!open) {
+    initRef.current = false;
+    return null;
+  }
 
-  if (!open) return null;
+  const attach = (el: HTMLInputElement | null): void => {
+    inputRef.current = el;
+    if (el && !initRef.current) {
+      el.value = initialValue;
+      initRef.current = true;
+    }
+  };
 
   const confirm = (): void => {
-    // F-11 fix: read the LIVE input value — a render landing between the
-    // user's keystroke/fill and this click could leave `value` stale, which
-    // silently applied the previous name (reproduced in E2E, 2026-10-15).
-    const live = inputRef.current?.value ?? value;
+    const live = inputRef.current?.value ?? '';
     const clean = live.trim().slice(0, maxLength);
     if (clean) {
       onCancel();
@@ -129,13 +144,11 @@ export function TextPromptDialog({
         </label>
         <input
           id="text-prompt-value"
-          ref={inputRef}
+          ref={attach}
           class="url-input"
           type="text"
           maxlength={maxLength}
-          value={value}
           onFocus={(e) => (e.target as HTMLInputElement).select()}
-          onInput={(e) => setValue((e.target as HTMLInputElement).value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') confirm();
           }}
