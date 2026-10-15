@@ -1,3 +1,8 @@
 # Control Bar v2 — Decisions
 
 Format: ID · decision · alternatives rejected · why · consequences.
+
+| CB-D1 | Phase 0 baselines the REAL `main` tip (`3691995`) even though production serves the same build — no separate baseline branch dance | Baseline from `audit/remediation` tip | The brief targets `main`; the two branches differ by one docs commit; build hash identical (`index-5UAA3P5m.js`) | All CB numbers are reproducible against `main`. |
+| CB-D2 | The 60-config visual matrix runs against the DEV server (not preview): Phase 0 must not build dist churn into measurements, and the dev server exposes the same DOM/CSS for layout facts; the perf rows (long tasks) are dev-server-inclusive and are treated as RELATIVE baselines only | Preview for everything | Dev-server long-task numbers are noisier but the method is identical across phases; absolute perf claims will be re-measured on preview in Phase 6 (CB-6.2) | Recorded in the method header; long-task CLS rows labeled as relative. |
+| CB-D3 | The baseline method script lives in `docs/audits/control-bar/baseline-method.mjs` (committed) rather than `scripts/` — it is the documented measurement instrument, not build tooling, and Phase 0 adds no production-adjacent code | scripts/cb-baseline.mjs | Keeps the production tree untouched in Phase 0; the file is pure measurement tooling | Reused verbatim in later phases for comparable numbers. |
+| CB-D4 | First measurement run (17 errored configs under load) was DISCARDED and re-run with a hardened method; the clean run is the baseline | Keep the noisy run with caveats | Failable setups (arm→roll timing, goto timeouts) were method bugs, not app facts; a baseline must be reproducible | Hardened script committed; retry logic documented in E-CB-003. |
