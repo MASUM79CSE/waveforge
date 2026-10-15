@@ -72,7 +72,7 @@ architecture that makes that viable at production quality.
 | `src/fx` | 4,578 | Effect definitions + DSP kernels (registry `defs.ts`): dynamics, EQ, modulation, reverb, NR, stretch/pitch |
 | `src/io` | 887 | Decode, export service + format catalog, WAV writer, ID3v2, draft repository |
 | `src/workers` | 336 | MP3 export, analysis (LUFS/BPM/report), peaks mip builder |
-| `public/worklets` | 56 | `recorder.worklet` — real-time capture off the main thread (same-origin file: CSP `worklet-src 'self'`, no blob:/data: scripts) |
+| `public/worklets` | 56 | `recorder.worklet` — real-time capture off the main thread (same-origin file: CSP `script-src 'self'` (worklets follow script-src — there is no worklet-src directive), no blob:/data: scripts) |
 | `public/workers` | — | FLAC export worker (libFLAC WASM), vendored runtimes |
 | `tests/` | 15,171 | 765 unit tests (93 files) + 64 Playwright e2e incl. axe, egress and CSP-enforcement gates + 3 production smoke tests |
 
@@ -187,7 +187,7 @@ and shortcuts behave deterministically with stacked dialogs.
 
 - **CSP** (ENFORCING header via `vercel.json`, all paths): `default-src
   'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:;
-  worklet-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'
+  style-src 'self' 'unsafe-inline'; img-src 'self'
   data: blob:; media-src 'self' blob: data:; connect-src 'self' data:
   blob:; font-src 'self'; object-src 'none'; base-uri 'self';
   frame-ancestors 'self'; form-action 'self'` — no third-party script,

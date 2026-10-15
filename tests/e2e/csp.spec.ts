@@ -42,7 +42,14 @@ test('csp: zero violations across load + edit + wav/flac export + worklet probe'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).showSaveFilePicker;
   });
-  await page.goto('/');
+  const resp = await page.goto('/');
+  // E-031 vacuity guard: without the enforcing header this spec passes
+  // trivially (no header ⇒ no violations). Hard-require it instead.
+  expect(
+    resp?.headers()['content-security-policy'] ?? '',
+    'no enforcing CSP served — run this spec with CSP_ENFORCE=1 (or against production)',
+  ).toContain('default-src');
+
   const welcome = page.getByRole('dialog', { name: /welcome/i });
   await welcome.getByRole('button', { name: /load sample/i }).click();
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });

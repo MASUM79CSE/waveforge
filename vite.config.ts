@@ -10,7 +10,6 @@ const CSP_ENFORCED = [
   "default-src 'self'",
   "script-src 'self' 'wasm-unsafe-eval'",
   "worker-src 'self' blob:",
-  "worklet-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "media-src 'self' blob: data:",
@@ -69,6 +68,22 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // E-031: keep zod in ONE chunk. The dynamic-entry split (PF-05)
+        // otherwise duplicates zod, and the copy outside the entry never
+        // sees `z.config({ jitless: true })` (main.tsx) — its first parse
+        // JIT-probes `new Function`, which the enforcing CSP blocks (9
+        // violations + console errors per load). One shared chunk = one
+        // instance, configured at boot before any parse.
+        manualChunks(id: string) {
+          // zodConfig rides IN the zod chunk so the jitless flag is applied
+          // during zod's own module load — before any importer's body runs
+          // (the boot-time probe read happens in an importer's module scope).
+          if (id.includes('node_modules/zod') || id.includes('core/zodConfig')) return 'zod';
+        },
+      },
+    },
   },
   test: {
     environment: 'node',
