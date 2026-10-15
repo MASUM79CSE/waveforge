@@ -5,7 +5,7 @@
  */
 import { MenuBar } from '../components/MenuBar';
 import { ToolBar } from '../components/ToolBar';
-import { TransportZone } from './TransportZone';
+import { TransportZone, SeekButtons } from './TransportZone';
 import { SelectionZone } from './SelectionZone';
 import { TempoZone } from './TempoZone';
 import { RecordZoneV2 } from './RecordZoneV2';
@@ -16,6 +16,7 @@ import { rowWidth, TUCK, trackRowWidth } from './rowWidth';
 export function ControlBarV2() {
   const w = rowWidth.value;
   const tuck = {
+    seek: w < TUCK.seek,
     master: w < TUCK.master,
     record: w < TUCK.record,
     tempo: w < TUCK.tempo,
@@ -26,7 +27,7 @@ export function ControlBarV2() {
     <div class="cb2" data-testid="cb2-root" ref={trackRowWidth}>
       <MenuBar apg />
       <div class="transport cb2-row">
-        <TransportZone />
+        <TransportZone seek={!tuck.seek} />
         {!tuck.tool && <ToolBar />}
         {!tuck.selection && <SelectionZone />}
         {!tuck.tempo && <TempoZone />}
@@ -34,6 +35,8 @@ export function ControlBarV2() {
         {!tuck.record && <RecordZoneV2 />}
         {!tuck.master && <MasterZoneV2 />}
         <OverflowZone tucked={tuck}>
+          {tuck.seek && <SeekButtons />}
+          {tuck.tool && <ToolBar />}
           {tuck.tempo && <TempoZone />}
           {tuck.record && <RecordZoneV2 />}
           {tuck.master && <MasterZoneV2 />}

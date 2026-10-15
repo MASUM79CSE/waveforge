@@ -148,5 +148,36 @@ Design rules:
 
 ---
 
+## 10. Control Bar v2 (feature flag `ui.controlBarV2`, default OFF)
+
+> Added by the Control Bar v2 program (2026-10-15). Off by default; the v1
+> bar remains the shipped UX until the flag decision (CB-D20). All v2
+> markup sits behind the flag; flag-OFF DOM is asserted identical.
+
+**Zones (one header row, Audition-style labeled groups):** APG menubar
+(arrow/Enter/Escape model) · transport (switchable clock m:ss.mmm /
+samples / bars&beats-when-tempo-known, play/stop/record/loop, seek ±5 s)
+· quick-tools toolbar · editable validated selection fields (start /
+end / length, inline `role=status` errors, commits through the same
+zero-cross snap pipeline as canvas drags) · tempo & grid cluster
+(BEAT / SNAP / metronome, BPM readout) · record cluster with reserved
+slots (arm-time layout shift 0 px) · master strips + volume on the
+canonical signal · `⋮` priority overflow.
+
+**Responsive (CB-D19):** the row never scrolls. At measured container
+widths zones relocate — single instance — into the `⋮` dialog panel
+(master → record → tempo → selection → toolbar → seek, transport + clock
++ `⋮` never tuck); ≤371 px a compact tier (26 px boxes) fits 320 px.
+Page h-scroll 0 and axe-clean at 1440/1280/1024/768/390/320, both themes.
+
+**Details:** tooltips = registry label + registry shortcut (truth-tested
+against `resolveShortcut` + the keyboard switch); all toggles carry
+`aria-pressed` from signals; every interactive ≥24 px; i18n en + bn
+(`waveforge.locale`; credit texts stay English). Evidence:
+`docs/audits/control-bar/` (parity table, evidence log, per-phase
+reports), screenshots `docs/screenshots/control-bar-v2/`.
+
+---
+
 *Design changes ship with before/after screenshots and updated gates,
 per the D-series convention.*

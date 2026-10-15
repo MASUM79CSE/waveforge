@@ -36,8 +36,8 @@ export const commands: Command[] = [
     label: () => t().fileRecord,
     run: () => A.openRecordSettings(),
   },
-  { id: 'record.toggle', label: () => t().recordStart, run: () => void RA.toggleRecord() },
-  { id: 'record.punch', label: () => t().punchIn, run: () => void RA.punchRecord() },
+  { id: 'record.toggle', label: () => t().recordStart, kbd: () => 'R', run: () => void RA.toggleRecord() },
+  { id: 'record.punch', label: () => t().punchIn, kbd: () => 'P', run: () => void RA.punchRecord() },
   {
     id: 'record.monitor',
     label: () => t().monitorTitle,
@@ -45,7 +45,7 @@ export const commands: Command[] = [
     check: true,
     isChecked: () => recStudio.value.monitoring,
   },
-  { id: 'record.metronome', label: () => t().studioMetronome, run: () => RA.toggleMetronome() },
+  { id: 'record.metronome', label: () => t().studioMetronome, kbd: () => 'M', run: () => RA.toggleMetronome() },
   {
     id: 'file.export',
     label: () => t().fileExport,
@@ -152,7 +152,8 @@ export const commands: Command[] = [
   {
     id: 'view.center',
     label: () => t().viewCenter,
-    kbd: () => 'Tab',
+    // no kbd hint — Tab is not bound anywhere (purged in E-CB-021;
+    // binding decisions need written approval per protocol)
     run: () => A.view.center(),
     sep: true,
   },
@@ -286,6 +287,18 @@ export const commands: Command[] = [
 
   // Control Bar v2 (CB-2.3/2.4): transport + bar toggles promoted into the
   // registry (F-09) so menus, shortcuts, and the bar share one command system.
+  {
+    id: 'transport.nudgeBack',
+    label: () => t().seekBack5,
+    kbd: () => 'Shift+←',
+    run: () => A.transport.nudge(-5),
+  },
+  {
+    id: 'transport.nudgeFwd',
+    label: () => t().seekFwd5,
+    kbd: () => 'Shift+→',
+    run: () => A.transport.nudge(5),
+  },
   { id: 'transport.playPause', label: () => t().play, kbd: () => 'Space', run: () => A.transport.togglePlay() },
   { id: 'transport.stop', label: () => t().stop, run: () => A.transport.stop() },
   {

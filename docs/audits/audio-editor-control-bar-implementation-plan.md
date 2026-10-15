@@ -224,3 +224,28 @@
 **Phase 5 audit PASSED: zero open gaps and zero open errors.**
 
 **Awaiting `PROCEED TO PHASE 6`.**
+
+## 13. Phase 6 report (§7.5 template) — program completion
+
+**Phase goal:** parity + decision — control-by-control parity vs audit §2, full gates + LH both flags, validation report (Deliverable 3) + DESIGN.md + changed-file inventory, flag default recommendation.
+
+**Tasks closed:**
+
+| Task | Status | Evidence |
+|---|---|---|
+| CB-6.1 Parity sweep — **ZERO-DIFF**; sweep caught + closed two real reachability gaps (Back/Forward 5 s dropped in the Phase-2 transport; tucked ToolBar missing its panel host) and corrected the shortcut-truth record (R/P/M/A ARE bound via `resolveShortcut`; monitor-(M) and center-Tab were the real fabrications) | VERIFIED | E-CB-021; `parity.md`; `cb6.spec` 5/5; `shortcutTruth.test.ts` 3/3 |
+| CB-6.2 Full gates + LH both flags (exact final build) | VERIFIED | E-CB-022 — see below |
+| CB-6.3 Deliverable 3 validation report + DESIGN.md §10 + changed-file inventory | VERIFIED | `docs/audits/audio-editor-control-bar-validation-report.md`; `docs/DESIGN.md`; `control-bar/changed-files.md` |
+| CB-6.4 Flag default recorded OFF + flip recommendation packaged (CB-D20) | VERIFIED | validation report §5; DECISIONS |
+
+**Gate results (final build `index-QJPVQ7Q0.js` = 58,105 B gz ≤ 123,661 PASS):** typecheck PASS · lint PASS · unit **102 files / 854 tests** · e2e plain **158 passed / 0 flaky** (csp composition red only, CB-D6; enforced **2/2 PASS**) · LH **desktop P100/A100/BP100/S91 at flag OFF and ON; mobile P97 (OFF) / P96 (ON), A100 both flags** · cb suites **70/70**.
+
+**Deviations & decisions:** CB-D20 (default stays OFF pending approval). In-phase closure of the two parity gaps (seek pair + toolbar host) is the sweep working as designed, not scope creep — both are reachability restorations required by the no-control-removed rule.
+
+**Known-interim / carried:** status clock format unification + bn switcher UI ride the flag decision; tickets T-CB-1..6/8/9/11 carried (T-CB-10 resolved); H-12 pseudo-loc harness remains an enhancement.
+
+**Open gaps / open errors:** zero.
+
+**Phase 6 audit PASSED: zero open gaps and zero open errors.**
+
+**Program complete (Phases 0–6).** The control bar v2 ships behind `ui.controlBarV2` (default OFF). Next actions belong to the user: review Deliverable 3 + screenshots → approve/decline the default-flip (one line + flag-matrix re-run) and triage the carried tickets.

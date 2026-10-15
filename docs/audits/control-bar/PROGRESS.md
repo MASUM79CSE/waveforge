@@ -53,3 +53,10 @@ Phases: 0 PASSED · 1 PASSED · 2 PASSED · 3 PASSED · **4 gates+PCA complete (
 | CB-5.5 | (H-sweep) F-11 third instance root-fixed in SelectionZone (uncontrolled fields); OverflowZone close/Escape/focus races fixed | VERIFIED | E-CB-019 | deterministic repro probes → 65/65 ×3 |
 
 Phases: 0 PASSED · 1 PASSED · 2 PASSED · 3 PASSED · 4 PASSED · **5 gates+PCA complete (report in plan §12)** · 6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).
+
+| CB-6.1 | Control-by-control parity sweep vs audit §2 (reachability + command + shortcut + acc name) — ZERO-DIFF; seek pair restored, tucked-toolbar host fixed, shortcut truth mechanically guarded | VERIFIED | E-CB-021 | `parity.md`; `cb6.spec` 5/5; `shortcutTruth.test.ts` 3/3 |
+| CB-6.2 | Full gates + LH at BOTH flags on the exact final build | VERIFIED | E-CB-022 | 102f/854t; 158 e2e; csp 2/2; 58,105 B gz; LH a11y 100 both flags |
+| CB-6.3 | Validation report (Deliverable 3) + DESIGN.md §10 + changed-file inventory | VERIFIED | E-CB-022 | `audio-editor-control-bar-validation-report.md`; `changed-files.md` |
+| CB-6.4 | Flag default decision recorded (OFF; flip recommendation packaged) | VERIFIED | E-CB-022 | CB-D20; validation report §5 |
+
+Phases: 0 PASSED · 1 PASSED · 2 PASSED · 3 PASSED · 4 PASSED · 5 PASSED · **6 gates+PCA complete (report in plan §13)** — program complete pending the user's flag decision.

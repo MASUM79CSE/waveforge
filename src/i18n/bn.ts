@@ -211,7 +211,7 @@ export const bn = {
   recordFailed: 'মাইক্রোফোন অনুপলব্ধ',
   recordTooLong: 'রেকর্ডিং বন্ধ — ১০ মিনিটের সীমা',
   recNoPermission: 'মাইক্রোফোনের অনুমতি দেওয়া হয়নি',
-  recArmed: 'আর্মড — লেভেল দেখুন, রেকর্ড চাপুন',
+  recArmed: 'আর্মড — লেভেল দেখুন, R চাপুন',
   metronomeOn: 'মেট্রোনোম চালু',
   metronomeOff: 'মেট্রোনোম বন্ধ',
   monitorOn: 'ইনপুট মনিটরিং চালু',
@@ -384,6 +384,8 @@ export const bn = {
   pause: 'বিরতি',
   stop: 'স্টপ',
   toggleLoop: 'লুপ টগল',
+  seekBack5: '৫ সেকেন্ড পেছনে',
+  seekFwd5: '৫ সেকেন্ড সামনে',
 
   // Control Bar v2 (CB-2)
   zoneTransport: 'ট্রান্সপোর্ট',

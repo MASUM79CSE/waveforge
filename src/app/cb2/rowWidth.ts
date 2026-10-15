@@ -15,6 +15,7 @@ export const rowWidth = signal(0);
  * cumulative budget. Never tucked: transport+clock, the ⋮ trigger.
  */
 export const TUCK = {
+  seek: 430,
   master: 2150,
   record: 1540,
   tempo: 1360,

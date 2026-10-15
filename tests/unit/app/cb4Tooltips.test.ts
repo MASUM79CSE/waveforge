@@ -15,11 +15,12 @@ describe('CB-4.3 tooltip helper (registry-derived)', () => {
   test('name + shortcut come from the registry, never hardcoded', () => {
     expect(cmdTitle('edit.deselect')).toBe(`${en.editDeselect} (Q)`);
     expect(cmdTitle('transport.playPause')).toBe(`${en.play} (Space)`);
-    // record.metronome has NO kbd in the registry — the old v2 title
-    // fabricated "(M)" although no M binding exists; the helper must not
-    // invent shortcuts.
-    expect(cmdTitle('record.metronome')).toBe(en.studioMetronome);
-    expect(kbdOf('record.metronome')).toBe('');
+    // R/P/M ARE real bindings (shortcuts.ts resolveShortcut — the Phase-4
+    // purge mis-audited them; corrected in E-CB-021). Monitor has none
+    // (M belongs to the metronome).
+    expect(cmdTitle('record.metronome')).toBe(`${en.studioMetronome} (M)`);
+    expect(cmdTitle('record.punch')).toBe(`${en.punchIn} (P)`);
+    expect(kbdOf('record.monitor')).toBe('');
     expect(kbdOf('edit.deselect')).toBe(' (Q)');
     expect(cmdTitle('no.such.command')).toBe('');
   });

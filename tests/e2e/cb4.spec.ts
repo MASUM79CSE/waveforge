@@ -152,14 +152,22 @@ test.describe('CB-4.3 tooltips from the registry (flag ON)', () => {
     await expect(page.locator('.cb2 .sel-clear')).toHaveAttribute('title', 'Deselect All (Q)');
   });
 
-  test('no fabricated shortcuts: metronome and record show names only', async ({ page }) => {
+  test('shortcut hints match the real bindings (R/P/M); monitor has none', async ({ page }) => {
     await load(page, '?cbv2=1');
     await page.getByTestId('cb2-overflow').click();
     const metro = page.getByTestId('cb2-metronome');
-    await expect(metro).toHaveAttribute('title', 'Metronome');
+    await expect(metro).toHaveAttribute('title', 'Metronome (M)');
     const rec = page.getByTestId('record-toggle');
-    await expect(rec).toHaveAttribute('title', 'Record');
-    await expect(page.getByTestId('monitor-toggle')).toHaveAttribute('title', 'Input monitoring');
+    await expect(rec).toHaveAttribute('title', 'Record (R)');
+    await expect(page.getByTestId('punch-button')).toHaveAttribute(
+      'title',
+      'Punch in/out over the selection (P)',
+    );
+    // M is the metronome's — the monitor button must not claim it
+    await expect(page.getByTestId('monitor-toggle')).toHaveAttribute(
+      'title',
+      'Input monitoring',
+    );
     await expect(page.getByTestId('clip-led')).toHaveAttribute('title', 'Reset clip indicator');
   });
 });

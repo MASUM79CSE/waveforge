@@ -205,7 +205,7 @@ export const en = {
   recordFailed: 'Microphone unavailable',
   recordTooLong: 'Recording stopped — 10 minute limit',
   recNoPermission: 'Microphone permission was denied',
-  recArmed: 'Armed — check your level, press Record to roll',
+  recArmed: 'Armed — check your level, press R to roll',
   metronomeOn: 'Metronome on',
   metronomeOff: 'Metronome off',
   monitorOn: 'Input monitoring on',
@@ -378,6 +378,8 @@ export const en = {
   pause: 'Pause',
   stop: 'Stop',
   toggleLoop: 'Toggle Loop',
+  seekBack5: 'Back 5 seconds',
+  seekFwd5: 'Forward 5 seconds',
 
   // Control Bar v2 (CB-2)
   zoneTransport: 'Transport',

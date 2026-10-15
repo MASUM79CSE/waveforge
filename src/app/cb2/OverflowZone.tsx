@@ -13,6 +13,7 @@ import type { ComponentChildren } from 'preact';
 const OVERFLOW_IDS = ['view.follow', 'record.monitor', 'record.clipReset'] as const;
 
 export interface TuckState {
+  seek: boolean;
   master: boolean;
   record: boolean;
   tempo: boolean;
@@ -34,7 +35,12 @@ export function OverflowZone({
 
   const hasZones =
     tucked !== undefined &&
-    (tucked.master || tucked.record || tucked.tempo || tucked.selection || tucked.tool);
+    (tucked.seek ||
+      tucked.master ||
+      tucked.record ||
+      tucked.tempo ||
+      tucked.selection ||
+      tucked.tool);
 
   useEffect(() => {
     if (!open) return;

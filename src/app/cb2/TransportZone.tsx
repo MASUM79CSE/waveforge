@@ -6,13 +6,13 @@
  */
 import { playing, looping, recording, armed, docInfo } from '../state';
 import { runCommand } from '../commands';
-import { kbdOf } from './tooltips';
+import { cmdTitle, kbdOf } from './tooltips';
 import { t } from '../../i18n';
 import { Zone } from '../components/Zone';
 import { useRovingToolbar } from './useRovingToolbar';
 import { Clock } from './Clock';
 
-export function TransportZone() {
+export function TransportZone({ seek = true }: { seek?: boolean }) {
   const doc = docInfo.value;
   const roving = useRovingToolbar();
   const rec = recording.value;
@@ -37,6 +37,7 @@ export function TransportZone() {
       >
         <Clock />
         <span class="cb2-tsep" aria-hidden="true" />
+        {seek && <SeekButtons />}
         <button
           class={`tbtn tbtn-play-big ${playing.value ? 'playing' : ''}`}
           tabIndex={0}
@@ -101,5 +102,39 @@ function Svg({ d }: { d: string }) {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d={d} />
     </svg>
+  );
+}
+
+
+/** Back/Forward 5 s (audit §2 rows 9/10): shared by the row and the ⋮
+ * panel so the pair can tuck at ultra-narrow widths (CB-5.1 tier). */
+export function SeekButtons({ roving = false }: { roving?: boolean }) {
+  const doc = docInfo.value !== null;
+  const tab = roving ? undefined : -1;
+  return (
+    <>
+      <button
+        class="tbtn"
+        tabIndex={tab}
+        title={cmdTitle('transport.nudgeBack')}
+        aria-label={t().seekBack5}
+        data-testid="transport-seek-back"
+        disabled={!doc}
+        onClick={() => runCommand('transport.nudgeBack')}
+      >
+        <Svg d="M11 6v12L2.5 12zM21 6v12l-8.5-6z" />
+      </button>
+      <button
+        class="tbtn"
+        tabIndex={tab}
+        title={cmdTitle('transport.nudgeFwd')}
+        aria-label={t().seekFwd5}
+        data-testid="transport-seek-fwd"
+        disabled={!doc}
+        onClick={() => runCommand('transport.nudgeFwd')}
+      >
+        <Svg d="M13 6v12l8.5-6zM3 6v12l8.5-6z" />
+      </button>
+    </>
   );
 }
