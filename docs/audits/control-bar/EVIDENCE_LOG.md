@@ -49,3 +49,16 @@ Format: date · commit · environment · command · result · criteria met/open 
 - **Comparison:** identical build hash to production; a11y 100/100 confirms the baseline is WCAG-clean by automated audit — the accessibility gaps this project addresses (H-03/H-04/H-06) are ones axe/LH do not catch.
 
 ### CB-D2 correction (DECISIONS): the LH row recorded earlier today as "preview re-run NOT RUN" was superseded within Phase 0 — the re-run above was executed after the idle machine freed up.
+
+## E-CB-007 — CB-0.4 supplemental: playback jitter + arm-moment layout shift (closes the two NOT-RUN cells)
+- **Date:** 2026-10-15 · **Commit:** base app `3691995` (measured on dev server) · **Method:** `jitter-method.mjs` (committed; re-runnable) · **Data:** `baseline/jitter.json`.
+- **A. Clock jitter during playback** (play → 5 s rAF sampling, 301 frames/config, 1280 & 390 dark):
+  - `.time-cursor` width **constant 89.578 px** (distinct values 1/301; p2p 0). `.time-sep`/`.time-total` x: p2p 0, 0 moves >0.05 px. `.transport-time` width p2p 0.
+  - Cause: `.transport-time` uses `--font-mono` (tokens.css:82) + fixed `m:ss.mmm` 8-char format ⇒ constant glyph count × mono advance. `font-variant-numeric: normal`.
+  - **Verdict:** visual jitter = 0 px ⇒ H-07's jitter component REFUTED by measurement; `tabular-nums` stays a v2 design requirement (master prompt) but is hardening, not defect fix. (Step changes remain possible at minute rollovers ≥10:00 — 8→9 chars; noted, not a jitter oscillation.)
+- **B. Arm-moment layout shift** (PerformanceObserver across arm→roll + zone geometry T0/T1/T2):
+  - **1280 dark:** Record zone width +**122 px** on arm (meter block mounts); Master zone displaced +**122 px** to the right — inside the hidden-overflow region (no layout-shift entry; F-01's invisible-scroll makes it invisible at default scroll). T1→T2 (roll, rec-time mount): all deltas 0.
+  - **390 dark:** all visible transport content jumps **−22 px** on arm (overflow container auto-scrolls toward the armed control; Record zone +122, Master +100 relative). T1→T2: 0.
+  - Arm/roll toasts add small shifts: no-input CLS sum **0.012 @1280 / 0.064 @390** (largest single 0.050, toast-close).
+  - **Verdict:** F-05 CONFIRMED and quantified; visible impact is width-dependent (hidden @1280 default view, visible jump @390). P2 backlog item "F-05 reserved meter slot" stands, now evidence-backed.
+- **Honesty notes:** count-in chip transient (if enabled in settings) was not separately staged — defaults measured; jitter probed at 2 of 6 widths (worst-case candidates: smallest + desktop), mono font argument covers the rest.
