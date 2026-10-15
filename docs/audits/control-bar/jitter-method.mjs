@@ -49,10 +49,13 @@ async function measureJitter(width) {
     const data = await page.evaluate(
       () =>
         new Promise((resolve) => {
-          const cur = document.querySelector('.time-cursor');
-          const sep = document.querySelector('.time-sep');
-          const tot = document.querySelector('.time-total');
-          const box = document.querySelector('.transport-time');
+          // v1 clock (.time-cursor/.time-sep/.time-total) or v2 clock
+          // (.cb2-clock-readout — single readout, format switcher beside it)
+          const v2 = document.querySelector('.cb2-clock-readout');
+          const cur = v2 ?? document.querySelector('.time-cursor');
+          const sep = v2 ?? document.querySelector('.time-sep');
+          const tot = v2 ?? document.querySelector('.time-total');
+          const box = v2?.parentElement ?? document.querySelector('.transport-time');
           if (!cur || !sep || !tot || !box) {
             resolve({ error: 'clock elements not found' });
             return;

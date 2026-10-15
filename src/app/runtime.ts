@@ -250,3 +250,28 @@ function snapSelection(sel: { start: number; end: number } | null): { start: num
     end: Math.max(s, e),
   };
 }
+
+/** CB-3.1: set the selection from typed field values — clamp into the
+ * document, swap inverted ranges, snap through the same pipeline as canvas
+ * selections (ADR 007), apply to renderer + signal. */
+export function selectRange(
+  start: number,
+  end: number,
+): { start: number; end: number } | null {
+  const doc = getDoc();
+  if (!doc) return null;
+  const dur = doc.duration;
+  const clamped = {
+    start: Math.max(0, Math.min(dur, start)),
+    end: Math.max(0, Math.min(dur, end)),
+  };
+  if (clamped.start > clamped.end) {
+    const t = clamped.start;
+    clamped.start = clamped.end;
+    clamped.end = t;
+  }
+  const snapped = snapSelection(clamped);
+  renderer.setSelection(snapped);
+  S.selection.value = snapped;
+  return snapped;
+}

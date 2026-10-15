@@ -6,10 +6,11 @@
  */
 import { MenuBar } from '../components/MenuBar';
 import { ToolBar } from '../components/ToolBar';
-import { SelectionBar } from '../components/SelectionBar';
-import { BeatBar } from '../components/ViewBars';
-import { RecordZone, MasterZone } from '../components/RecordMasterZones';
 import { TransportZone } from './TransportZone';
+import { SelectionZone } from './SelectionZone';
+import { TempoZone } from './TempoZone';
+import { RecordZoneV2 } from './RecordZoneV2';
+import { MasterZoneV2 } from './MasterZoneV2';
 import { OverflowZone } from './OverflowZone';
 
 export function ControlBarV2() {
@@ -22,11 +23,11 @@ export function ControlBarV2() {
       <div class="transport cb2-row">
         <TransportZone />
         <ToolBar />
-        <SelectionBar />
-        <BeatBar />
+        <SelectionZone />
+        <TempoZone />
         <div class="transport-spacer" />
-        <RecordZone />
-        <MasterZone />
+        <RecordZoneV2 />
+        <MasterZoneV2 />
         <OverflowZone />
       </div>
     </div>

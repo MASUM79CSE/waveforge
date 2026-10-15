@@ -27,3 +27,13 @@ Rule: a task only closes with evidence in EVIDENCE_LOG.md + commit SHA. Resume =
 | CB-2.6 | Screenshots 6 widths × 2 themes × v1/v2 + h-scroll probes (theme-key corrected + re-captured) | VERIFIED | E-CB-014/015 | 24 PNGs; page h-scroll FALSE at 1280/390/320 flag-ON |
 
 Phases: 0 PASSED · 1 PASSED · **2 gates+PCA complete (report in plan §9)** · 3..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).
+
+| CB-3.1 | Editable validated selection fields (start/end/length; inline error; selectRange clamp→swap→snap→signal; Clear-Q carried) | VERIFIED | E-CB-016/017 | `SelectionZone.tsx`; cb3.spec 11/11 incl. axe; snap-literal behavior proven |
+| CB-3.2 | Tempo/grid/metronome cluster (BEAT/SNAP registry-routed pressed states; BPM readout; metronome+count-in) | VERIFIED | E-CB-016 | `TempoZone.tsx`; cb3.spec toggle/pressed tests; CB-D10 hiding intact |
+| CB-3.3 | Record cluster with reserved slots — arm/roll zoneDeltas 0 px @1280 & 390 (F-05 MET; v1 +122) | VERIFIED | E-CB-016 | `RecordZoneV2.tsx`; jitter-v2.json; geometry ±0.5 px asserted |
+| CB-3.4 | Master zone on canonical `masterVolume` signal (CB-D9: no persistence, effect→engine.setVolume) | VERIFIED | E-CB-016 | `MasterZoneV2.tsx`; reload→0.9 asserted; aria-valuetext % readout |
+| CB-3.5 | (H-sweep) DOM-authoritative commit hardening (CB-D16) + adversarial suite 9/9 | VERIFIED | E-CB-017 | `cb3adv.spec.ts`; rapid fill→Enter race closed |
+
+Phase-3 flake classification: markers-persist + peakLimits flakes PROVEN pre-existing (clean `c4144ee` worktree reproduces) → tickets T-CB-8/T-CB-9, not v2 gaps.
+
+Phases: 0 PASSED · 1 PASSED · 2 PASSED · **3 gates+PCA complete (report in plan §10)** · 4..6 pending (stop rule: PCA + explicit `PROCEED TO PHASE N+1`).

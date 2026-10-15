@@ -42,12 +42,18 @@ test.describe('flag ON (?cbv2=1)', () => {
     await expect(page.getByTestId('record-toggle')).toBeVisible();
     await expect(page.getByTestId('cb2-loop')).toBeVisible();
     await expect(page.getByTestId('cb2-clock')).toBeVisible();
-    // carried v1 zones — every control still reachable
+    // carried v1 controls — every control still reachable (Phase 3: the
+    // carried SelectionBar/BeatBar grew into the editable SelectionZone and
+    // the TempoZone; the Record/Master clusters are the v2 reserved-slot
+    // builds of the same controls — see cb3.spec.ts)
     const toolButtons = page.locator('.cb2 .toolbtn');
     expect(await toolButtons.count()).toBe(15);
-    await expect(page.locator('.cb2 .beatbar')).toBeVisible();
+    await expect(page.getByTestId('cb2-selection')).toBeVisible();
+    await expect(page.getByTestId('cb2-beat')).toBeVisible();
+    await expect(page.getByTestId('cb2-snap')).toBeVisible();
     await expect(page.getByTestId('monitor-toggle')).toBeVisible();
     await expect(page.getByTestId('punch-button')).toBeVisible();
+    await expect(page.getByTestId('clip-led')).toHaveCount(1);
     await expect(page.locator('.cb2 input[type="range"]').first()).toBeVisible();
     // menus
     await expect(page.getByRole('button', { name: 'File', exact: true })).toBeVisible();

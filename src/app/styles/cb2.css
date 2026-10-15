@@ -160,3 +160,66 @@
   left: auto;
   right: 0;
 }
+
+/* ---- Phase 3: editing clusters (CB-3) ---- */
+
+/* editable selection fields (CB-3.1) */
+.cb2-selgroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cb2-sel-in {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--fg-1);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 3px 4px;
+  min-width: 8ch;
+}
+.cb2-sel-in:hover:not(:disabled) {
+  border-color: var(--line-2, rgba(128, 128, 128, 0.4));
+}
+.cb2-sel-in:focus {
+  outline: 1px solid var(--ac);
+  border-color: transparent;
+}
+.cb2-sel-in[aria-invalid='true'] {
+  outline: 1px solid #e5534b;
+}
+
+.cb2-sel-error {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  color: #e5534b;
+  white-space: nowrap;
+}
+
+/* reserved record slots (CB-3.3, F-05): children always occupy layout —
+   visibility toggles, so arming shifts nothing */
+.cb2-rec-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cb2-rec-slot .rec-time {
+  min-width: 8ch;
+  text-align: left;
+}
+.cb2-count-slot {
+  display: inline-flex;
+  align-items: center;
+  width: 24px; /* count-chip slot */
+}
+
+/* tempo cluster (CB-3.2) */
+.cb2-tempo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

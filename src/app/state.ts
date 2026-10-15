@@ -54,6 +54,11 @@ export const followCursor = signal(true);
 // editing
 export const selection = signal<Selection | null>(null);
 
+/** CB-3.4/CB-D9: canonical master-volume UI signal (0..1.5). The v2 master
+ * slider binds this; an effect mirrors it into engine.setVolume. No local
+ * useState, no persistence in v2 (P3 ticket owns the persistence decision). */
+export const masterVolume = signal(0.9);
+
 // io
 export const loadingActive = signal(false);
 export const loadingLabel = signal('');

@@ -146,3 +146,29 @@
 **Addendum (same-day "continue" round, still Phase 2):** visual review caught the light-theme screenshots rendering dark → root cause: measurement scripts (including the Phase-0 method) set bare `theme` instead of the settings-prefixed `waveforge.theme`. Full baseline re-measured at the true baseline commit (`3691995`, worktree) — all layout/perf numbers reproduced identically (claims stand; only light PNGs change); methods fixed; audit §3 carries a correction row. Build-time flag path verified end-to-end (ON, URL-override, default OFF). New `clockState` persistence tests (6). Evidence: E-CB-015.
 
 **Awaiting `PROCEED TO PHASE 3`.**
+
+## 10. Phase 3 report (§7.5 template)
+
+**Phase goal:** the editing clusters — editable validated selection fields, tempo/grid/metronome cluster, record cluster with reserved slots (arm-shift 0 px), master zone on a canonical volume signal.
+
+**Tasks closed:**
+
+| Task | Status | Evidence |
+|---|---|---|
+| CB-3.1 Editable validated selection Start/End/Length (inline `role=status` error, `aria-invalid`, Escape clears, commit → `selectRange` clamp→swap→snap→renderer+signal, Clear-Q carried verbatim) | VERIFIED | E-CB-016; `cb3.spec.ts` 11/11 (incl. axe zero violations with populated selection) |
+| CB-3.2 Tempo/grid/metronome cluster (BEAT/SNAP via registry with signal-truth `aria-pressed`; BPM readout `-` until analysis; metronome + count-in chip; CB-D10 hidden-bars-beats intact) | VERIFIED | E-CB-016; `cb3.spec.ts` + `cb2.spec.ts` clock-menu test |
+| CB-3.3 Record cluster with reserved slots — **F-05 MET: arm zoneDeltas 0 px @1280 and @390, arm AND roll (v1: +122 px)**; meter/time cells visibility-toggled, never unmounted | VERIFIED | E-CB-016; `baseline/jitter-v2.json`; geometry ±0.5 px spec |
+| CB-3.4 Master zone via canonical `masterVolume = signal(0.9)` (CB-D9: effect → `engine.setVolume`, NOT persisted — reload returns 0.9; no `*volume*` storage keys) | VERIFIED | E-CB-016; slider/reload/persistence specs |
+| CB-3.5 (unplanned) H-sweep hardening CB-D16: commit reads the live DOM value for edited fields — closes a rapid fill→Enter stale-closure race (F-11 family) | VERIFIED | E-CB-017; `cb3adv.spec.ts` 9/9; +25 B gz |
+
+**Gate results (final tree, idle, fresh build `index-BzvGq0PP.js`):** typecheck PASS · lint PASS · unit **100 files / 845 tests** · e2e plain **117 passed / 1 flaky (peakLimits, retry-green) / 1 failed (markers-persist — proven PRE-EXISTING at clean `c4144ee`, ticket T-CB-8)** · enforced csp **2/2 PASS** · build ✓ · bundle **56,876 B gz ≤ 123,661 PASS** · LH desktop **P100/A100/BP100/S91** · mobile **P98/A100/BP100/S91** · jitter-v2: all p2p 0 px; CLS identical to v1 baseline (0.012/0.009/0.064/0.047 — toast-sourced, pre-existing).
+
+**Deviations & decisions:** CB-D16 (DOM-authoritative commit for edited fields; user may veto at the STOP boundary). Spec-only updates: cb2 reachability selectors track the intentional zone swaps (assertion set grew); two adversarial probes corrected (9:99 normalizes by design; slider readout is aria-valuetext).
+
+**Known-interim / tickets:** T-CB-8 markers-persist flake (pre-existing; proven on the clean Phase-2 tree) · T-CB-9 peakLimits canvas flake under load (idle-green 2/2) · global Space/L titles vs `shortcuts.ts` inconsistency carried to Phase 6 unification · T-CB-6 (EffectDialog/ExportDialog F-11 pattern) unchanged.
+
+**Open gaps / open errors:** zero (the two failing-class e2e results are classified pre-existing flakes with clean-tree proof, ticketed — not open gaps against Phase-3 acceptance).
+
+**Phase 3 audit PASSED: zero open gaps and zero open errors.**
+
+**Awaiting `PROCEED TO PHASE 4`.**

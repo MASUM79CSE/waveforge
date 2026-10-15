@@ -391,6 +391,13 @@ export const en = {
   beatsToggle: 'Toggle beat markers',
   snapToggle: 'Snap to beats',
   clipReset: 'Reset clip indicator',
+  selZone: 'Selection',
+  selStart: 'Start',
+  selEnd: 'End',
+  selLength: 'Length',
+  selInvalid: 'Enter a time like 9.272 or 0:09.272',
+  tempoZone: 'Tempo & grid',
+  bpmTitle: 'Detected tempo (Analyze → BPM)',
   volume: 'Volume',
 
   // shell

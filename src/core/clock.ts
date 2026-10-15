@@ -43,3 +43,28 @@ export function fmtBarsBeats(
   const sixteenth = Math.floor((totalBeats * sixteenthsPerBeat) % sixteenthsPerBeat) + 1;
   return `${bar}.${beat}.${sixteenth}`;
 }
+
+/**
+ * Parse a user-typed time for the v2 selection fields (CB-3.1): plain
+ * seconds ("90", "0.5"), "m:ss", "m:ss.mmm" or "h:mm:ss". Returns null for
+ * anything non-finite or negative — callers show an inline error; they own
+ * range clamping.
+ */
+export function parseClockInput(input: string): number | null {
+  const s = input.trim();
+  if (s === '' || !/^[0-9:.]+$/.test(s)) return null;
+  const parts = s.split(':');
+  if (parts.length > 3) return null;
+  const numbers: number[] = [];
+  for (const part of parts) {
+    if (part === '') return null;
+    const n = Number(part);
+    if (!Number.isFinite(n) || n < 0) return null;
+    numbers.push(n);
+  }
+  let seconds: number;
+  if (numbers.length === 1) seconds = numbers[0]!;
+  else if (numbers.length === 2) seconds = numbers[0]! * 60 + numbers[1]!;
+  else seconds = numbers[0]! * 3600 + numbers[1]! * 60 + numbers[2]!;
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
+}

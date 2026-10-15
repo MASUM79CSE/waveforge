@@ -1,0 +1,310 @@
+{
+ "generated": "2026-10-15T07:17:38.841Z",
+ "commit": "c4144ee",
+ "base": "http://localhost:5180/?cbv2=1",
+ "jitter": {
+  "1280-dark": {
+   "fontVariantNumeric": "tabular-nums",
+   "frames": 301,
+   "cursorWidthPx": {
+    "min": 84.609,
+    "max": 84.609,
+    "distinct": 1,
+    "p2p": 0
+   },
+   "sepXPx": {
+    "p2p": 0,
+    "movesOver0_05": 0
+   },
+   "totalXPx": {
+    "p2p": 0,
+    "movesOver0_05": 0
+   },
+   "transportTimeWidthPx": {
+    "p2p": 0
+   },
+   "lastClockText": "0:05.418",
+   "zonesVisible": {
+    "cursor": true,
+    "total": true
+   }
+  },
+  "390-dark": {
+   "fontVariantNumeric": "tabular-nums",
+   "frames": 301,
+   "cursorWidthPx": {
+    "min": 84.609,
+    "max": 84.609,
+    "distinct": 1,
+    "p2p": 0
+   },
+   "sepXPx": {
+    "p2p": 0,
+    "movesOver0_05": 0
+   },
+   "totalXPx": {
+    "p2p": 0,
+    "movesOver0_05": 0
+   },
+   "transportTimeWidthPx": {
+    "p2p": 0
+   },
+   "lastClockText": "0:05.418",
+   "zonesVisible": {
+    "cursor": true,
+    "total": true
+   }
+  }
+ },
+ "arm": {
+  "1280-dark": {
+   "clsNoInput": 0.012,
+   "clsInput": 0.009,
+   "entries": 4,
+   "topShifts": [
+    {
+     "v": 0.009594932198524475,
+     "input": false,
+     "t": 4976,
+     "src": [
+      "toasts",
+      "toast toast-info"
+     ]
+    },
+    {
+     "v": 0.006394386291503906,
+     "input": true,
+     "t": 1477,
+     "src": [
+      "toasts"
+     ]
+    },
+    {
+     "v": 0.002510547637939453,
+     "input": true,
+     "t": 3502,
+     "src": [
+      "toasts"
+     ]
+    },
+    {
+     "v": 0.002510547637939453,
+     "input": false,
+     "t": 4293,
+     "src": [
+      "toasts"
+     ]
+    }
+   ],
+   "zoneDeltasT0toT1": [
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "toolbar",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "transport-spacer",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "cb2-overflow",
+     "dx": 0,
+     "dw": 0
+    }
+   ],
+   "zoneDeltasT1toT2": [
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "toolbar",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "transport-spacer",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "cb2-overflow",
+     "dx": 0,
+     "dw": 0
+    }
+   ]
+  },
+  "390-dark": {
+   "clsNoInput": 0.064,
+   "clsInput": 0.047,
+   "entries": 4,
+   "topShifts": [
+    {
+     "v": 0.05038569523737981,
+     "input": false,
+     "t": 4925,
+     "src": [
+      "toasts",
+      "toast-close"
+     ]
+    },
+    {
+     "v": 0.03377239520733173,
+     "input": true,
+     "t": 1426,
+     "src": [
+      "toasts",
+      "toast-close"
+     ]
+    },
+    {
+     "v": 0.01318359375,
+     "input": true,
+     "t": 3449,
+     "src": [
+      "toasts"
+     ]
+    },
+    {
+     "v": 0.01318359375,
+     "input": false,
+     "t": 4258,
+     "src": [
+      "toasts"
+     ]
+    }
+   ],
+   "zoneDeltasT0toT1": [
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "toolbar",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "transport-spacer",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "cb2-overflow",
+     "dx": 0,
+     "dw": 0
+    }
+   ],
+   "zoneDeltasT1toT2": [
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "toolbar",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "transport-spacer",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "tz",
+     "dx": 0,
+     "dw": 0
+    },
+    {
+     "c": "cb2-overflow",
+     "dx": 0,
+     "dw": 0
+    }
+   ]
+  }
+ }
+}
