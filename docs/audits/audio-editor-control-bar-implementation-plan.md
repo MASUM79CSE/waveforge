@@ -115,3 +115,31 @@
 **Phase 1 audit PASSED: zero open gaps and zero open errors.**
 
 **Awaiting `PROCEED TO PHASE 2`.**
+
+## 9. Phase 2 report (§7.5 template)
+
+**Phase goal:** foundation — flag + v2 shell, switchable clock, APG transport toolbar, overflow skeleton, flag-OFF parity, deliverable screenshots. Plus one root-level product fix (F-11 round 2) that the gates forced into the open.
+
+**Tasks closed:**
+
+| Task | Status | Evidence |
+|---|---|---|
+| CB-2.1 Flag (`VITE_CB_V2` / `?cbv2=` / guarded localStorage; default OFF) + v2 shell | VERIFIED | E-CB-012 — all paths probed; `.cb2` grid-row 1/3 integration |
+| CB-2.2 Clock formatters (RED→green) + switchable clock (time default; samples; bars+beats only when tempo known, hidden-when-unknown CB-D10) + persistence | VERIFIED | E-CB-012; `tests/unit/clock.test.ts` 9/9 |
+| CB-2.3 Transport zone as APG toolbar: 1 tab stop, roving arrows, Home/End, Space no-double-fire (CB-D15), pressed state from signals, all actions via registry (incl. new `transport.playPause/stop/loop`, `view.beatsShown`, `view.snapToBeat`, `record.clipReset` — F-09 promotions) | VERIFIED | E-CB-012; `tests/e2e/cb2.spec.ts` 10/10 |
+| CB-2.4 Overflow `⋮` skeleton hosting registry commands (follow, monitor + check state, clip-reset) | VERIFIED | E-CB-012 |
+| CB-2.5 Flag-OFF parity: v1 untouched (full v1 e2e suite green at final tree) | VERIFIED | E-CB-014 |
+| CB-2.6 Screenshots {v1,v2}×{dark,light}×6 widths + page h-scroll probes (FALSE at 1280/390/320 flag-ON) | VERIFIED | E-CB-014; `docs/screenshots/control-bar-v2/phase2/` (24 PNGs) |
+| CB-2.7 (unplanned) F-11 root fix: uncontrolled inputs + commit-time init (CB-D14) | VERIFIED | E-CB-013 |
+
+**Gate results (final tree, idle):** typecheck PASS · lint PASS · unit **99 files / 835 tests** · e2e plain **97 passed / 1 flaky (studioRecord — targeted 2× exit-0) / `csp.spec.ts` expected-red only** · enforced csp **PASS** · build ✓ · bundle **55,436 B gz (entry `index-_VX3_3Jk.js`) ≤ 123,661** (+1,816 vs Phase 1 = the v2 tree, hidden behind the flag) · LH desktop **P100/A100/BP100/S91** · mobile **P98/A100/BP100/S91** (S91 = vite-preview robots.txt artifact, unchanged) · axe zero violations on the v2 shell.
+
+**Deviations & decisions:** CB-D13 (v2 layout integration + flag-scoped width hardening), CB-D14 (F-11 root fix in-phase; supersedes the Phase-1 mitigation for the three fixed dialogs), CB-D15 (Space/Enter + arrows stop-propagation semantics).
+
+**Known-interim (declared, not gaps):** at narrow widths the v2 row scrolls internally with a visible scrollbar until Phase 5 priority-collapse; EffectDialog/ExportDialog keep the Phase-1 mitigation until T-CB-6.
+
+**Open gaps / open errors:** zero.
+
+**Phase 2 audit PASSED: zero open gaps and zero open errors.**
+
+**Awaiting `PROCEED TO PHASE 3`.**
