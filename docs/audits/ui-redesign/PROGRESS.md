@@ -50,11 +50,11 @@ Deliverables: `INDEPENDENT-REVIEW.md`, `PROGRAM-SUMMARY.md`, `docs/ui2/clean-sla
 
 | Task | Description | Status | Commit | Evidence |
 |---|---|---|---|---|
-| UX-6.1 | Deliberate-break experiment — 5 mutations vs the net | VERIFIED | (phase-6 commit) | INDEPENDENT-REVIEW §4: M1 flag (2 fail) · M2 APG skip (1) · M3 single-surface (correct pass) · M3b full-surface (2, names id) · M4 dB anchors (2); all reverted, suites green |
-| UX-6.2 | Measured perf vs Phase 0 (flag OFF parity + flag ON wins) | VERIFIED | (phase-6 commit) | PROGRAM-SUMMARY table: bundle 120,084→129,619 gz · LH D identical · M 99→98 · fills 764k→823 flag ON · tab stops 45→32 · targets ≥24 |
-| UX-6.3 | Independent diff review (guilty-until-proven per shared file) | VERIFIED | (phase-6 commit) | INDEPENDENT-REVIEW.md: 16 shared-file verdicts, honesty §2 (F-4/F-6/F-7 are the ONLY flag-OFF deltas, all e2e-asserted), sweeps clean, R-1/R-2 notes |
-| UX-6.4 | Docs: user-facing feature doc + program summary | VERIFIED | (phase-6 commit) | `docs/ui2/clean-slate-layout.md` + `PROGRAM-SUMMARY.md` |
-| UX-6.5 | Rollout recommendation (opt-in → flip → retire) | VERIFIED | (phase-6 commit) | PROGRAM-SUMMARY §Rollout: ship preview as-is; flip after beta window; removal only on `APPROVE REMOVE LEGACY UI` |
+| UX-6.1 | Deliberate-break experiment — 5 mutations vs the net | VERIFIED | `18e4e8c` | INDEPENDENT-REVIEW §4: M1 flag (2 fail) · M2 APG skip (1) · M3 single-surface (correct pass) · M3b full-surface (2, names id) · M4 dB anchors (2); all reverted, suites green |
+| UX-6.2 | Measured perf vs Phase 0 (flag OFF parity + flag ON wins) | VERIFIED | `18e4e8c` | PROGRAM-SUMMARY table: bundle 120,084→129,619 gz · LH D identical · M 99→98 · fills 764k→823 flag ON · tab stops 45→32 · targets ≥24 |
+| UX-6.3 | Independent diff review (guilty-until-proven per shared file) | VERIFIED | `18e4e8c` | INDEPENDENT-REVIEW.md: 16 shared-file verdicts, honesty §2 (F-4/F-6/F-7 are the ONLY flag-OFF deltas, all e2e-asserted), sweeps clean, R-1/R-2 notes |
+| UX-6.4 | Docs: user-facing feature doc + program summary | VERIFIED | `18e4e8c` | `docs/ui2/clean-slate-layout.md` + `PROGRAM-SUMMARY.md` |
+| UX-6.5 | Rollout recommendation (opt-in → flip → retire) | VERIFIED | `18e4e8c` | PROGRAM-SUMMARY §Rollout: ship preview as-is; flip after beta window; removal only on `APPROVE REMOVE LEGACY UI` |
 
 Phase-6 gates (final): unit **96 f / 792 t** · e2e **77** · tsc/eslint 0 ·
 build PASS · bundle **129,619 gz / 418,329 raw** · LH D **P100/A100/BP100/S91** · M **P98**.
