@@ -11,7 +11,7 @@ cover every row below.
 Shortcut column: `kbd` = global keyboard handler case in `keyboard.ts`;
 `resolve` = plain/modified layer in `shortcuts.ts`; `—` = no keyboard path.
 
-### File / record (10)
+### File / record (11)
 | id | menu | keyboard | notes |
 |---|---|---|---|
 | file.open | File › Import | Ctrl+O (resolve) | |
@@ -33,8 +33,8 @@ edit.undo (Ctrl+Z, Shift+Z variant), edit.redo (Ctrl+Y, Shift+Y), edit.cut (Ctrl
 ### Clips (3)
 clip.split (Ctrl+Shift+X-family via resolve? verified: Ctrl layer `case 'x'`+shift paths; menu Edit › split), clip.duplicate (Ctrl+Shift+D-region), clip.delete (menu Edit). Menu membership verified in menus.ts.
 
-### Effects (32)
-fx.rack (opens FxRackDialog) + 31 effects, menu Effects with 10 group headers:
+### Effects (31)
+fx.rack (opens FxRackDialog) + 30 effects = 31 fx ids, menu Effects with 10 group headers:
 - Dynamics: fx.compressor, fx.limiter, fx.gate, fx.deesser
 - Noise: fx.nr3, fx.nrPrint (NrPrintDialog), fx.rnvoice
 - EQ: fx.pgeq8 (Pgeq8Dialog), fx.pgeq, fx.geq10, fx.geq20
@@ -46,13 +46,13 @@ fx.rack (opens FxRackDialog) + 31 effects, menu Effects with 10 group headers:
 - Special: fx.reverse, fx.invert, fx.removeSilence
 All menu-only (no keyboard paths). Effect dialogs open via EffectDialog/PromptDialogs.
 
-### View (10)
+### View (9)
 view.zoomIn (+/= kbd), view.zoomOut (−/_ kbd), view.zoomReset (0 kbd), view.center (**registry advertises kbd 'Tab' — PHANTOM: no Tab case exists in keyboard.ts or shortcuts.ts; fabrication to fix in Phase 1**), view.follow, view.zerocross, view.axis, view.theme, view.accent, view.follow/l: plain `l` kbd toggles follow; view.* surfaced in ViewBars + menu View.
 
-### Analyze (6)
+### Analyze (5)
 analyze.report (report-run/report-export/report-copy/report-verdicts testids in dialog), analyze.lufs, analyze.bpm (click-bpm testid), analyze.beats, analyze.panel; analyze.* menu Analyze; menu-only.
 
-### Automation / help (4)
+### Automation / help (5: automation.toggle + help.x4)
 automation.toggle (track-panel context, **not in any menu** — surfaced on lanes), help.welcome (reopens welcome dialog), help.shortcuts, help.about (About/credit dialog), help.doctor (diagnostics; storage-usage/rnvoice-status testids).
 
 ## 2. Menus (6) — verified structure `menus.ts`
