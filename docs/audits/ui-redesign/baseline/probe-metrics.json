@@ -1,0 +1,17 @@
+{
+  "smallestTarget": {
+    "w": 23,
+    "h": 17,
+    "what": "toast-close"
+  },
+  "tabStops": 39,
+  "playback": {
+    "longTasks": 0,
+    "longestTaskMs": 0,
+    "cls": 0,
+    "frameMedianMs": 16.7,
+    "frameP95Ms": 16.8,
+    "frames": 351
+  },
+  "notes": []
+}
