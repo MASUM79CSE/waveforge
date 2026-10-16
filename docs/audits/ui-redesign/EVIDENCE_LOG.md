@@ -54,3 +54,11 @@
 - **Test-truth notes:** doc.duration is 9.27256 s → `0:09.273` (rounding); SMP duration displays in the active format (samples) — both e2e expectations corrected to match documented semantics.
 - 400px finding: frame2 menubar (6 titles + brand) overflowed → internal scroll at ≤480; page scrollWidth asserted == viewport.
 - Canvas a11y summary = role=status live region; selection committed via FIELDS renders in the graph (screenshot viewed: bn locale, 0–3.5 s selection tint).
+
+## UX-6.x — Phase 6 gates (verbatim; final)
+- Deliberate breaks: M1/M2/M3b/M4 caught (2/1/2/2 test failures), M3 correctly passed (capability reachability vs placement nuance — documented); revert sanity 30/30.
+- Final suites: unit **96 f / 792 t** · e2e **77 passed** · tsc 0 · eslint 0 · build PASS · bundle **129,619 B gz / 418,329 B raw**.
+- LH final: desktop **P100/A100/BP100/S91** · mobile **P98**/A100/BP100/S91 (flag OFF).
+- Tab-stop methodology correction (R-1): legacy **45** → frame2 **32** real tab stops (selector initially counted tabindex=-1; corrected, re-measured).
+- Sweeps: no console/debug/MUTATION/f2dbg leftovers in src (only pre-existing vendor/logger/test hits).
+- Program artifacts: `INDEPENDENT-REVIEW.md`, `PROGRAM-SUMMARY.md`, `docs/ui2/clean-slate-layout.md`.
