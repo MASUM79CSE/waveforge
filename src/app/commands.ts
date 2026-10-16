@@ -10,6 +10,7 @@ import * as CA from './clipActions';
 import * as RA from './recordActions';
 import { projectOpen, recStudio } from './state';
 import { toastInfo } from './toast';
+import { resetLayout, toggleToolbarGroup, toolbarsPopoverOpen, visibility } from './frame2/visibilityStore';
 
 /**
  * Command registry — one place where menus and keyboard shortcuts meet.
@@ -235,7 +236,49 @@ export const commands: Command[] = [
   { id: 'help.about', label: () => t().helpAbout, run: () => A.openAbout() },
   { id: 'help.doctor', label: () => t().helpDoctor, run: () => A.openDoctor() },
   { id: 'help.shortcuts', label: () => t().helpShortcuts, run: () => A.openShortcuts() },
+
+// frame2 addendum (UX-3.2) — toolbar-group visibility + layout reset.
+// Consumed only by the cleanSlateLayout frame; unreferenced (and therefore
+// invisible) in the legacy frame.
+{
+  id: 'view.toolbars.transport',
+  label: () => t().tbTransport,
+  check: true,
+  isChecked: () => visibility.value.transport,
+  run: () => toggleToolbarGroup('transport'),
+},
+{
+  id: 'view.toolbars.edit',
+  label: () => t().tbEdit,
+  check: true,
+  isChecked: () => visibility.value.edit,
+  run: () => toggleToolbarGroup('edit'),
+},
+{
+  id: 'view.toolbars.tools',
+  label: () => t().tbTools,
+  check: true,
+  isChecked: () => visibility.value.tools,
+  run: () => toggleToolbarGroup('tools'),
+},
+{
+  id: 'view.toolbars.timenap',
+  label: () => t().tbTimenap,
+  check: true,
+  isChecked: () => visibility.value.timenap,
+  run: () => toggleToolbarGroup('timenap'),
+},
+{
+  id: 'view.toolbars.meters',
+  label: () => t().tbMeters,
+  check: true,
+  isChecked: () => visibility.value.meters,
+  run: () => toggleToolbarGroup('meters'),
+},
+{ id: 'view.layoutReset', label: () => t().viewLayoutReset, run: () => resetLayout() },
+{ id: 'help.toolbars', label: () => t().viewToolbars, run: () => { toolbarsPopoverOpen.value = !toolbarsPopoverOpen.value; } },
 ];
+
 
 export function runCommand(id: string): void {
   commands.find((command) => command.id === id)?.run();

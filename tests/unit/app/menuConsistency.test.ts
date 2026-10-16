@@ -72,9 +72,17 @@ test('g13: file + view menus are fully grouped, no duplicates', () => {
       }
     }
     expect(new Set(grouped).size).toBe(grouped.length);
-    // the menu references every command of its namespace, all grouped
+    // the menu references every command of its namespace, all grouped.
+    // Scope (UX-D9): the frame2 addendum namespace (view.toolbars.*,
+    // view.layoutReset, help.toolbars) is surfaced by the frame2 Toolbars
+    // popover, NOT the legacy menu — putting it here would render inert
+    // rows when the flag is OFF. Coverage is asserted in
+    // frame2Reach.test.ts (menu ∪ toolbars ∪ popover ∪ documented lanes).
+    const FRAME2_ADDENDUM = /^(view\.toolbars\.|view\.layoutReset$|help\.toolbars$)/;
     const prefix = menuId === 'file' ? ['file.', 'record.'] : ['view.'];
-    const expected = commands.map((c) => c.id).filter((id) => prefix.some((p) => id.startsWith(p)));
+    const expected = commands
+      .map((c) => c.id)
+      .filter((id) => prefix.some((p) => id.startsWith(p)) && !FRAME2_ADDENDUM.test(id));
     for (const id of expected) {
       expect(grouped, `${menuId} groups ${id}`).toContain(id);
     }

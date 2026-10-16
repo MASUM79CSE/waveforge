@@ -28,3 +28,12 @@
 - Lighthouse (preview :4179, built app, flag default OFF): desktop **P100 / A100 / BP100 / S91** · mobile **P99 / A100 / BP100 / S91** — exactly baseline.
 - Flag matrix (e2e frame2.spec.ts): default OFF · `?ui2=1` ON · localStorage ON · URL `ui2=0` overrides storage OFF · `ui2=garbage` forces OFF · OFF-flow intact after visiting ON.
 - Flag-ON live check: Z-shell renders (menu Z1; POSITION/PLAY/TRANSPORT/STOP-PAUSE/EDIT-TOOLS/SELECTION band Z2; ruler+waveform Z4–Z7 at 1280×660; dB strip; status Z8 demo.wav; toast) — screenshot viewed 2026-10-16.
+
+## UX-3.x — Phase 3 gates (verbatim)
+- unit: **92 files / 766 tests PASS** (+2 files: frame2Groups 11, frame2Reach 5; g13 scope amendment per UX-D9) · tsc 0 · eslint 0.
+- e2e: **70 passed / 0 failed** (all projects) incl. `frame2-interact` (roving/overflow/aria semantics), `frame2-rehoming` walk + axe.
+- **Re-homing execution walk:** 100 executed / 102 entries, **failed: []**. Skips: `File:Open File…Ctrl+O` (OS picker, headless; legacy import e2e covers), `record.punch` band control (disabled at walk state; command already executed via menu `File:Punch in/out`). Walk artifact: `test-results/rehoming-walk.json` (per-run).
+- build PASS · bundle **125,238 B gz / 405,538 B raw** (baseline 120,084 gz → +4,877 gz = frame2 toolbar system: group defs, sections, popovers, overflow).
+- LH (flag OFF, preview :4179): desktop **P100/A100/BP100/S91** (= baseline) · mobile **P98/A100/BP100/S91** (baseline P99 — −1 perf from +4.9 KB; A/BP/S unchanged).
+- **Bugs found & fixed during H (all flag-ON only):** (1) sticky Z2/Z3 bands stacked OVER menu dropdowns — menu items unclickable in frame2; fixed by raising `.f2-menubar` z above bands; (2) overflow plan oscillation (fold↔unfold under repeat ticks) — fixed by idempotent closed-loop recompute (UX-D10); (3) `menuEntries()` leaked `-` separators — fixed.
+- **Findings:** F-6 i18n is English-only today (`catalogs = { en }` in `src/i18n/index.ts`; `waveforge.locale=bn` falls back to en) — bn catalog lands in Phase 5 on the existing seam. F-7 SaveDraft dialog ignores Escape (pre-existing, BOTH frames verified) — Phase-5 a11y ticket; the walk closes it via its Cancel button.

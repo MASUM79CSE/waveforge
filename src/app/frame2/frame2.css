@@ -23,7 +23,8 @@
 .f2-menubar {
   position: sticky;
   top: 0;
-  z-index: var(--z-menu, 30);
+  /* must stack ABOVE the sticky command bands — menu dropdowns overlap them */
+  z-index: calc(var(--z-command, 32) + 10);
 }
 
 /* Option B row: the primary band hosts the transport cluster (Phase 3
@@ -104,4 +105,105 @@
 .f2-overflow-pop [role='menuitem']:focus-visible {
   outline: var(--focus-width, 2px) solid var(--ac, var(--accent));
   outline-offset: calc(var(--focus-offset, 2px) * -1);
+}
+
+/* ---- Option B command bands (UX-3.3) ---- */
+
+.f2-band-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--s1, 4px);
+  padding: 4px 8px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.f2-section {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1, 4px);
+  flex: none;
+}
+
+.f2-folded {
+  display: none;
+}
+
+.f2-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--s1, 4px);
+  border-left: 1px solid var(--bd, var(--line));
+}
+
+.f2-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--target-min, 24px);
+  min-height: var(--target-min, 24px);
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.f2-btn:hover {
+  background: var(--ac-soft, var(--bg-3));
+}
+
+.f2-btn[aria-pressed='true'] {
+  background: var(--ac-soft, var(--bg-3));
+  border-color: var(--ac, var(--accent));
+  color: var(--ac, var(--accent));
+}
+
+.f2-btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.f2-btn:focus-visible {
+  outline: var(--focus-width, 2px) solid var(--ac, var(--accent));
+  outline-offset: var(--focus-offset, 2px);
+}
+
+.f2-readout {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+}
+
+.f2-band-end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1, 4px);
+  margin-left: auto;
+  flex: none;
+}
+
+.f2-toolbars {
+  position: relative;
+  display: inline-flex;
+}
+
+.f2-toolbars-pop [role='menuitem'],
+.f2-toolbars-pop [role='menuitemcheckbox'] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* popups escape overflow-clipped bands: viewport-fixed (like global tips) */
+.f2-pop-fixed {
+  position: fixed;
+  top: auto;
+  right: auto;
 }

@@ -455,6 +455,15 @@ export const en = {
   metadataHint: 'Embedded in MP3 exports as an ID3v2.4 tag.',
   metadataSongInfo: 'Song Info…',
 
+  // frame2 toolbar management (phase 3)
+  viewToolbars: 'Toolbars',
+  viewLayoutReset: 'Reset layout',
+  tbTransport: 'Transport toolbar',
+  tbEdit: 'Edit toolbar',
+  tbTools: 'Tools toolbar',
+  tbTimenap: 'Time & snapping toolbar',
+  tbMeters: 'Meters & mixer toolbar',
+
   // toast helpers
 
   // error catalog (Build Plan §6.1) — keys are the ErrorCode values

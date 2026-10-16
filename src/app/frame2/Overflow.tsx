@@ -28,6 +28,26 @@ export function OverflowMenu({ label, entries }: OverflowMenuProps) {
     if (refocus) btnRef.current?.focus();
   }, []);
 
+  // Fixed positioning: the band clips overflow, so the popup is placed in
+  // viewport coordinates (same approach as the app's global tooltips).
+  const placeFixed = useCallback(() => {
+    const pop = popRef.current;
+    const btn = btnRef.current;
+    if (!pop || !btn) return;
+    const r = btn.getBoundingClientRect();
+    pop.style.top = `${r.bottom + 4}px`;
+    const width = pop.offsetWidth || 180;
+    const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8));
+    pop.style.left = `${left}px`;
+  }, []);
+  const onResize = useCallback(() => close(false), [close]);
+  useEffect(() => {
+    if (!open) return;
+    placeFixed();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [open, placeFixed, onResize]);
+
   useEffect(() => {
     if (!open) return;
     const onDocDown = (e: MouseEvent) => {
@@ -70,7 +90,7 @@ export function OverflowMenu({ label, entries }: OverflowMenuProps) {
         ⋯
       </button>
       {open && (
-        <div class="f2-overflow-pop" role="menu" aria-label={label} ref={popRef} onKeyDown={onMenuKey as (e: KeyboardEvent) => void}>
+        <div class="f2-overflow-pop f2-pop-fixed" role="menu" aria-label={label} ref={popRef} onKeyDown={onMenuKey as (e: KeyboardEvent) => void}>
           {entries.map((en) => (
             <button
               key={en.id}

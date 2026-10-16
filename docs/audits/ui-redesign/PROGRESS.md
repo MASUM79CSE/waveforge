@@ -41,5 +41,19 @@ with spectrogram; a literal `APPROVE TIER B: RMS` before Phase 4 revives it).
 | UX-2.5 | Z-shell Frame2 (Option B zones Z1–Z9, legacy bars mounted verbatim; capability parity flag-ON) | VERIFIED | `1f8b27c` | `src/app/frame2/Frame2.tsx` + `frame2.css` + App switch; live screenshot verified (waveform 1280×660) |
 | UX-2.6 | Full gate: flag OFF identical legacy; flag ON parity; LH; bundle | VERIFIED | `1f8b27c` | unit **90 f / 750 t** PASS · e2e **65 passed** (59 legacy + 6 frame2, both projects) · build PASS · bundle **120,361 B gz (+277 vs baseline)** · LH D **P100/A100/BP100/S91** · M **P99/A100/BP100/S91** = baseline parity |
 
-Phases: 0 PASSED · 1 PASSED · **2 complete pending PCA** · 3..6 pending
-(two-confirmation stop; awaiting own PCA then literal `PROCEED TO PHASE 3`).
+Phases: 0 PASSED · 1 PASSED · 2 PASSED (gate `ROCEED TO PHASE 3` read as the Phase-3
+token — in-sequence typo noted) · **3 complete pending PCA** · 4..6 pending.
+
+## Phase 3 — toolbar re-homing + automated re-homing test
+
+| Task | Description | Status | Commit | Evidence |
+|---|---|---|---|---|
+| UX-3.1 | 5 group definitions (transport 10 / edit 10 / tools 7 / timenap 3 / meters 2+extras); registry-dispatch via data-cmd; legacy testids + SVG artwork preserved | VERIFIED | (phase-3 commit) | `src/app/frame2/groups.ts` + `Groups.tsx`; 11 unit tests |
+| UX-3.2 | Visibility commands in the ONE registry (`view.toolbars.*` ×5, `view.layoutReset`, `help.toolbars`) + signal store + Toolbars popover (checkbox menu, arrows/Esc, persistence, Reset clears storage) | VERIFIED | (phase-3 commit) | `visibilityStore.ts`, `ToolbarsPopover.tsx`, commands.ts addendum, en.ts keys |
+| UX-3.3 | Option B bands live in Frame2: Z2 primary (transport+position+selection+⋯), Z3 secondary (edit/tools/timenap/meters + ⚙ + ⋯); RovingToolbar per APG; overflow folds whole sections by priority (idempotent closed-loop plan); Tooltips = registry label+real kbd only | VERIFIED | (phase-3 commit) | Frame2.tsx rebuild; `useOverflow.ts` (oscillation bug found+fixed); interact e2e (roving/overflow/semantics) 3/3 |
+| UX-3.4 | Re-homing test: UNIT reachability — every registry id ∈ menu ∪ band controls ∪ popover ∪ {automation.toggle=lane surface}; E2E EXECUTION walk — every capability executed once through its v2 surface, same command | VERIFIED | (phase-3 commit) | `frame2Reach.test.ts` 5/5; `frame2-rehoming.spec.ts`: **100 executed / 102 entries, failed: []** (skips documented: OS file picker headless; punch disabled at band-walk state — command already executed via menu); + axe flag-ON clean |
+| F-2 fix | MenuBar keyboard was Phase-4 scope, but the walk surfaced a REAL frame2 blocker: sticky bands (z 32) covered menu dropdowns → `.f2-menubar` z raised above bands (flag-ON only CSS) | VERIFIED | (phase-3 commit) | dbg evidence + menu walk now fully executable; flag-OFF untouched |
+
+Phase-3 gates: unit **92 f / 766 t** PASS · tsc 0 · eslint 0 · e2e **70 passed** (all projects) ·
+build PASS · bundle **125,238 B gz / 405,538 raw** (+4,877 gz vs baseline; toolbar system) ·
+LH desktop **P100/A100/BP100/S91** (= baseline) · mobile **P98**/A100/BP100/S91 (−1 perf, +4.9 KB).
