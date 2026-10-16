@@ -34,12 +34,12 @@ with spectrogram; a literal `APPROVE TIER B: RMS` before Phase 4 revives it).
 
 | Task | Description | Status | Commit | Evidence |
 |---|---|---|---|---|
-| UX-2.1 | Flag: URL `ui2` override (URL wins) + guarded localStorage, default OFF, cached per load | VERIFIED | (phase-2 commit) | `src/app/frame2/flag.ts` + 10 unit tests + 6 e2e |
-| UX-2.2 | APG roving core + RovingToolbar wrapper (one tab stop, arrows/Home/End, disabled-focusable) | VERIFIED | (phase-2 commit) | `src/app/frame2/roving.ts` + `Toolbar.tsx` + 10 unit tests |
-| UX-2.3 | Toolbar-group visibility manager core (5 groups, Reset clears storage) | VERIFIED | (phase-2 commit) | `src/app/frame2/visibility.ts` + 6 unit tests (signal+View surface = Phase 3) |
-| UX-2.4 | Overflow primitive (priority plan core + ⋯ popup with Esc/click-outside/arrow menu) | VERIFIED | (phase-2 commit) | `src/app/frame2/overflow.ts` + `Overflow.tsx` + 4 unit tests |
-| UX-2.5 | Z-shell Frame2 (Option B zones Z1–Z9, legacy bars mounted verbatim; capability parity flag-ON) | VERIFIED | (phase-2 commit) | `src/app/frame2/Frame2.tsx` + `frame2.css` + App switch; live screenshot verified (waveform 1280×660) |
-| UX-2.6 | Full gate: flag OFF identical legacy; flag ON parity; LH; bundle | VERIFIED | (phase-2 commit) | unit **90 f / 750 t** PASS · e2e **65 passed** (59 legacy + 6 frame2, both projects) · build PASS · bundle **120,361 B gz (+277 vs baseline)** · LH D **P100/A100/BP100/S91** · M **P99/A100/BP100/S91** = baseline parity |
+| UX-2.1 | Flag: URL `ui2` override (URL wins) + guarded localStorage, default OFF, cached per load | VERIFIED | `1f8b27c` | `src/app/frame2/flag.ts` + 10 unit tests + 6 e2e |
+| UX-2.2 | APG roving core + RovingToolbar wrapper (one tab stop, arrows/Home/End, disabled-focusable) | VERIFIED | `1f8b27c` | `src/app/frame2/roving.ts` + `Toolbar.tsx` + 10 unit tests |
+| UX-2.3 | Toolbar-group visibility manager core (5 groups, Reset clears storage) | VERIFIED | `1f8b27c` | `src/app/frame2/visibility.ts` + 6 unit tests (signal+View surface = Phase 3) |
+| UX-2.4 | Overflow primitive (priority plan core + ⋯ popup with Esc/click-outside/arrow menu) | VERIFIED | `1f8b27c` | `src/app/frame2/overflow.ts` + `Overflow.tsx` + 4 unit tests |
+| UX-2.5 | Z-shell Frame2 (Option B zones Z1–Z9, legacy bars mounted verbatim; capability parity flag-ON) | VERIFIED | `1f8b27c` | `src/app/frame2/Frame2.tsx` + `frame2.css` + App switch; live screenshot verified (waveform 1280×660) |
+| UX-2.6 | Full gate: flag OFF identical legacy; flag ON parity; LH; bundle | VERIFIED | `1f8b27c` | unit **90 f / 750 t** PASS · e2e **65 passed** (59 legacy + 6 frame2, both projects) · build PASS · bundle **120,361 B gz (+277 vs baseline)** · LH D **P100/A100/BP100/S91** · M **P99/A100/BP100/S91** = baseline parity |
 
 Phases: 0 PASSED · 1 PASSED · **2 complete pending PCA** · 3..6 pending
 (two-confirmation stop; awaiting own PCA then literal `PROCEED TO PHASE 3`).
