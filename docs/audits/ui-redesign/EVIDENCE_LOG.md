@@ -11,3 +11,6 @@
 - **Screenshots:** 6 widths × 2 themes × 6 states = **72 PNGs** → `docs/screenshots/ui-redesign/phase0/` (spot-verified: `playing-1280-light.png`, `multitrack-1440-dark.png`).
 - **Measurements (`baseline/probe-metrics.json`):** smallest target **23×17 px (toast-close)** → below WCAG 2.5.8 (finding F-4) · **39 tab stops** · playback window: long tasks **0**, CLS **0**, frames 351 (median 16.7 ms / P95 16.8 ms).
 - **Redraw cost (`baseline/redraw-metrics.json`, 5 s playback 1280×800 light):** rAF **605**; canvas calls **fillRect 764,362 / beginPath 302 / clearRect 0 / drawImage 0**; long-animation-frames **1** (worst **53 ms**, blocking **3 ms**). Same probe re-runs in Phase 6.
+
+## Commit
+- Phase-0 evidence commit: `3cbca9f` (branch `ui/clean-slate-layout`; only `docs/audits/ui-redesign/**` + `docs/screenshots/ui-redesign/phase0/**` — zero production changes, proof below).
