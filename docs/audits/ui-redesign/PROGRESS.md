@@ -26,5 +26,20 @@ Phases: **0 complete (PCA PASSED, gate `PROCEED TO PHASE 1` received 2026-10-16)
 | UX-1.5 | Interaction spec (selection-field parser S/MS/HMS/SMP, menu+toolbar keyboard, tooltips, canvas a11y, targets/responsive, i18n) | VERIFIED | `4243617` | `phase1/INTERACTIONS.md` |
 | UX-1.6 | Tier B request decision (UX-D5: request RMS, ticket spectrogram) | VERIFIED | `4243617` | DECISIONS UX-D5 — **WAITING for `APPROVE TIER B: RMS` / decline** |
 
-Phase-1 exit: own PCA + user approval of (a) layout option, (b) Tier B decision, then literal
-`PROCEED TO PHASE 2`.
+Phase-1 exit: **PASSED** — user approved Option B (UX-D6) + `PROCEED TO PHASE 2` received
+2026-10-16. Tier B: "Do as your Best" is NOT the literal token → RMS NOT approved (ticketed
+with spectrogram; a literal `APPROVE TIER B: RMS` before Phase 4 revives it).
+
+## Phase 2 — foundations behind the flag (`ui.cleanSlateLayout`, default OFF)
+
+| Task | Description | Status | Commit | Evidence |
+|---|---|---|---|---|
+| UX-2.1 | Flag: URL `ui2` override (URL wins) + guarded localStorage, default OFF, cached per load | VERIFIED | (phase-2 commit) | `src/app/frame2/flag.ts` + 10 unit tests + 6 e2e |
+| UX-2.2 | APG roving core + RovingToolbar wrapper (one tab stop, arrows/Home/End, disabled-focusable) | VERIFIED | (phase-2 commit) | `src/app/frame2/roving.ts` + `Toolbar.tsx` + 10 unit tests |
+| UX-2.3 | Toolbar-group visibility manager core (5 groups, Reset clears storage) | VERIFIED | (phase-2 commit) | `src/app/frame2/visibility.ts` + 6 unit tests (signal+View surface = Phase 3) |
+| UX-2.4 | Overflow primitive (priority plan core + ⋯ popup with Esc/click-outside/arrow menu) | VERIFIED | (phase-2 commit) | `src/app/frame2/overflow.ts` + `Overflow.tsx` + 4 unit tests |
+| UX-2.5 | Z-shell Frame2 (Option B zones Z1–Z9, legacy bars mounted verbatim; capability parity flag-ON) | VERIFIED | (phase-2 commit) | `src/app/frame2/Frame2.tsx` + `frame2.css` + App switch; live screenshot verified (waveform 1280×660) |
+| UX-2.6 | Full gate: flag OFF identical legacy; flag ON parity; LH; bundle | VERIFIED | (phase-2 commit) | unit **90 f / 750 t** PASS · e2e **65 passed** (59 legacy + 6 frame2, both projects) · build PASS · bundle **120,361 B gz (+277 vs baseline)** · LH D **P100/A100/BP100/S91** · M **P99/A100/BP100/S91** = baseline parity |
+
+Phases: 0 PASSED · 1 PASSED · **2 complete pending PCA** · 3..6 pending
+(two-confirmation stop; awaiting own PCA then literal `PROCEED TO PHASE 3`).

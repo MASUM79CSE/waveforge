@@ -20,3 +20,11 @@
 - `PeakClient` lives in `src/engine/peakClient.ts` (engine-side) and wraps the full `AudioBuffer` → RMS tier = peaks-pipeline-local engine extension (the designed Tier-B approval path); spectrogram = FFT worker infra (A-3 scope) → DECISIONS UX-D5.
 - `tokens.css` @ `src/app/styles/` has 131 custom props incl. `--cv-*` canvas set, band heights, `--s1..s4` — v2 token spec EXTENDS this vocabulary (`phase1/TOKENS.md`), no parallel system.
 - Phase-1 commit: ``4243617`` — docs only (`phase1/**` + ledgers), zero production diffs.
+
+## UX-2.x — Phase 2 gates (verbatim)
+- unit: **90 files / 750 tests PASS** (baseline 86/720 + 4 new files / +30 tests: flag 10, roving 10, visibility 6, overflow 4) · tsc 0 · eslint 0.
+- e2e: **65 passed / 0 failed** (baseline 59 + 6 frame2) across chromium-fake-media + chromium-preview; legacy suite (flag OFF) fully green alongside.
+- build: PASS · bundle **120,361 B gz / 389,793 B raw** (`index-*.js`; baseline 120,084 gz / 388,669 raw → **+277 B gz, +1,124 B raw** = flag + 4 cores + shell + styles; no new deps).
+- Lighthouse (preview :4179, built app, flag default OFF): desktop **P100 / A100 / BP100 / S91** · mobile **P99 / A100 / BP100 / S91** — exactly baseline.
+- Flag matrix (e2e frame2.spec.ts): default OFF · `?ui2=1` ON · localStorage ON · URL `ui2=0` overrides storage OFF · `ui2=garbage` forces OFF · OFF-flow intact after visiting ON.
+- Flag-ON live check: Z-shell renders (menu Z1; POSITION/PLAY/TRANSPORT/STOP-PAUSE/EDIT-TOOLS/SELECTION band Z2; ruler+waveform Z4–Z7 at 1280×660; dB strip; status Z8 demo.wav; toast) — screenshot viewed 2026-10-16.

@@ -1,0 +1,107 @@
+/*
+ * frame2 shell styles (UX-2.5) — Option B two-row command surface.
+ * Consumes ONLY design tokens (docs/audits/ui-redesign/phase1/TOKENS.md);
+ * legacy components keep their own styles inside the zones.
+ */
+
+.f2-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* full-height column: bands, graph, status */
+}
+
+/* the graph block (Z4–Z7) must keep the legacy grid's 1fr sizing */
+.f2-shell > .workspace {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.f2-zone {
+  width: 100%;
+}
+
+.f2-menubar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-menu, 30);
+}
+
+/* Option B row: the primary band hosts the transport cluster (Phase 3
+   splits this into transport + readout rows with the overflow primitive). */
+.f2-band {
+  position: sticky;
+  z-index: var(--z-command, 32);
+  top: var(--menubar-h, 40px);
+  background: var(--panel, var(--bg-1));
+  border-bottom: 1px solid var(--bd, var(--line));
+}
+
+.f2-band-primary {
+  top: 0; /* legacy band already includes its own background/borders */
+}
+
+.f2-status {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-command, 32);
+}
+
+/* Toolbar primitive (RovingToolbar) — minimal chrome; group visuals come
+   with the Phase-3 group definitions. */
+.f2-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1, 4px);
+  padding: 0 var(--s1, 4px);
+}
+
+.f2-toolbar:focus-within {
+  outline: var(--focus-width, 2px) solid var(--ac, var(--accent));
+  outline-offset: var(--focus-offset, 2px);
+}
+
+/* Overflow primitive */
+.f2-overflow {
+  position: relative;
+  display: inline-flex;
+}
+
+.f2-overflow-btn {
+  min-width: var(--target-min, 24px);
+  min-height: var(--target-min, 24px);
+  border: 1px solid var(--bd, var(--line));
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.f2-overflow-pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-raised, var(--bg-2));
+  border: 1px solid var(--bd, var(--line));
+  border-radius: var(--radius, 6px);
+  box-shadow: var(--glow, 0 4px 16px rgba(0, 0, 0, 0.25));
+  z-index: var(--z-overlay, 60);
+}
+
+.f2-overflow-pop [role='menuitem'] {
+  text-align: left;
+  padding: 6px 12px;
+  min-height: var(--target-min, 24px);
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.f2-overflow-pop [role='menuitem']:focus-visible {
+  outline: var(--focus-width, 2px) solid var(--ac, var(--accent));
+  outline-offset: calc(var(--focus-offset, 2px) * -1);
+}
