@@ -455,6 +455,19 @@ export const en = {
   metadataHint: 'Embedded in MP3 exports as an ID3v2.4 tag.',
   metadataSongInfo: 'Song Info…',
 
+  // frame2 selection fields + canvas summary (phase 5)
+  selGroupLabel: 'Selection fields',
+  selStart: 'Start:',
+  selEnd: 'End:',
+  selDuration: 'Duration:',
+  selFormat: 'Time format',
+  selSamples: 'samples',
+  selInvalid: 'Invalid time — use the selected format (e.g. 1:23.456)',
+  selOrder: 'End must be after Start',
+  summarySelection: 'Selection',
+  summaryNoSelection: 'no selection',
+  summaryCursor: 'cursor',
+
   // frame2 toolbar management (phase 3)
   viewToolbars: 'Toolbars',
   viewLayoutReset: 'Reset layout',

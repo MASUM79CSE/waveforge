@@ -45,3 +45,12 @@
 - Redraw before/after: see PROGRESS Phase-4 table — fillRect **766,893 → 823 (−99.89%)**, playhead overlay 301 clearRect at rAF cadence; waveform repaints only on view paging.
 - Screenshots (viewed): dB-scaled lanes with aligned DOM anchor labels (stopped + playing, playhead mid-clip).
 - Scope note: canvas accessible summary + keyboard selection/seek equivalents land in Phase 5 (a11y gate) per the master prompt's phase split; interactions remain unchanged this phase.
+
+## UX-5.x — Phase 5 gates (verbatim)
+- unit: **96 files / 792 tests PASS** (+1 file: timeParse 12) · tsc 0 · eslint 0 · e2e **77 passed** (+7 frame2-a11y).
+- build PASS · bundle **129,619 B gz / 418,329 B raw** (baseline 120,084 gz → +9,535 gz cumulative).
+- LH (flag OFF): desktop **P100/A100/BP100/S91** (= baseline) · mobile **P98**/A100/BP100/S91.
+- **Findings closed this phase:** F-4 (toast 23×17 → ≥24×24, e2e-asserted) · F-7 (SaveDraft + Drafts + Metadata join the Escape stack — legacy behavior gap fixed for BOTH frames, e2e-asserted) · F-6 deepened: `setLocale` existed since v1 but was NEVER CALLED — now wired in bootstrap from `waveforge.locale`; bn partial catalog merged over en (fallback = English, no empty strings).
+- **Test-truth notes:** doc.duration is 9.27256 s → `0:09.273` (rounding); SMP duration displays in the active format (samples) — both e2e expectations corrected to match documented semantics.
+- 400px finding: frame2 menubar (6 titles + brand) overflowed → internal scroll at ≤480; page scrollWidth asserted == viewport.
+- Canvas a11y summary = role=status live region; selection committed via FIELDS renders in the graph (screenshot viewed: bn locale, 0–3.5 s selection tint).

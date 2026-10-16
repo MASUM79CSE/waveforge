@@ -1,11 +1,16 @@
 /**
- * Locale access. v1 ships English; `setLocale` is the seam for future
- * catalogs (components never import a catalog directly).
+ * Locale access. English is the base catalog; partial catalogs (bn) merge
+ * over it — untranslated keys fall back to English (no empty strings).
+ * Components never import a catalog directly.
  */
 import type { ErrorCode } from '../core/errors';
 import { en, type Catalog } from './en';
+import { bnPartial } from './bn';
 
-const catalogs: Record<string, Catalog> = { en };
+const catalogs: Record<string, Catalog> = {
+  en,
+  bn: { ...en, ...bnPartial } as unknown as Catalog,
+};
 let active: Catalog = catalogs['en'] ?? en;
 
 export function t(): Catalog {

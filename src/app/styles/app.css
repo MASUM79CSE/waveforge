@@ -1994,3 +1994,9 @@
   width: 100%;
   background: #3ddad0;
 }
+
+/* UX-5 (F-4): toast close must meet WCAG 2.5.8 — 24x24 CSS px minimum. */
+.toast-close {
+  min-width: 24px;
+  min-height: 24px;
+}

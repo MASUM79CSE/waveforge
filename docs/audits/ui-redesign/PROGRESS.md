@@ -41,8 +41,22 @@ with spectrogram; a literal `APPROVE TIER B: RMS` before Phase 4 revives it).
 | UX-2.5 | Z-shell Frame2 (Option B zones Z1–Z9, legacy bars mounted verbatim; capability parity flag-ON) | VERIFIED | `1f8b27c` | `src/app/frame2/Frame2.tsx` + `frame2.css` + App switch; live screenshot verified (waveform 1280×660) |
 | UX-2.6 | Full gate: flag OFF identical legacy; flag ON parity; LH; bundle | VERIFIED | `1f8b27c` | unit **90 f / 750 t** PASS · e2e **65 passed** (59 legacy + 6 frame2, both projects) · build PASS · bundle **120,361 B gz (+277 vs baseline)** · LH D **P100/A100/BP100/S91** · M **P99/A100/BP100/S91** = baseline parity |
 
-Phases: 0..3 PASSED · **4 complete pending PCA** · 5..6 pending
-(two-confirmation stop; awaiting own PCA then literal `PROCEED TO PHASE 5`).
+Phases: 0..4 PASSED · **5 complete pending PCA** · 6 pending
+(two-confirmation stop; awaiting own PCA then literal `PROCEED TO PHASE 6`).
+
+## Phase 5 — states, a11y, i18n, responsive + touch
+
+| Task | Description | Status | Commit | Evidence |
+|---|---|---|---|---|
+| UX-5.1 | Selection fields (editable): 4 formats (m:ss.mmm default, s.mmm, h:mm:ss.mmm, samples@rate) via `core/timeParse.ts` (12 unit tests); Enter commits / Escape reverts (focus stays); `garbage`/`1:99`/negatives never commit (aria-invalid + role=status message); End<Start rejected; clamped to doc; commits funnel through the SAME path the canvas drag writes; keyboard selection PROVEN (e2e + screenshot: committed 0–3.5 s renders in the graph) | VERIFIED | (phase-5 commit) | frame2-a11y.spec.ts |
+| UX-5.2 | i18n/F-6: **setLocale was NEVER wired** (deeper than the catalog gap) → wired in bootstrap from the documented `waveforge.locale`; bn partial catalog (85+ core strings, honest merge-with-English fallback); bn e2e: ফাইল/সম্পাদনা/… menus + টুলবার names + fields render Bengali, zero clipped menu titles, no x-overflow | VERIFIED | (phase-5 commit) | bn e2e + screenshot (viewed) |
+| UX-5.3 | Canvas a11y: visually-hidden `role=status` summary (document, selection in active format, cursor when stopped) — canvas never the only way; fields are the keyboard select/seek/zoom equivalents (+ existing global keys) | VERIFIED | (phase-5 commit) | summary e2e assertions |
+| UX-5.4 | F-4 CLOSED: toast close ≥24×24 (shared CSS, both frames) + e2e bbox assert ≥23.5 · F-7 CLOSED: Escape stack completion (draftSave/drafts/metadata join the closer chain) — e2e asserts BOTH frames · tooltips now Escape-dismissible (§9) · reduced-motion global kill switch | VERIFIED | (phase-5 commit) | frame2-a11y.spec.ts |
+| UX-5.5 | Responsive/touch: ≤480 bands wrap (folding gated off), sections max-width, selgroup wraps, menubar scrolls internally (page NEVER x-scrolls — scrollWidth asserted 400/400), pointer:coarse ≥40px hit areas; axe clean on welcome dialog + main + 390px viewport | VERIFIED | (phase-5 commit) | frame2-a11y.spec.ts (7/7) |
+
+Phase-5 gates: unit **96 f / 792 t** PASS · tsc 0 · eslint 0 · e2e **77 passed** ·
+build PASS · bundle **129,619 B gz / 418,329 raw** (+9,535 gz cumulative) ·
+LH desktop **P100/A100/BP100/S91** (= baseline) · mobile **P98**/A100/BP100/S91.
 
 ## Phase 4 — track panel + Tier-A audio graph (flag ON only)
 

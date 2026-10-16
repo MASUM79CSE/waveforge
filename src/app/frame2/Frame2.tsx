@@ -14,7 +14,7 @@ import type { RefObject } from 'preact';
 import { Graph } from './Graph';
 import { TrackLanes } from '../components/TrackLanes';
 import { MenuBar } from '../components/MenuBar';
-import { SelectionBar } from '../components/SelectionBar';
+import { SelectionFields, CanvasSummary } from './SelectionFields';
 import { ChannelStrip } from '../components/TransportBar';
 import { StatusBar } from '../components/StatusBar';
 import { Toasts } from '../components/Toasts';
@@ -135,7 +135,7 @@ export function Frame2() {
             data-f2-item="selection"
             data-priority="3"
           >
-            <SelectionBar />
+            <SelectionFields />
           </span>
           <OverflowMenu label="More" entries={primaryEntries} />
         </div>
@@ -157,6 +157,7 @@ export function Frame2() {
       </div>
       <main class={`workspace ${projectOpen.value ? 'with-lanes' : ''}`} data-zone="Z4-Z7">
         <Graph />
+        <CanvasSummary />
         <TrackLanes />
       </main>
       <AnalysisPanel />

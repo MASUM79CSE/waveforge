@@ -276,3 +276,114 @@
   pointer-events: none;
   z-index: 5;
 }
+
+
+/* ---- Selection fields (UX-5.1) ---- */
+
+.f2-selgroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-left: 1px solid var(--bd, var(--line));
+  padding-left: 8px;
+}
+
+.f2-selfield {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.f2-sel-input {
+  width: 88px;
+  min-height: 24px;
+  padding: 1px 4px;
+  border: 1px solid var(--bd, var(--line));
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-2, #111);
+  color: inherit;
+  font-family: var(--ff-mono, monospace);
+  font-size: 11px;
+}
+
+.f2-sel-input[aria-invalid='true'] {
+  border-color: var(--danger, #e2574b);
+}
+
+.f2-sel-mode {
+  min-height: 24px;
+  border: 1px solid var(--bd, var(--line));
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+}
+
+.f2-sel-error {
+  color: var(--danger, #e2574b);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* touch: ≥40px hit areas on pointer-coarse devices (INTERACTIONS §6) */
+@media (pointer: coarse) {
+  .f2-btn,
+  .f2-overflow-btn,
+  .f2-toolbars-btn {
+    min-width: var(--target-touch, 40px);
+    min-height: var(--target-touch, 40px);
+  }
+
+  .f2-sel-input,
+  .f2-sel-mode {
+    min-height: var(--target-touch, 40px);
+  }
+}
+
+/* ≤480: stacked bands — wrap instead of fold (planner is gated in JS) */
+@media (max-width: 480px) {
+  .f2-band-inner {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .f2-section {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* the 6-menu bar scrolls internally; the page never gains x-scroll */
+  .f2-menubar .menubar {
+    overflow-x: auto;
+    max-width: 100%;
+    scrollbar-width: thin;
+  }
+
+  .f2-selgroup {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .f2-sel-input {
+    width: 72px;
+  }
+
+  .toolbar-group.strips {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .transport-vol {
+    flex: 1 1 120px;
+  }
+}
+
+/* reduced motion: kill micro-motion globally (TOKENS §2) */
+@media (prefers-reduced-motion: reduce) {
+  .f2-shell *,
+  .f2-overflow-pop,
+  .f2-toolbars-pop {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

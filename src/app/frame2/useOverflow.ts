@@ -17,6 +17,14 @@ export function useBandOverflow(bandRef: RefObject<HTMLElement>, itemIds: string
   const tick = useCallback(() => {
     const el = bandRef.current;
     if (!el) return;
+    // ≤480 stacks (flex-wrap) — folding is disabled there (CSS @media)
+    if (window.matchMedia('(max-width: 480px)').matches) {
+      if (foldedRef.current.length > 0) {
+        foldedRef.current = [];
+        setFolded([]);
+      }
+      return;
+    }
     const sections = [...el.querySelectorAll<HTMLElement>('[data-f2-item]')];
     if (sections.length === 0) return;
     const avail = Math.max(0, el.clientWidth - RESERVED_PX);

@@ -20,7 +20,7 @@ function ToastRow({ toast }: { toast: Toast }) {
           {toast.action.label}
         </button>
       )}
-      <button class="toast-close" title="Dismiss" onClick={() => dismissToast(toast.id)}>
+      <button class="toast-close" title="Dismiss" aria-label="Dismiss" onClick={() => dismissToast(toast.id)}>
         ✕
       </button>
     </div>
