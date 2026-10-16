@@ -51,6 +51,12 @@
   user-select: none;
 }
 
+/* the roving menubar (role) wraps only the menu titles; display:contents
+   keeps the original flex layout untouched */
+.menubar-menus {
+  display: contents;
+}
+
 .menubar-brand {
   display: flex;
   align-items: center;

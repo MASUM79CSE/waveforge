@@ -11,7 +11,7 @@ test('doctor: Help → Diagnostics runs capability self-tests and reports', asyn
   await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
-  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Help', exact: true }).click();
   await page.getByRole('menuitem', { name: /Diagnostics/i }).click();
 
   const panel = page.getByRole('dialog', { name: /Diagnostics/i });

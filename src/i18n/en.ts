@@ -10,6 +10,7 @@ export const en = {
   appTagline: Brand.tagline,
 
   // menus
+  menubarLabel: 'Main menus',
   menuFile: 'File',
   menuEdit: 'Edit',
   menuView: 'View',

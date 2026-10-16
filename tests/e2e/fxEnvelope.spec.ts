@@ -28,7 +28,7 @@ test('fx envelope: author tremolo depth curve, apply, undo, redo (A7)', async ({
 
   // select all so the effect targets a region
   await page.keyboard.press('Shift+a');
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /Tremolo/i }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();

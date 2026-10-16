@@ -38,12 +38,19 @@ is exactly the app you had.
 - Toast close buttons meet the 24×24 px minimum target size.
 - The Save Draft / Drafts / Metadata dialogs close with Escape.
 - Tooltips are Escape-dismissible.
+- The menu bar is fully keyboard-operable (arrows switch/open menus,
+  in-menu arrow navigation + typeahead, Escape restores focus) and counts
+  as ONE tab stop instead of six.
 
 ## Keyboard quick reference (new parts)
 
 | Keys | Where | Action |
 |---|---|---|
 | Tab / Shift+Tab | command rows | enter/leave a toolbar (one stop each) |
+| ← → Home End | menu bar | move between menus (one tab stop; wraps) |
+| ↓ / ↑ / Enter | menu bar | open the menu (first/last item focused) |
+| ↑ ↓ Home End | open menu | move between items (typeahead: press a letter) |
+| Enter / Escape | open menu | run the item / close and refocus the menu |
 | ← → ↑ ↓ Home End | inside a toolbar | move between buttons (wraps; skips disabled) |
 | Enter / Escape | selection fields | commit / revert |
 | ⚙ → checkboxes | row 2 | show/hide toolbars; "Reset layout" restores defaults |

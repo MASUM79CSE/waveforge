@@ -62,3 +62,10 @@
 - Tab-stop methodology correction (R-1): legacy **45** → frame2 **32** real tab stops (selector initially counted tabindex=-1; corrected, re-measured).
 - Sweeps: no console/debug/MUTATION/f2dbg leftovers in src (only pre-existing vendor/logger/test hits).
 - Program artifacts: `INDEPENDENT-REVIEW.md`, `PROGRAM-SUMMARY.md`, `docs/ui2/clean-slate-layout.md`.
+
+## UX-6.x addendum — F-2 closure (post-program, verbatim)
+- Deliberate-break (F-2 hardening evidence): unit 97 f / 800 t (+ menubarNav 8) · tsc 0 · eslint 0.
+- e2e: **78 passed (2.8m)** incl. new menubar-keyboard test + axe scan with a menu OPEN; walk 100/102 failed:0.
+- Tab stops re-measured (selector excludes tabindex=-1): legacy **45→40**, frame2 **32→27**.
+- LH (flag OFF): D P100/A100/BP100/S91 · M P98/A100/BP100/S91 (unchanged). Bundle **130,389 gz / 420,869 raw** (+770).
+- **R-3 lesson (process):** first selector sweep missed `Effects`/`Analyze`/regex names → 28 tests clicked a non-existent role and hung (run reported 50/78 in 23.5 m; `tail` had cut the failed-count line). Fixed by grepping EVERY menu-title `getByRole('button'…)` form; full suite then green at normal speed. Also: pkill in a compound command aborted the following python twice — run ledgers standalone (existing rule, re-learned).

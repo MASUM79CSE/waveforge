@@ -55,7 +55,7 @@ test('report export: CSV download + clipboard copy (P4)', async ({ page }) => {
   await expect(page.getByText('clipped.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
   // run the full report
-  await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Analyze', exact: true }).click();
   await page.getByRole('menuitem', { name: /Full report/i }).click();
   const report = page.getByTestId('analysis-report');
   await expect(report).toBeVisible({ timeout: 20_000 });

@@ -65,12 +65,12 @@ test('view: amplitude axis toggle persists and redraws', async ({ page }) => {
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
   // default on; toggle off and back on via the View menu
-  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'View', exact: true }).click();
   const item = page.getByRole('menuitem', { name: /amplitude axis/i });
   await expect(item).toBeVisible();
   await item.click();
   await page.waitForTimeout(300);
-  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'View', exact: true }).click();
   await expect(page.getByRole('menuitem', { name: /amplitude axis/i })).toBeVisible();
   // persisted preference survives a reload
   await page.reload();
@@ -111,7 +111,7 @@ test('D6: Help → Keyboard Shortcuts overlay lists legacy + standard bindings',
   await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
-  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Help', exact: true }).click();
   await page.getByRole('menuitem', { name: /keyboard shortcuts/i }).click();
   const panel = page.getByRole('dialog', { name: /keyboard shortcuts/i });
   await expect(panel).toBeVisible();
@@ -166,13 +166,13 @@ test('D9: light theme + accent cycling apply to <html>, persist, and redraw the 
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
 
   // accent cycle
-  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'View', exact: true }).click();
   await page.getByRole('menuitem', { name: /^Accent — Cyan$/ }).click();
   await page.waitForTimeout(200);
   expect(await page.evaluate(() => document.documentElement.dataset.accent)).toBe('teal');
 
   // light theme
-  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'View', exact: true }).click();
   await page.getByRole('menuitem', { name: /Light Theme/ }).click();
   await page.waitForTimeout(300);
   expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('light');

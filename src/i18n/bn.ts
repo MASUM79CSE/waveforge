@@ -78,4 +78,5 @@ export const bnPartial: StringKeys<Catalog> = {
   dropHint: 'এখানে অডিও ফাইল টেনে আনুন',
   quickOpen: 'ফাইল খুলুন',
   quickSample: 'নমুনা লোড',
+  menubarLabel: 'প্রধান মেনু',
 };

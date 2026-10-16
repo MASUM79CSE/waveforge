@@ -31,3 +31,5 @@ Clean-room assertions for this program:
   they are not used in product UI, code, or docs.
 - Every adopted pattern above is a generic interaction/IA concept re-expressed in WaveForge's
   own design language.
+
+| 10 | 2026-10-16 | WAI-ARIA Authoring Practices — menubar/menu pattern (knowledge already held from rows 1–3 research; no new source fetched) | Concepts only: roving tabindex on menubar items, Down/Up open submenu with first/last item, arrow switch opens adjacent submenu while one is open, typeahead by first character, Escape closes and refocuses the menubar item, menu items are not in the tab sequence. No benchmark code viewed or copied. |

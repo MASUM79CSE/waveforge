@@ -42,6 +42,12 @@ registered finding with repro on legacy):
    ignored Escape on them — verified identical pre-fix on legacy).
 3. **F-6** `waveforge.locale` was documented but never read; bn locale now
    activates (bn previously silently fell back to English).
+4. **F-2 (post-program ticket, closed after review)** menubar APG keyboard:
+   shared `MenuBar` now has role=menubar + roving titles (one tab stop per
+   frame; legacy 45→40, frame2 32→27 real tab stops), arrows switch/open
+   menus, in-menu cycling + typeahead, Escape restores focus — identical
+   improvement in BOTH frames; 55 legacy e2e selectors migrated from
+   role=button → role=menuitem (mechanical, e2e-asserted by the full suite).
 
 Everything else flag-OFF is behaviorally identical: legacy e2e suite (59
 tests) green unmodified (one g13 scope amendment documented in UX-D9),
@@ -78,5 +84,13 @@ All reverted; full suites re-run green (96 f / 792 t unit, 77 e2e).
   would recover most of it, but that is a post-removal step needing A-5
   approval).
 
-**Review verdict: no open defects. The flag boundary is clean; shared-file
-edits are three documented, e2e-asserted defect fixes.**
+- **R-3 (process, resolved):** the first selector migration sweep used a
+  title-name list that missed plural/other names (`Effects`, `Analyze`) and
+  regex-name selectors — 28 tests then hung on clicks against a role that no
+  longer existed (run reported 50/78 in 23.5 min). Lesson recorded: after a
+  shared role change, grep EVERY `getByRole('button', …)` against menu
+  titles incl. regex forms, and read the FULL line-reporter output (tail can
+  cut the failed-count line).
+
+**Review verdict (updated post-F-2): no open defects. The flag boundary is
+clean; shared-file edits are FOUR documented, e2e-asserted defect fixes.**

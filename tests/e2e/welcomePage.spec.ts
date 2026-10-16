@@ -50,7 +50,7 @@ test('welcome: large logo, centered actions, simple dev credit, no inspired-by',
 test('about: no reference attribution, full professional developer card', async ({ page }) => {
   await openWelcome(page);
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Help', exact: true }).click();
   await page.getByRole('menuitem', { name: /about/i }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();

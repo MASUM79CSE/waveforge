@@ -46,6 +46,15 @@ Deliverables: `INDEPENDENT-REVIEW.md`, `PROGRAM-SUMMARY.md`, `docs/ui2/clean-sla
 **Awaiting user decisions:** merge of the opt-in preview · (later) default flip ·
 (later, token-gated) `APPROVE REMOVE LEGACY UI` · optional `APPROVE TIER B: RMS`.
 
+## Post-program ticket closure — F-2 menubar APG keyboard (shared fix)
+
+| Task | Description | Status | Commit | Evidence |
+|---|---|---|---|---|
+| F-2 | Shared `MenuBar`: role=menubar + roving titles (1 tab stop/frame: legacy 45→40, frame2 32→27); ←/→/Home/End switch titles (open menu switches too — APG hover equivalent), ↓/↑ open first/last, in-menu ↑↓ Home/End cycle + typeahead, Enter/Space activate → focus returns to menubar, Escape closes+restores, Tab closes; `app/menubarNav.ts` pure model (8 unit tests); 55 e2e selectors migrated button→menuitem; axe-clean with a menu open | VERIFIED | (f2 commit) | menubarNav.test.ts · frame2-a11y menubar e2e |
+
+Gates after F-2: unit **97 f / 800 t** · e2e **78 passed (2.8m)** · tsc 0 · eslint 0 ·
+bundle **130,389 gz / 420,869 raw** · LH D **P100/A100/BP100/S91** · M **P98**/A100/BP100/S91.
+
 ## Phase 6 — test net, measured perf, independent review, docs, rollout
 
 | Task | Description | Status | Commit | Evidence |

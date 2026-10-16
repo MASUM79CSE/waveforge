@@ -13,3 +13,12 @@ Format: ID · decision · alternatives rejected · why · consequences.
 | UX-D10 | Band overflow folds WHOLE sections by an idempotent closed-loop plan (recomputed from all-visible every tick) | Incremental fold memory | The incremental plan oscillated (fold→refit→unfold) under repeat ticks — non-deterministic DOM | 5/5 deterministic at 700px; interact e2e green. |
 | UX-D11 | The dB mapping lives in `src/core/dbScale.ts` and is consumed by BOTH the DOM scale panel and the waveform painter (graph = labels, no parallel mappings); frame2/scale.ts is a thin re-export + anchor-label helper | Two mappings kept in sync by tests | A drift between panel labels and the painted waveform is a truthfulness bug the tests cannot see | Single source; anchors unit-pinned (1.0/0.5/0.1/floor). |
 | UX-D12 | Tier-A engine deltas are ADDITIVE renderer options (`overlayPlayhead`, `batchedLanes`, `minorTicks`, `dbScale`), all default-false; flag OFF restores byte-identical painting & cursor behavior | Replacing waveDraw paths outright | Legacy must stay provably untouched (A-5; remove-legacy only at the end) | Legacy redraw re-measured identical (766,893 fillRect ≈ baseline 764,362). |
+
+## UX-D13 — Menubar keyboard is a SHARED component fix (F-2 closed post-program)
+`src/app/components/MenuBar.tsx` serves BOTH frames; the APG menubar pattern
+(roving titles, arrow switch/open, in-menu cycling+typeahead, Escape restore)
+ships for everyone — the 4th intentional flag-OFF behavioral delta (with
+F-4/F-6/F-7), each e2e-asserted. E2E selectors follow the component's real
+roles (menu titles are `role=menuitem`, 55 selectors migrated). Pure nav
+model lives in `src/app/menubarNav.ts` so wrap/skip/typeahead rules stay
+unit-testable; the component only maps ids→elements and moves focus.

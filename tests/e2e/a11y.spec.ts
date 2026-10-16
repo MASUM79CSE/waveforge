@@ -49,7 +49,7 @@ test('x2: axe zero violations — welcome dialog', async ({ page }) => {
 test('x2: axe zero violations — compressor effect dialog', async ({ page }) => {
   await loadSample(page);
   await page.keyboard.press('Shift+a');
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /Compressor/i }).click();
   await expect(page.getByRole('dialog', { name: /Compressor/i })).toBeVisible();
   expect(await axeViolations(page)).toEqual([]);
@@ -58,7 +58,7 @@ test('x2: axe zero violations — compressor effect dialog', async ({ page }) =>
 test('x2: axe zero violations — populated FX Rack with envelope editor', async ({ page }) => {
   await loadSample(page);
   await page.keyboard.press('Shift+a');
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /FX Rack/i }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();

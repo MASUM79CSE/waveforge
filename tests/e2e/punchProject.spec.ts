@@ -52,7 +52,7 @@ test('punch replaces the active lane in a project — one undo step', async ({ p
   await expect(page.locator('.lane.active', { hasText: 'vox' })).toBeVisible();
 
   // configure a 2 s pre-roll (persisted studio setting)
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /record from microphone/i }).click();
   await page.getByTestId('punch-preroll').selectOption('2');
   await page.getByRole('button', { name: /save & close/i }).click();
@@ -75,7 +75,7 @@ test('punch replaces the active lane in a project — one undo step', async ({ p
   // pre-roll setting persisted
   await page.reload();
   await page.getByRole('button', { name: /skip|close|✕/i }).first().click().catch(() => {});
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /record from microphone/i }).click();
   await expect(page.getByTestId('punch-preroll')).toHaveValue('2');
 
