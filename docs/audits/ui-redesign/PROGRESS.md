@@ -19,12 +19,12 @@ Phases: **0 complete (PCA PASSED, gate `PROCEED TO PHASE 1` received 2026-10-16)
 
 | Task | Description | Status | Commit | Evidence |
 |---|---|---|---|---|
-| UX-1.1 | IA: Z1–Z9 zone shell + registry addendum | VERIFIED | (phase-1 commit) | `phase1/IA.md` |
-| UX-1.2 | Toolbar model (5 groups, APG contract, visibility manager, Reset) + tokens spec | VERIFIED | (phase-1 commit) | `phase1/IA.md` §2, `phase1/TOKENS.md` |
-| UX-1.3 | Re-homing map — all 74 ids + non-registry capabilities + addendum ids | VERIFIED | (phase-1 commit) | `phase1/IA.md` §3–4 (Phase-3 automated test walks this map) |
-| UX-1.4 | Three layout options A/B/C + wireframes + tradeoffs + recommendation | VERIFIED | (phase-1 commit) | `phase1/LAYOUT-OPTIONS.md`, `phase1/wireframes.html` — **WAITING for user option approval** |
-| UX-1.5 | Interaction spec (selection-field parser S/MS/HMS/SMP, menu+toolbar keyboard, tooltips, canvas a11y, targets/responsive, i18n) | VERIFIED | (phase-1 commit) | `phase1/INTERACTIONS.md` |
-| UX-1.6 | Tier B request decision (UX-D5: request RMS, ticket spectrogram) | VERIFIED | (phase-1 commit) | DECISIONS UX-D5 — **WAITING for `APPROVE TIER B: RMS` / decline** |
+| UX-1.1 | IA: Z1–Z9 zone shell + registry addendum | VERIFIED | `4243617` | `phase1/IA.md` |
+| UX-1.2 | Toolbar model (5 groups, APG contract, visibility manager, Reset) + tokens spec | VERIFIED | `4243617` | `phase1/IA.md` §2, `phase1/TOKENS.md` |
+| UX-1.3 | Re-homing map — all 74 ids + non-registry capabilities + addendum ids | VERIFIED | `4243617` | `phase1/IA.md` §3–4 (Phase-3 automated test walks this map) |
+| UX-1.4 | Three layout options A/B/C + wireframes + tradeoffs + recommendation | VERIFIED | `4243617` | `phase1/LAYOUT-OPTIONS.md`, `phase1/wireframes.html` — **WAITING for user option approval** |
+| UX-1.5 | Interaction spec (selection-field parser S/MS/HMS/SMP, menu+toolbar keyboard, tooltips, canvas a11y, targets/responsive, i18n) | VERIFIED | `4243617` | `phase1/INTERACTIONS.md` |
+| UX-1.6 | Tier B request decision (UX-D5: request RMS, ticket spectrogram) | VERIFIED | `4243617` | DECISIONS UX-D5 — **WAITING for `APPROVE TIER B: RMS` / decline** |
 
 Phase-1 exit: own PCA + user approval of (a) layout option, (b) Tier B decision, then literal
 `PROCEED TO PHASE 2`.

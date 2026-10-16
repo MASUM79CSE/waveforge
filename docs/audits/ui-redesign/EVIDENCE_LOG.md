@@ -19,4 +19,4 @@
 - `SelectionBar.tsx` @ `22b6aba` is **read-only** (span readouts via `fmtClock` `m:ss.mmm`, clear button → `edit.deselect`): the editable 4-format selection-field parser is a prescribed net-new capability, spec'd in `phase1/INTERACTIONS.md` §1.
 - `PeakClient` lives in `src/engine/peakClient.ts` (engine-side) and wraps the full `AudioBuffer` → RMS tier = peaks-pipeline-local engine extension (the designed Tier-B approval path); spectrogram = FFT worker infra (A-3 scope) → DECISIONS UX-D5.
 - `tokens.css` @ `src/app/styles/` has 131 custom props incl. `--cv-*` canvas set, band heights, `--s1..s4` — v2 token spec EXTENDS this vocabulary (`phase1/TOKENS.md`), no parallel system.
-- Phase-1 commit: `(stamped after commit)` — docs only (`phase1/**` + ledgers), zero production diffs.
+- Phase-1 commit: ``4243617`` — docs only (`phase1/**` + ledgers), zero production diffs.
