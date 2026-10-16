@@ -2,7 +2,7 @@ import { Brand } from '../brand';
 import { cycleAccent, toggleTheme } from './theme';
 import { getErrorMessage, isWaveForgeError, makeError, redactContext } from '../core/errors';
 import { logger } from '../core/logger-instance';
-import { audioFileSchema, fileMetaSchema, urlInputSchema } from '../core/schemas';
+import { audioFileSchema, fileMetaSchema } from '../core/schemas';
 import { AudioDocument } from '../engine/AudioDocument';
 import type { LoopRegion } from '../engine/transportMath';
 import { clampSeek } from '../engine/transportMath';
@@ -10,6 +10,7 @@ import { decodeBlob } from '../io/decode';
 import { parseId3 } from '../io/id3';
 import { t, tError } from '../i18n';
 import { installDoc, engine, renderer, getDoc } from './runtime';
+import { resetMarkers } from './markersActions';
 import { applyProjectLoopIfPlaying, projectPause, projectSeek, projectStop, projectTogglePlay } from './projectActions';
 import { stopPreview } from './preview';
 import * as S from './state';
@@ -45,6 +46,14 @@ export function isAmplitudeAxisOn(): boolean {
 
 export function toggleAmplitudeAxis(): void {
   S.setAmplitudeAxis(!S.amplitudeAxis.value);
+}
+
+export function isWaveLimitsOn(): boolean {
+  return S.waveLimits.value;
+}
+
+export function toggleWaveLimits(): void {
+  S.setWaveLimits(!S.waveLimits.value);
 }
 
 // ---- dialogs ----
@@ -97,13 +106,6 @@ export function closeShortcuts(): void {
   S.shortcutsOpen.value = false;
 }
 
-export function openUrlDialog(): void {
-  S.urlOpen.value = true;
-}
-
-export function closeUrlDialog(): void {
-  S.urlOpen.value = false;
-}
 
 export function openGainPrompt(): void {
   S.gainPromptOpen.value = true;
@@ -111,6 +113,22 @@ export function openGainPrompt(): void {
 
 export function closeGainPrompt(): void {
   S.gainPromptOpen.value = false;
+}
+
+export function openSeamlessLoop(): void {
+  S.seamlessOpen.value = true;
+}
+
+export function closeSeamlessLoop(): void {
+  S.seamlessOpen.value = false;
+}
+
+export function openClipFades(): void {
+  S.clipFadesOpen.value = true;
+}
+
+export function closeClipFades(): void {
+  S.clipFadesOpen.value = false;
 }
 
 export function openNormalizePrompt(): void {
@@ -155,6 +173,16 @@ export function closeNormalizePrompt(): void {
   S.normalizePromptOpen.value = false;
 }
 
+/** Open the Audio Repair dialog (PF-03). */
+export function openRepairPrompt(): void {
+  S.repairPromptOpen.value = true;
+}
+
+/** Close the Audio Repair dialog without applying. */
+export function closeRepairPrompt(): void {
+  S.repairPromptOpen.value = false;
+}
+
 export function toggleZeroCross(): void {
   S.setZeroCrossEnabled(!S.zeroCrossEnabled.value);
 }
@@ -174,8 +202,8 @@ function endLoading(): void {
 
 function finishLoad(buffer: AudioBuffer, name: string, sizeBytes: number, source: 'file' | 'url' | 'sample'): void {
   installDoc(new AudioDocument(buffer, { name, sizeBytes, source }));
+  resetMarkers(); // PF-01: markers are per-document
   S.welcomeOpen.value = false;
-  S.urlOpen.value = false;
   toastInfo(t().toastLoaded(name));
 }
 
@@ -222,66 +250,20 @@ export async function openFileObject(file: File): Promise<void> {
 export function pickAudioFile(): void {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'audio/*,.mp3,.wav,.flac,.ogg,.oga,.opus,.m4a,.aac,.aif,.aiff,.webm';
+  input.accept = 'audio/*,.amss,.mp3,.wav,.flac,.ogg,.oga,.opus,.m4a,.aac,.aif,.aiff,.webm';
   input.onchange = () => {
     const file = input.files?.[0];
-    if (file) void openFileObject(file);
+    if (!file) return;
+    // PF-05: portable session files ride the same open path (reference accept)
+    if (/\.amss$/i.test(file.name)) {
+      void import('./sessionActions').then((m) => m.openSessionFile(file));
+      return;
+    }
+    void openFileObject(file);
   };
   input.click();
 }
 
-export async function openUrl(rawUrl: string): Promise<void> {
-  const parsed = urlInputSchema.safeParse({ url: rawUrl.trim() });
-  if (!parsed.success) {
-    reportError(makeError('WF-E201', { url: rawUrl }));
-    return;
-  }
-  const url = parsed.data.url;
-
-  beginLoading(t().loadingUrl);
-  try {
-    let response: Response;
-    try {
-      response = await fetch(url, { mode: 'cors' });
-    } catch (cause: unknown) {
-      throw makeError('WF-E201', { url }, cause);
-    }
-    if (!response.ok) throw makeError('WF-E202', { status: response.status });
-
-    const total = Number(response.headers.get('content-length') || 0);
-    let blob: Blob;
-    if (total > 0 && response.body) {
-      const reader = response.body.getReader();
-      const chunks: Uint8Array[] = [];
-      let received = 0;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (value) {
-          chunks.push(value);
-          received += value.length;
-          S.loadingProgress.value = received / total;
-        }
-      }
-      blob = new Blob(chunks as BlobPart[]);
-    } else {
-      blob = await response.blob();
-    }
-
-    let buffer: AudioBuffer;
-    try {
-      buffer = await decodeBlob(blob);
-    } catch (cause: unknown) {
-      throw makeError('WF-E102', { url }, cause);
-    }
-    const name = basename(url);
-    finishLoad(buffer, name, blob.size, 'url');
-  } catch (error: unknown) {
-    reportError(error);
-  } finally {
-    endLoading();
-  }
-}
 
 export async function loadSample(): Promise<void> {
   beginLoading(t().loadingSample);
@@ -298,15 +280,6 @@ export async function loadSample(): Promise<void> {
   }
 }
 
-function basename(url: string): string {
-  try {
-    const path = new URL(url).pathname;
-    const last = path.split('/').pop() ?? 'audio';
-    return last.length > 0 ? decodeURIComponent(last) : 'audio';
-  } catch {
-    return 'audio';
-  }
-}
 
 // ---- transport ----
 

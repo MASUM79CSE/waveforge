@@ -30,6 +30,8 @@ export type ShortcutCommand =
   | 'clip.delete'
   | 'clip.duplicate'
   | 'automation.toggle'
+  | 'clip.crossfade'
+  | 'file.export'
   | 'record.toggle'
   | 'record.punch'
   | 'record.monitor'
@@ -78,6 +80,8 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
         return 'file.open';
       case 'd':
         return 'clip.duplicate';
+      case 's':
+        return 'file.export'; // reference KeyModSave — SPA save dialog is useless
       default:
         return null;
     }
@@ -89,6 +93,8 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
     switch (key) {
       case 's':
         return 'clip.split';
+      case 'x':
+        return 'clip.crossfade'; // reference KeyCrossfade (bare X)
       case 'a':
         return 'automation.toggle';
       case 'delete':
@@ -113,6 +119,8 @@ export function resolveShortcut(event: ShortcutEvent): ShortcutCommand | null {
       return 'edit.selectAll';
     case 'n':
       return 'edit.insertSilence';
+    case 's':
+      return 'file.export'; // reference KeyShiftSave
     default:
       return null;
   }

@@ -9,6 +9,7 @@ import * as AN from './analysisActions';
 import * as CA from './clipActions';
 import * as RA from './recordActions';
 import { projectOpen, recStudio } from './state';
+import * as MK from './markersActions';
 import { toastInfo } from './toast';
 import { resetLayout, toggleToolbarGroup, toolbarsPopoverOpen, visibility } from './frame2/visibilityStore';
 
@@ -29,7 +30,6 @@ export interface Command {
 export const commands: Command[] = [
   // File
   { id: 'file.open', label: () => t().fileOpen, kbd: () => HINTS.open, run: () => A.pickAudioFile() },
-  { id: 'file.url', label: () => t().fileUrl, run: () => A.openUrlDialog() },
   { id: 'file.sample', label: () => t().fileSample, run: () => void A.loadSample() },
   {
     id: 'file.recordSettings',
@@ -46,8 +46,21 @@ export const commands: Command[] = [
     run: () => A.openExportDialog(),
     sep: true,
   },
+
   { id: 'file.draftSave', label: () => t().fileDraftSave, run: () => A.openSaveDraftDialog() },
   { id: 'file.draftOpen', label: () => t().fileDraftOpen, run: () => A.openDraftsDialog() },
+
+  // Markers (PF-01/AM-07) — keyboard-first, also in the Edit menu
+  { id: 'marker.add', label: () => t().markerAdd, run: () => MK.openMarkerAddPrompt() },
+  { id: 'marker.rename', label: () => t().markerRename, run: () => MK.openMarkerRenamePrompt() },
+  { id: 'marker.delete', label: () => t().markerDelete, run: () => MK.deleteMarkerNearCursor() },
+  { id: 'marker.clear', label: () => t().markerClear, run: () => MK.clearMarkers() },
+  { id: 'marker.jumpPrev', label: () => t().markerJumpPrev, run: () => MK.jumpToPrevMarker() },
+  { id: 'marker.jumpNext', label: () => t().markerJumpNext, run: () => MK.jumpToNextMarker() },
+  { id: 'marker.selectPrev', label: () => t().markerSelectPrev, run: () => MK.selectToPrevMarker() },
+  { id: 'marker.selectNext', label: () => t().markerSelectNext, run: () => MK.selectToNextMarker() },
+
+  // Edit
 
   // Edit
   { id: 'edit.undo', label: () => t().editUndo, kbd: () => HINTS.undo, run: () => EA.undo() },
@@ -63,6 +76,7 @@ export const commands: Command[] = [
     sep: true,
   },
   { id: 'edit.trim', label: () => t().editTrim, run: () => EA.trimToSelection() },
+  { id: 'edit.seamlessLoop', label: () => t().seamlessLoop, run: () => A.openSeamlessLoop() },
   {
     id: 'edit.silence',
     label: () => t().editInsertSilence,
@@ -88,6 +102,13 @@ export const commands: Command[] = [
   { id: 'fx.reverse', label: () => t().fxReverse, run: () => EA.applyReverse() },
   { id: 'fx.invert', label: () => t().fxInvert, run: () => EA.applyInvert(), sep: true },
   { id: 'fx.removeSilence', label: () => t().fxRemoveSilence, run: () => EA.applyRemoveSilence() },
+  {
+    id: 'fx.repair',
+    label: () => t().fxRepair,
+    // reference parity: Audio Repair is a single-editor tool (the lazy
+    // chunk refuses in project mode); kernels stay off the startup path
+    run: () => void import('./repairOps').then((m) => m.repairFromCommand(projectOpen.value)),
+  },
   { id: 'fx.compressor', label: () => t().fxCompressor, run: () => A.openEffectDialog('fx.compressor') },
   { id: 'fx.limiter', label: () => t().fxLimiter, run: () => A.openEffectDialog('fx.limiter') },
   { id: 'fx.pgeq8', label: () => t().fxPgeq8, run: () => A.openEffectDialog('fx.pgeq8') },
@@ -162,6 +183,13 @@ export const commands: Command[] = [
     check: true,
     isChecked: () => A.isAmplitudeAxisOn(),
   },
+  {
+    id: 'view.limits',
+    label: () => t().viewPeakLimits,
+    run: () => A.toggleWaveLimits(),
+    check: true,
+    isChecked: () => A.isWaveLimitsOn(),
+  },
   // Analyze (M5)
   {
     id: 'analyze.report',
@@ -214,6 +242,19 @@ export const commands: Command[] = [
     run: () => {
       if (!CA.duplicateSelectedClip()) toastInfo(t().clipNone);
     },
+  },
+  {
+    id: 'clip.fades',
+    label: () => t().clipFades,
+    run: () => {
+      if (CA.selectedClip()) A.openClipFades();
+      else if (projectOpen.value) toastInfo(t().clipNone);
+    },
+  },
+  {
+    id: 'clip.crossfade',
+    label: () => t().clipCrossfadeMenu,
+    run: () => void import('./clipFadeOps').then((FO) => FO.crossfadeFromCommand()),
   },
   {
     id: 'clip.delete',

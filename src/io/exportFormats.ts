@@ -22,6 +22,17 @@ export interface ExportFormatInfo {
   blurb: string;
   qualities: ExportQualityOption[];
   defaultQuality: string;
+  /** MIME type of the produced file (WF-010: the single authority). */
+  mime: string;
+  /** Container/signature summary shown in docs and used in tests. */
+  container: string;
+  /** Honest limitation line (WF-010: nothing advertised that isn't shipped). */
+  limitations: string;
+}
+
+/** True when `quality` is a listed id for the format (service gate). */
+export function isSupportedQuality(format: ExportFormat, quality: string): boolean {
+  return formatInfo(format).qualities.some((q) => q.id === quality);
 }
 
 const WAV: ExportFormatInfo = {
@@ -36,6 +47,9 @@ const WAV: ExportFormatInfo = {
     { id: 'pcm24', label: '24-bit PCM', hint: 'Studio master — extra dynamic headroom' },
     { id: 'float32', label: '32-bit float', hint: 'DAW-native — no clipping on the bus' },
   ],
+  mime: 'audio/wav',
+  container: 'RIFF/WAVE (pcm16/pcm24; float32 with fmt(18)+fact)',
+  limitations: 'Uncompressed — ~10 MB per minute of stereo 44.1 kHz',
 };
 
 const MP3: ExportFormatInfo = {
@@ -51,6 +65,9 @@ const MP3: ExportFormatInfo = {
     { id: '256', label: '256 kbps', hint: 'High quality — music releases' },
     { id: '320', label: '320 kbps', hint: 'Maximum — transparent for most listeners' },
   ],
+  mime: 'audio/mpeg',
+  container: 'MPEG-1 Layer III frames (ID3v2.4 prepended when tagged)',
+  limitations: 'Lossy — 16-bit source domain; mono files encode as dual-mono',
 };
 
 const FLAC: ExportFormatInfo = {
@@ -66,6 +83,9 @@ const FLAC: ExportFormatInfo = {
     { id: '5', label: 'Level 5 — balanced', hint: 'Recommended default' },
     { id: '8', label: 'Level 8 — best', hint: 'Smallest files — slowest encode' },
   ],
+  mime: 'audio/flac',
+  container: 'fLaC native (16-bit, stereo or mono)',
+  limitations: '16-bit only; levels 0–8 map to the vendored libFLAC build',
 };
 
 export const EXPORT_FORMATS: ExportFormatInfo[] = [WAV, MP3, FLAC];

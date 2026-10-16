@@ -40,6 +40,7 @@ interface Theme {
   clipSelected: string;
   automationLine: string;
   automationPoint: string;
+  markerLine: string;
 }
 
 const THEME_FALLBACK: Theme = {
@@ -60,6 +61,7 @@ const THEME_FALLBACK: Theme = {
   clipEdge: 'rgba(90, 242, 255, 0.5)',
   clipSelected: 'rgba(90, 242, 255, 0.9)',
   automationLine: 'rgba(255, 184, 74, 0.85)',
+  markerLine: 'rgba(196, 140, 255, 0.8)',
   automationPoint: '#ffb84a',
 };
 
@@ -84,6 +86,7 @@ const CV_KEYS: Array<[keyof Theme, string]> = [
   ['clipSelected', '--cv-clip-selected'],
   ['automationLine', '--cv-automation-line'],
   ['automationPoint', '--cv-automation'],
+  ['markerLine', '--cv-marker'],
 ];
 
 let cachedTheme = THEME_FALLBACK;
@@ -122,6 +125,8 @@ export interface WaveDrawCtx {
   cursor: number;
   selection: { start: number; end: number } | null;
   beats: number[];
+  /** PF-01: user markers (seconds + label) drawn as labeled flags */
+  markers: Array<{ t: number; label: string }>;
   /** renderer-owned cache of raw sample slices (mutated by drawRawLane) */
   pendingRaw: Map<number, Float32Array>;
   /** D4: draw the left channel rail + bottom amplitude axis */
@@ -136,6 +141,8 @@ export interface WaveDrawCtx {
   minorTicks?: boolean;
   /** frame2 (UX-4): vertical scale linear-in-dB (batched lanes only) */
   dbScale?: boolean;
+  /** AM-08: draw full-scale (0 dBFS) peak-separator lines per lane */
+  limits: boolean;
   /** schedule a redraw (rAF-coalesced in the renderer) */
   requestDraw: () => void;
 }
@@ -168,6 +175,7 @@ export function drawFrame(ctx: WaveDrawCtx): void {
     drawLanes(full, H - RULER_H - axisH);
   }
   drawBeats(full, H);
+  drawMarkers(full, H);
   drawSelection(full, H);
   if (!ctx.overlayPlayhead) drawPlayhead(full, H); // frame2 overlay layer owns the playhead
   if (ctx.axis) {
@@ -186,6 +194,30 @@ function drawBeats(ctx: FullCtx, H: number): void {
     const x = Math.round(V.xAtTime(ctx.view, ctx.env, t)) + 0.5 + rail;
     if (x < rail || x > W) continue;
     g.fillRect(x, RULER_H, 1, H - RULER_H - axisH);
+  }
+}
+
+function drawMarkers(ctx: FullCtx, H: number): void {
+  const { g, cssW: W } = ctx;
+  if (ctx.markers.length === 0) return;
+  const rail = ctx.axis ? RAIL_W : 0;
+  const axisH = ctx.axis ? AXIS_H : 0;
+  const theme = currentTheme();
+  g.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
+  g.textBaseline = 'middle';
+  for (const m of ctx.markers) {
+    const x = Math.round(V.xAtTime(ctx.view, ctx.env, m.t)) + 0.5 + rail;
+    if (x < rail || x > W) continue;
+    // flag line from the ruler bottom to the waveform floor
+    g.fillStyle = theme.markerLine;
+    g.fillRect(x, RULER_H - 6, 1, H - RULER_H - axisH + 6);
+    // label chip just under the ruler, clamped to the canvas
+    const tw = g.measureText(m.label).width;
+    const cx = Math.min(Math.max(x + 3, rail + 1), W - tw - 7);
+    g.fillStyle = theme.markerLine;
+    g.fillRect(cx, RULER_H + 2, tw + 6, 12);
+    g.fillStyle = theme.bg;
+    g.fillText(m.label, cx + 3, RULER_H + 8);
   }
 }
 
@@ -240,6 +272,15 @@ function drawLanes(ctx: FullCtx, lanesH: number): void {
     g.fillRect(rail, y0, laneW, laneH);
     g.fillStyle = currentTheme().center;
     g.fillRect(rail, Math.round(mid), laneW, 1);
+    if (ctx.limits && ctx.view.spp >= 1) {
+      // AM-08: full-scale separator lines at ±1.0 sample (the amp scale),
+      // only meaningful when the lane renders from peak buckets (spp ≥ 1)
+      g.fillStyle = currentTheme().center;
+      const top = Math.round(mid - amp);
+      const bot = Math.round(mid + amp);
+      if (top > y0) g.fillRect(rail, top, laneW, 1);
+      if (bot < y0 + laneH - 1) g.fillRect(rail, bot, laneW, 1);
+    }
 
     if (ctx.view.spp < 1) {
       missing = drawRawLane(ctx, ch, y0, laneH, mid, amp) || missing;

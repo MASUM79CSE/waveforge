@@ -342,3 +342,125 @@ export function applyOps(channels: Float32Array[], ops: SliceOp[]): Float32Array
   }
   return out;
 }
+
+// ---- PF-06 / AM-11: seamless loop ----
+
+export interface SeamlessLoopOptions {
+  /** Crossfade length in milliseconds (folded from the tail into the head). */
+  fadeMs: number;
+  /** How many times the conditioned loop is tiled (1–64). */
+  repeat: number;
+  /** Shrink edges past near-silence before looping (1 ms pad kept). */
+  trim: boolean;
+  /** Snap both edges to matched-slope zero crossings first. */
+  snap: boolean;
+  sampleRate: number;
+}
+
+/** Backward/forward zero-crossing scan that prefers a matching slope. */
+function scanZero(data: Float32Array, from: number, dir: 1 | -1, max: number, slope: number): number {
+  let any = -1;
+  let i = from;
+  for (let n = 0; n < max; ++n, i += dir) {
+    if (i < 1 || i >= data.length - 1) break;
+    const prev = data[i - 1] ?? 0;
+    const curr = data[i] ?? 0;
+    if ((prev <= 0 && curr >= 0) || (prev >= 0 && curr <= 0)) {
+      if (any < 0) any = i;
+      if (!slope || ((data[i + 1] ?? 0) - prev) * slope > 0) return i;
+    }
+  }
+  return any;
+}
+
+/**
+ * Condition [start, start+len) so it loops without a click: the last
+ * `fade` samples are equal-power folded into the head and consumed
+ * (output length = regionLen − fade), with optional silence trim and
+ * zero-crossing edge snap. The result REPLACES the region through
+ * makeOverwritePaste, so undo restores the original audio (AM-11).
+ */
+/** Where the loop will actually sit after trim/snap, and its sizes. */
+export interface SeamlessLoopGeometry {
+  s: number;
+  e: number;
+  fade: number;
+  loopLen: number;
+  repeat: number;
+}
+
+/** Pure planner: edge trim + zero-cross snap + fade clamp, no synthesis. */
+export function seamlessLoopGeometry(
+  channels: Float32Array[],
+  start: number,
+  len: number,
+  opts: SeamlessLoopOptions,
+): SeamlessLoopGeometry {
+  const analysis = channels[0] ?? new Float32Array(0);
+  const docLen = analysis.length;
+  const clampedStart = Math.max(0, Math.min(docLen, start));
+  const clampedEnd = Math.max(clampedStart, Math.min(docLen, start + len));
+  let s = clampedStart;
+  let e = clampedEnd;
+
+  if (opts.trim) {
+    const pad = Math.trunc(opts.sampleRate / 1000);
+    while (s < e - 8 && Math.abs(analysis[s] ?? 0) < 0.0007) ++s;
+    while (e > s + 8 && Math.abs(analysis[e - 1] ?? 0) < 0.0007) --e;
+    if (e > s + 8) {
+      s = Math.max(clampedStart, s - pad);
+      e = Math.min(clampedEnd, e + pad);
+    } else {
+      s = clampedStart;
+      e = clampedEnd;
+    }
+  }
+
+  if (opts.snap) {
+    const max = Math.min(Math.trunc(opts.sampleRate / 100), (e - s) >> 3);
+    const z1 = max > 2 ? scanZero(analysis, s + 1, 1, max, 0) : -1;
+    const slope = z1 > 0 ? (analysis[z1 + 1] ?? 0) - (analysis[z1 - 1] ?? 0) : 0;
+    const z2 = z1 > 0 ? scanZero(analysis, e - 2, -1, max, slope) : -1;
+    if (z1 > 0 && z2 > z1 + 8) {
+      s = z1;
+      e = z2 + 1;
+    }
+  }
+
+  const regionLen = e - s;
+  const fade = Math.max(0, Math.min(Math.trunc((opts.fadeMs * opts.sampleRate) / 1000), regionLen >> 2));
+  const loopLen = Math.max(1, regionLen - fade);
+  const repeat = Math.max(1, Math.min(64, Math.trunc(opts.repeat) || 1));
+  return { s, e, fade, loopLen, repeat };
+}
+
+export function seamlessLoopRange(
+  channels: Float32Array[],
+  start: number,
+  len: number,
+  opts: SeamlessLoopOptions,
+): EditOutcome {
+  const { s, e, fade, loopLen, repeat } = seamlessLoopGeometry(channels, start, len, opts);
+
+  const loop: Float32Array[] = channels.map((channel) => {
+    const out = new Float32Array(loopLen);
+    const halfPi = Math.PI / 2;
+    for (let i = 0; i < fade; ++i) {
+      const p = i / (fade - 1 || 1);
+      out[i] =
+        (channel[s + i] ?? 0) * Math.sin(p * halfPi) +
+        (channel[e - fade + i] ?? 0) * Math.cos(p * halfPi);
+    }
+    for (let i = fade; i < loopLen; ++i) out[i] = channel[s + i] ?? 0;
+    return out;
+  });
+
+  if (repeat === 1) return makeOverwritePaste(channels, s, e - s, loop);
+
+  const tiled: Float32Array[] = loop.map((channel) => {
+    const out = new Float32Array(channel.length * repeat);
+    for (let n = 0; n < repeat; ++n) out.set(channel, n * channel.length);
+    return out;
+  });
+  return makeOverwritePaste(channels, s, e - s, tiled);
+}

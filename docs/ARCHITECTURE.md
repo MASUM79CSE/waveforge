@@ -30,7 +30,7 @@ architecture that makes that viable at production quality.
 ```
 ┌────────────────────────────────── Browser ───────────────────────────────┐
 │                                                                          │
-│  ┌── UI shell (Preact 11 + @preact/signals) ─────────────────────────┐  │
+│  ┌── UI shell (Preact 10 + @preact/signals) ─────────────────────────┐  │
 │  │  MenuBar (grouped)   TransportBar (zones)   LaneStack / Strips    │  │
 │  │  Dialogs (welcome, export, record, effects, about, shortcuts…)    │  │
 │  │  WaveCanvas (canvas renderer + envelope overlays)                 │  │
@@ -67,14 +67,14 @@ architecture that makes that viable at production quality.
 
 | Module | LOC | Responsibility |
 |---|---|---|
-| `src/app` | 12,600 | UI shell: signals, actions, command registry, menus, keyboard, dialogs, transport/menu components, i18n, brand |
-| `src/engine` | 5,130 | Pure audio core: documents, edits, history, projects/clips, transport, recorder/punch/takes, meters, analysis kernels |
-| `src/fx` | 4,579 | Effect definitions + DSP kernels (registry `defs.ts`): dynamics, EQ, modulation, reverb, NR, stretch/pitch |
-| `src/io` | 651 | Decode, export service + format catalog, WAV writer, ID3v2, draft repository |
-| `src/workers` | 276 | MP3 export, analysis (LUFS/BPM/report), peaks mip builder |
-| `src/worklets` | 56 | `recorder.worklet` — real-time capture off the main thread |
+| `src/app` | 12,494 | UI shell: signals, actions, command registry, menus, keyboard, dialogs, transport/menu components, i18n, brand |
+| `src/engine` | 5,133 | Pure audio core: documents, edits, history, projects/clips, transport, recorder/punch/takes, meters, analysis kernels |
+| `src/fx` | 4,578 | Effect definitions + DSP kernels (registry `defs.ts`): dynamics, EQ, modulation, reverb, NR, stretch/pitch |
+| `src/io` | 887 | Decode, export service + format catalog, WAV writer, ID3v2, draft repository |
+| `src/workers` | 336 | MP3 export, analysis (LUFS/BPM/report), peaks mip builder |
+| `public/worklets` | 56 | `recorder.worklet` — real-time capture off the main thread (same-origin file: CSP `script-src 'self'` (worklets follow script-src — there is no worklet-src directive), no blob:/data: scripts) |
 | `public/workers` | — | FLAC export worker (libFLAC WASM), vendored runtimes |
-| `tests/` | 13,980 | 720 unit tests (86 files) + 59 Playwright e2e (incl. axe gate) |
+| `tests/` | 15,171 | 765 unit tests (93 files) + 64 Playwright e2e incl. axe, egress and CSP-enforcement gates + 3 production smoke tests |
 
 ## 4. Key data flows
 
@@ -179,16 +179,41 @@ and shortcuts behave deterministically with stacked dialogs.
   stay flat in memory.
 - Encode/analysis in workers → UI never blocks; Lighthouse TBT stays low.
 - Precached PWA (vite-plugin-pwa) → instant repeat loads, offline use.
-- Verified: Lighthouse **99 / 100 / 100 / 100** desktop, **99** mobile
-  performance; main JS ≈ 119.5 KB gzipped.
+- Verified (audit baseline + Phase 3 re-run, 2026-10-13): Lighthouse
+  desktop **100 / 100 / 100 / 91**, mobile **99 / 100 / 100 / 91**
+  (perf/a11y/best-practices/SEO); main JS entry ≈ 118 KB gzipped.
 
 ## 10. Security & privacy
 
-- **CSP** (Report-Only header via `vercel.json`): `default-src 'self'`;
-  `wasm-unsafe-eval` for libFLAC/RNNoise; `img-src` includes the avatar
-  CDN; no third-party script/style origins.
+- **CSP** (ENFORCING header via `vercel.json`, all paths): `default-src
+  'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:;
+  style-src 'self' 'unsafe-inline'; img-src 'self'
+  data: blob:; media-src 'self' blob: data:; connect-src 'self' data:
+  blob:; font-src 'self'; object-src 'none'; base-uri 'self';
+  frame-ancestors 'self'; form-action 'self'` — no third-party script,
+  style, image or connect origins. No `unsafe-eval`, and **no script
+  execution from `blob:`/`data:`**: the recorder AudioWorklet is served
+  as a real same-origin file (`/worklets/recorder.worklet.js`) and the
+  doctor probe loads that same asset (blob:-script probes would be
+  blocked); zod runs **jitless** (`src/core/zodConfig.ts`, imported per
+  realm) so its JIT never probes `new Function`. `'wasm-unsafe-eval'`
+  is scoped to the vendored libFLAC compile; classic FLAC worker +
+  bundled module workers are same-origin. Dev parity:
+  `CSP_ENFORCE=1 npm run dev/preview` injects the same header
+  (`vite.config.ts`). Proven by `tests/e2e/csp.spec.ts`: enforcing
+  header + zero `securitypolicyviolation` across load → edit →
+  WAV/FLAC export → worklet probe on the production build (WF-004;
+  DECISIONS D-A10). The Report-Only header mirrors the enforcing
+  policy (`worklet-src` omitted — it falls back to `script-src`),
+  so any RO report is a genuinely new violation a future tightening
+  would block, without flagging the shipped encoders.
 - **No telemetry, no uploads** — structural, not policy: the app makes
-  no network requests for user data; URL import is user-initiated fetch.
+  no network requests for user data, full stop. The former URL import
+  was REMOVED in the WF-011 audit (it was the one feature that fetched
+  cross-origin, and it could not coexist with an enforcing
+  `connect-src 'self'`; intentional AudioMass difference — DECISIONS
+  D-A8). Verified by `tests/e2e/egress.spec.ts` (same-origin only,
+  zero request bodies across load/import/edit/export).
 - Drafts live in origin-scoped IndexedDB; cleared client-side only.
 
 ## 11. Extensibility

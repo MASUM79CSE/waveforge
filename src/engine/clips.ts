@@ -23,6 +23,17 @@ export interface AudioClip {
   offset: number;
   /** Clip length (samples). */
   duration: number;
+  /** PF-02: quadratic fade-in length (samples; 0 = none). */
+  fadeIn?: number;
+  /** PF-02: quadratic fade-out length (samples; 0 = none). */
+  fadeOut?: number;
+  /**
+   * PF-02: id of the EARLIER clip this clip crossfades with (equal-power
+   * cos/sin across the two clips' overlap). Stored on the later clip so
+   * clip-array undo (executeClipEdit) captures it; a dangling id (partner
+   * deleted) renders as if absent.
+   */
+  xfadeWith?: string;
 }
 
 export interface ClipTrack {
@@ -195,13 +206,13 @@ export function timelineDuration(track: ClipTrack): number {
   return max;
 }
 
-function assetOf(assets: Map<string, AudioAsset>, id: string): AudioAsset {
+export function assetOf(assets: Map<string, AudioAsset>, id: string): AudioAsset {
   const asset = assets.get(id);
   if (!asset) throw new Error(`render: unknown asset ${id}`);
   return asset;
 }
 
-function emptyStereo(length: number): Float32Array[] {
+export function emptyStereo(length: number): Float32Array[] {
   return [new Float32Array(length), new Float32Array(length)];
 }
 
@@ -209,86 +220,49 @@ function emptyStereo(length: number): Float32Array[] {
  * Render the arrangement to stereo (mono assets feed both channels).
  * Fixed clip order, Float64 accumulation, single f32 round.
  */
-export function renderClipTrack(track: ClipTrack, assets: Map<string, AudioAsset>): Float32Array[] {
-  const length = timelineDuration(track);
-  if (length === 0) return emptyStereo(0);
-  const accL = new Float64Array(length);
-  const accR = new Float64Array(length);
-  for (const clip of track.clips) {
-    const asset = assetOf(assets, clip.assetId);
-    const main = asset.channels[0]!;
-    const second = asset.channels[1] ?? main;
-    const avail = Math.min(clip.duration, main.length - clip.offset);
-    for (let i = 0; i < avail; ++i) {
-      const v = main[clip.offset + i]!;
-      accL[clip.start + i] = accL[clip.start + i]! + v;
-      accR[clip.start + i] = accR[clip.start + i]! + second[clip.offset + i]!;
-    }
-  }
-  const outL = new Float32Array(length);
-  const outR = new Float32Array(length);
-  for (let i = 0; i < length; ++i) {
-    outL[i] = accL[i]!;
-    outR[i] = accR[i]!;
-  }
-  return [outL, outR];
-}
-
-/** Slow bit-exact reference for `renderClipTrack` — test anchor only. */
-export function renderClipTrackReference(
-  track: ClipTrack,
-  assets: Map<string, AudioAsset>,
-): Float32Array[] {
-  const length = timelineDuration(track);
-  const outL = new Float64Array(length);
-  const outR = new Float64Array(length);
-  for (const clip of track.clips) {
-    const asset = assetOf(assets, clip.assetId);
-    const main = asset.channels[0]!;
-    const second = asset.channels[1] ?? main;
-    const avail = Math.min(clip.duration, main.length - clip.offset);
-    for (let i = 0; i < avail; ++i) {
-      outL[clip.start + i] = outL[clip.start + i]! + main[clip.offset + i]! * 1;
-      outR[clip.start + i] = outR[clip.start + i]! + second[clip.offset + i]! * 1;
-    }
-  }
-  const resL = new Float32Array(length);
-  const resR = new Float32Array(length);
-  for (let i = 0; i < length; ++i) {
-    resL[i] = outL[i]!;
-    resR[i] = outR[i]!;
-  }
-  return [resL, resR];
-}
+export const XFADE_MIN_OVERLAP_S = 0.005; // reference: overlaps <= 5 ms are not crossfades
+export const FADE_MIN_S = 0.005; // reference: sub-5 ms fades snap to 0
 
 /**
- * Render only the timeline region [from, from+len) — the effects bounce
- * path (M9b). Mono assets feed both channels of the region.
+ * PF-02: per-sample gain for one clip of a track — equal-power cos/sin
+ * inside an ACTIVE crossfade overlap (earlier = cos, later = sin; an
+ * active xfade replaces fi/fo there, reference clipGainAt), quadratic
+ * p² fades elsewhere. Pure so the fast render and the slow reference
+ * share one implementation (bit anchor).
  */
-export function renderRegion(
-  track: ClipTrack,
-  assets: Map<string, AudioAsset>,
-  from: number,
-  len: number,
-): Float32Array[] {
-  const outL = new Float32Array(len);
-  const outR = new Float32Array(len);
-  if (len <= 0) return [outL, outR];
-  for (const clip of track.clips) {
-    const end = clipEnd(clip);
-    if (clipEnd(clip) <= from || clip.start >= from + len) continue;
-    const asset = assetOf(assets, clip.assetId);
-    const main = asset.channels[0]!;
-    const second = asset.channels[1] ?? main;
-    const i0 = Math.max(clip.start, from);
-    const i1 = Math.min(end, from + len);
-    for (let t = i0; t < i1; ++t) {
-      const src = clip.offset + (t - clip.start);
-      if (src < 0 || src >= main.length) continue;
-      const dst = t - from;
-      outL[dst] = main[src]!;
-      outR[dst] = second[src]!;
+export function clipGainAt(
+  clip: AudioClip,
+  allClips: readonly AudioClip[],
+  sampleRate: number,
+  localIndex: number,
+): number {
+  const t = clip.start + localIndex;
+  // the pair marker lives on the LATER clip, but the gain gates BOTH sides
+  let partner = clip.xfadeWith ? allClips.find((c) => c.id === clip.xfadeWith) : undefined;
+  if (!partner) partner = allClips.find((c) => c.xfadeWith === clip.id);
+  if (partner) {
+    const ovStart = Math.max(clip.start, partner.start);
+    const ovEnd = Math.min(clip.start + clip.duration, partner.start + partner.duration);
+    if (ovEnd - ovStart > XFADE_MIN_OVERLAP_S * sampleRate && t >= ovStart && t < ovEnd) {
+      const p = (t - ovStart) / (ovEnd - ovStart);
+      const isEarlier =
+        clip.start < partner.start || (clip.start === partner.start && clip.id < partner.id);
+      return isEarlier ? Math.cos(p * Math.PI * 0.5) : Math.sin(p * Math.PI * 0.5);
     }
   }
-  return [outL, outR];
+  const len = clip.duration;
+  const fi = Math.min(clip.fadeIn ?? 0, len);
+  const fo = Math.min(clip.fadeOut ?? 0, len - fi);
+  let gain = 1;
+  if (fi > 0 && localIndex < fi) {
+    gain *= (localIndex / fi) ** 2;
+  }
+  if (fo > 0 && localIndex > len - fo) {
+    gain *= ((len - localIndex) / fo) ** 2;
+  }
+  return gain;
 }
+
+/** Render kernels live in `clipRender.ts`; re-exported here so the
+ * arrangement API stays in one module namespace (WF import stability). */
+export { renderClipTrack, renderClipTrackReference, renderRegion } from './clipRender';

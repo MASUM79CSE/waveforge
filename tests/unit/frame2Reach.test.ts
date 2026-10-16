@@ -16,6 +16,11 @@ const KNOWN_NON_MENU_SURFACES: Record<string, string> = {
   // per-lane automation toggle — TrackLanes header group (mounted in Z4–Z7);
   // exercised live by the e2e walk via the lane control.
   'automation.toggle': 'TrackLanes automation header',
+  // select-to prev/next marker — global keyboard bindings '{' / '}' in the
+  // SHARED keyboard.ts (serve both frames); merged-tree addition from the
+  // markers feature (their line) — documented global keys, like undo/redo.
+  'marker.selectPrev': "global keyboard '{' (shared keyboard.ts)",
+  'marker.selectNext': "global keyboard '}' (shared keyboard.ts)",
 };
 
 /** Addendum ids whose v2 surface is the Toolbars popover (⚙, frame2 only). */
@@ -59,7 +64,9 @@ describe('UX-3.4 re-homing reachability (unit)', () => {
 
   test('the documented-surface sets are exact (nothing hides there silently)', () => {
     for (const id of Object.keys(KNOWN_NON_MENU_SURFACES)) expect(registry.includes(id), id).toBe(true);
-    expect(Object.keys(KNOWN_NON_MENU_SURFACES)).toEqual(['automation.toggle']);
+    expect(Object.keys(KNOWN_NON_MENU_SURFACES).sort()).toEqual(
+      ['automation.toggle', 'marker.selectNext', 'marker.selectPrev'],
+    );
     for (const id of Object.keys(KNOWN_POPOVER_SURFACE)) expect(registry.includes(id), id).toBe(true);
   });
 

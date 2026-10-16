@@ -1,12 +1,14 @@
 /**
- * Export service (M4): main-thread façade over the two encoder workers.
- * WAV encodes inline (memcpy-speed); MP3 runs in a module worker, FLAC in
- * a classic worker over the vendored emscripten build (ADR 006 §2).
- * Both workers stream progress, honour cancel, and return transferables.
+ * Export service (M4): main-thread façade over the three encoder workers.
+ * WAV/MP3 run in module workers; FLAC in a classic worker over the vendored
+ * emscripten build (ADR 006 §2; WAV moved off-thread by WF-003). All three
+ * stream real progress, honour cancel, and return transferables.
  */
 import { z } from 'zod';
-import { encodeWav, type WavEncoding } from './wavEncoder';
+import type { WavEncoding } from './wavEncoder';
 import type { ExportFormat } from './exportName';
+import { formatInfo, isSupportedQuality } from './exportFormats';
+import { WaveForgeError } from '../core/errors';
 
 export interface ExportOptions {
   format: ExportFormat;
@@ -20,6 +22,14 @@ export interface ExportJob {
   options: ExportOptions;
   onProgress?: (fraction: number) => void;
   signal?: { cancelled: boolean };
+  /**
+   * WF-002: declare that the caller owns these channel arrays outright
+   * (e.g. fresh `sliceRegion` copies) and they are never read again —
+   * the worker request is then transferred (zero-copy move) instead of
+   * structured-cloned. Default (undefined/false) NEVER transfers: the
+   * clone keeps canonical AudioDocument data intact.
+   */
+  transferChannels?: boolean;
 }
 
 export interface ExportResult {
@@ -41,17 +51,55 @@ const workerFail = z.union([
 let nextJobId = 1;
 
 export async function runExport(job: ExportJob): Promise<ExportResult> {
-  const { format } = job.options;
-  if (format === 'wav') {
-    const encoding: WavEncoding =
-      job.options.quality === 'pcm24' ? 'pcm24' : job.options.quality === 'float32' ? 'float32' : 'pcm16';
-    job.onProgress?.(0.5);
-    const buffer = encodeWav(job.channels, job.sampleRate, encoding);
-    job.onProgress?.(1);
-    return { blob: new Blob([buffer], { type: 'audio/wav' }), mimeType: 'audio/wav' };
+  const { format, quality } = job.options;
+  // WF-010: the catalog is the authority — never silently fall back
+  if (!isSupportedQuality(format, quality)) {
+    throw new WaveForgeError('WF-E105', `unsupported ${format} quality "${quality}"`, {
+      context: { format, quality },
+    });
   }
-  if (format === 'mp3') return runMp3Worker(job);
-  return runFlacWorker(job);
+  const result =
+    format === 'wav'
+      ? await runWavWorker(job)
+      : format === 'mp3'
+        ? await runMp3Worker(job)
+        : await runFlacWorker(job);
+  return { ...result, mimeType: formatInfo(format).mime };
+}
+
+function spawnWavWorker(): Worker {
+  return new Worker(new URL('../workers/wavExport.worker.ts', import.meta.url), {
+    type: 'module',
+  });
+}
+
+async function runWavWorker(job: ExportJob): Promise<ExportResult> {
+  const worker = spawnWavWorker();
+  const id = nextJobId++;
+  const encoding: WavEncoding =
+    job.options.quality === 'pcm24' ? 'pcm24' : job.options.quality === 'float32' ? 'float32' : 'pcm16';
+  const left = job.channels[0] ?? new Float32Array(0);
+  const right = job.channels[1];
+  // transfer only caller-owned buffers; the default clones (WF-002)
+  const transfer: Transferable[] | undefined = job.transferChannels
+    ? right
+      ? [left.buffer, right.buffer]
+      : [left.buffer]
+    : undefined;
+  return driveWorker(
+    worker,
+    id,
+    job,
+    () => ({
+      cmd: 'encode',
+      id,
+      sampleRate: job.sampleRate,
+      encoding,
+      left,
+      right,
+    }),
+    transfer,
+  );
 }
 
 function spawnMp3Worker(): Worker {
@@ -66,14 +114,28 @@ async function runMp3Worker(job: ExportJob): Promise<ExportResult> {
   const kbps = (['128', '192', '256', '320'].includes(job.options.quality)
     ? Number(job.options.quality)
     : 192) as 128 | 192 | 256 | 320;
-  return driveWorker(worker, id, job, () => ({
-    cmd: 'encode',
+  const left = job.channels[0] ?? new Float32Array(0);
+  const right = job.channels[1];
+  // transfer only caller-owned buffers; the default clones (WF-002)
+  const transfer: Transferable[] | undefined = job.transferChannels
+    ? right
+      ? [left.buffer, right.buffer]
+      : [left.buffer]
+    : undefined;
+  return driveWorker(
+    worker,
     id,
-    sampleRate: job.sampleRate,
-    kbps,
-    left: job.channels[0] ?? new Float32Array(0),
-    right: job.channels[1],
-  }));
+    job,
+    () => ({
+      cmd: 'encode',
+      id,
+      sampleRate: job.sampleRate,
+      kbps,
+      left,
+      right,
+    }),
+    transfer,
+  );
 }
 
 function spawnFlacWorker(): Worker {
@@ -84,17 +146,31 @@ async function runFlacWorker(job: ExportJob): Promise<ExportResult> {
   const worker = spawnFlacWorker();
   const id = nextJobId++;
   const frames = job.channels[0]?.length ?? 0;
-  return driveWorker(worker, id, job, () => ({
-    cmd: 'encode',
+  const left = job.channels[0] ?? new Float32Array(0);
+  const right = job.channels[1];
+  // transfer only caller-owned buffers; the default clones (WF-002)
+  const transfer: Transferable[] | undefined = job.transferChannels
+    ? right
+      ? [left.buffer, right.buffer]
+      : [left.buffer]
+    : undefined;
+  return driveWorker(
+    worker,
     id,
-    sampleRate: job.sampleRate,
-    channels: job.channels.length >= 2 ? 2 : 1,
-    bits: job.options.quality === '24' ? 24 : 16,
-    level: Number(job.options.quality) || 5,
-    frames,
-    left: job.channels[0] ?? new Float32Array(0),
-    right: job.channels[1],
-  }));
+    job,
+    () => ({
+      cmd: 'encode',
+      id,
+      sampleRate: job.sampleRate,
+      channels: job.channels.length >= 2 ? 2 : 1,
+      bits: 16, // catalog advertises 16-bit FLAC only (validated above)
+      level: Number(job.options.quality) || 5,
+      frames,
+      left,
+      right,
+    }),
+    transfer,
+  );
 }
 
 /** Shared request/response plumbing: progress, cancel, cleanup, typing. */
@@ -103,9 +179,21 @@ function driveWorker(
   id: number,
   job: ExportJob,
   makeRequest: () => Record<string, unknown>,
+  transfer?: Transferable[],
 ): Promise<ExportResult> {
   return new Promise((resolve, reject) => {
+    // WF-001: the cancel watcher is cancellable itself — cleanup() stops
+    // it on every terminal path, so no timer (and no retained job closure)
+    // outlives the export and no `cancel` is ever posted after settlement.
+    let watchTimer: ReturnType<typeof setTimeout> | undefined;
+    let watchStopped = false;
+    const stopWatcher = (): void => {
+      watchStopped = true;
+      if (watchTimer !== undefined) clearTimeout(watchTimer);
+      watchTimer = undefined;
+    };
     const cleanup = (): void => {
+      stopWatcher();
       worker.onmessage = null;
       worker.onerror = null;
       worker.terminate();
@@ -127,21 +215,24 @@ function driveWorker(
       if (done.success) {
         job.onProgress?.(1);
         cleanup();
-        resolve({ blob: new Blob([done.data.data]), mimeType: 'application/octet-stream' });
+        // mimeType is set by runExport from the format catalog (WF-010)
+        resolve({ blob: new Blob([done.data.data]), mimeType: '' });
       }
     };
     worker.onerror = (event) => {
       cleanup();
       reject(new Error(event.message || 'worker failure'));
     };
-    worker.postMessage(makeRequest());
-    // watch the cancel signal
+    if (transfer) worker.postMessage(makeRequest(), transfer);
+    else worker.postMessage(makeRequest());
+    // watch the cancel signal (stopped by cleanup() on every terminal path)
     const watch = (): void => {
+      if (watchStopped) return;
       if (job.signal?.cancelled) {
         worker.postMessage({ cmd: 'cancel', id });
         return;
       }
-      setTimeout(watch, 120);
+      watchTimer = setTimeout(watch, 120);
     };
     watch();
   });

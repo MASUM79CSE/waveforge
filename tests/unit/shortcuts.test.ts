@@ -82,7 +82,27 @@ describe('non-shortcuts must not hijack the browser', () => {
     expect(std('Z')).toBeNull();
     expect(std('Control')).toBeNull();
     expect(std('a', { ctrl: true, alt: true })).toBeNull(); // Alt combos stay with the browser
-    expect(std('s', { ctrl: true })).toBeNull(); // unmapped combos stay unbound
+  });
+});
+
+describe('AM-14 reference key bindings', () => {
+  test('bare X crossfades the selected pair (reference KeyCrossfade)', () => {
+    expect(std('x')).toBe('clip.crossfade');
+    // Shift+X stays cut (legacy layer, reference KeyShiftCut)
+    expect(std('X', { shift: true })).toBe('edit.cut');
+  });
+
+  test('Ctrl/Cmd+S and Shift+S open the export dialog (reference KeyShiftSave/KeyModSave)', () => {
+    expect(std('s', { ctrl: true })).toBe('file.export');
+    expect(std('S', { meta: true })).toBe('file.export');
+    expect(std('S', { shift: true })).toBe('file.export');
+    // plain S stays clip.split
+    expect(std('s')).toBe('clip.split');
+  });
+
+  test('Tab is NOT bound (a11y: focus traversal stays with the browser)', () => {
+    expect(std('Tab')).toBeNull();
+    expect(std('Tab', { shift: true })).toBeNull();
   });
 });
 
@@ -101,8 +121,8 @@ describe('M9d2 arrangement shortcuts (single-source)', () => {
 
   test('plain letters stay untouched except the arrangement keys', () => {
     expect(std('z')).toBeNull();
-    expect(std('x')).toBeNull();
     expect(std('a')).toBe('automation.toggle'); // A4: A toggles envelope mode
+    // bare X is the AM-14 crossfade binding (asserted in its own test above)
   });
 });
 

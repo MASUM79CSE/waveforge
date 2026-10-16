@@ -19,7 +19,6 @@ import { ChannelStrip } from '../components/TransportBar';
 import { StatusBar } from '../components/StatusBar';
 import { Toasts } from '../components/Toasts';
 import { AboutDialog, WelcomeDialog } from '../components/Dialogs';
-import { UrlDialog } from '../components/UrlDialog';
 import { GainDialog, NormalizeDialog } from '../components/PromptDialogs';
 import { EffectDialog } from '../components/EffectDialog';
 import { FxRackDialog } from '../components/FxRackDialog';
@@ -168,7 +167,6 @@ export function Frame2() {
       <Toasts />
       <WelcomeDialog />
       <AboutDialog />
-      <UrlDialog />
       <GainDialog />
       <NormalizeDialog />
       {effectDialogId.value === 'fx.pgeq8' ? (

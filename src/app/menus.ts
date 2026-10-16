@@ -48,7 +48,7 @@ export const menus: MenuDef[] = [
     id: 'file',
     title: () => t().menuFile,
     items: [
-      { header: () => t().menuGroupImport, items: ['file.open', 'file.url', 'file.sample'] },
+      { header: () => t().menuGroupImport, items: ['file.open', 'file.sample'] },
       { header: () => t().menuGroupRecord, items: ['file.recordSettings', 'record.toggle', 'record.punch', 'record.monitor', 'record.metronome'] },
       { header: () => t().menuGroupExport, items: ['file.export'] },
       { header: () => t().menuGroupDrafts, items: ['file.draftSave', 'file.draftOpen'] },
@@ -68,13 +68,28 @@ export const menus: MenuDef[] = [
       '-',
       'clip.split',
       'clip.duplicate',
+      'clip.fades',
+      'clip.crossfade',
       'clip.delete',
       '-',
       'edit.trim',
+      'edit.seamlessLoop',
       'edit.silence',
       '-',
       'edit.selectAll',
       'edit.deselect',
+      '-',
+      {
+        header: () => t().markerGroup,
+        items: [
+          'marker.add',
+          'marker.rename',
+          'marker.delete',
+          'marker.clear',
+          'marker.jumpPrev',
+          'marker.jumpNext',
+        ],
+      },
     ],
   },
   {
@@ -91,7 +106,7 @@ export const menus: MenuDef[] = [
       { header: () => t().fxGroupDistortion, items: ['fx.distortion'] },
       { header: () => t().fxGroupTimePitch, items: ['fx.rate', 'fx.stretch'] },
       { header: () => t().fxGroupAmplitude, items: ['fx.gain', 'fx.fadeIn', 'fx.fadeOut', 'fx.normalize', 'fx.normalizeLufs'] },
-      { header: () => t().fxGroupSpecial, items: ['fx.reverse', 'fx.invert', 'fx.removeSilence'] },
+      { header: () => t().fxGroupSpecial, items: ['fx.repair', 'fx.reverse', 'fx.invert', 'fx.removeSilence'] },
     ],
   },
   {
@@ -112,7 +127,7 @@ export const menus: MenuDef[] = [
     items: [
       { header: () => t().menuGroupZoom, items: ['view.zoomIn', 'view.zoomOut', 'view.zoomReset', 'view.center'] },
       { header: () => t().menuGroupCursor, items: ['view.follow', 'view.zerocross', 'view.axis'] },
-      { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent'] },
+      { header: () => t().menuGroupAppearance, items: ['view.theme', 'view.accent', 'view.limits'] },
     ],
   },
   {

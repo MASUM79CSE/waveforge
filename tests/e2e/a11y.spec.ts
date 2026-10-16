@@ -12,7 +12,7 @@ import { expect, test, type Page } from '@playwright/test';
 const RULE_TAGS = ['wcag2a', 'wcag2aa'];
 
 async function axeViolations(page: Page): Promise<string[]> {
-  await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+  await page.addScriptTag({ url: '/node_modules/axe-core/axe.min.js' }) // same-origin: CSP-compliant under CSP_ENFORCE=1;
   return page.evaluate(async (tags) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const a = (window as any).axe;

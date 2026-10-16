@@ -70,6 +70,17 @@ export const draftHeaderSchema = z.object({
   tracks: z.array(draftTrackSchema).max(64).optional(),
   /** M9f: v3 shared assets; PCM = per-ASSET blocks in this order (deduped). */
   assets: z.array(draftAssetSchema).max(256).optional(),
+  /** PF-01: user markers ride the draft (optional — no version bump). */
+  markers: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(128),
+        t: z.number().int().nonnegative(),
+        label: z.string().max(200),
+      }),
+    )
+    .max(1024)
+    .optional(),
 });
 
 export type DraftHeader = z.infer<typeof draftHeaderSchema>;

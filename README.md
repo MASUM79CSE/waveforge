@@ -10,11 +10,11 @@ studio flow (count-in, monitoring, punch in/out), masters against streaming
 loudness targets, and exports WAV/MP3/FLAC — with **no uploads, no accounts,
 no tracking**. Your audio never leaves your machine.
 
-[![Preact](https://img.shields.io/badge/Preact-11-673AB8?logo=preact&logoColor=white)](https://preactjs.com)
+[![Preact](https://img.shields.io/badge/Preact-10-673AB8?logo=preact&logoColor=white)](https://preactjs.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
-[![Tests](https://img.shields.io/badge/tests-720%20%2B%2059%20e2e%20passing-brightgreen)](#-testing)
-[![Lighthouse](https://img.shields.io/badge/Lighthouse-99%20%2F%20100%20%2F%20100%20%2F%20100-success)](#-testing)
+[![CI](https://github.com/MASUM79CSE/waveforge/actions/workflows/ci.yml/badge.svg)](https://github.com/MASUM79CSE/waveforge/actions/workflows/ci.yml)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse-100%20%2F%20100%20%2F%20100%20%2F%2091-success)](#-testing)
 [![License](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 
 [Features](#-features) · [Tech Stack](#-tech-stack) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [Testing](#-testing) · [Deployment](#-deployment) · [Documentation](#-documentation)
@@ -94,16 +94,16 @@ no tracking**. Your audio never leaves your machine.
 
 | Layer | Technology |
 |---|---|
-| UI | [Preact 11](https://preactjs.com) + `@preact/signals` (fine-grained updates, tiny runtime) |
+| UI | [Preact 10](https://preactjs.com) + `@preact/signals` (fine-grained updates, tiny runtime) |
 | Language | TypeScript (strict mode) |
 | Build | [Vite 8](https://vitejs.dev) + `vite-plugin-pwa` (Workbox precache) |
 | Audio engine | [Web Audio API](https://developer.mozilla.org/docs/Web/API/Web_Audio_API) + AudioWorklet capture |
 | DSP | Pure TypeScript kernels + FFT partitioned convolver |
 | Codecs | lamejs (MP3, worker), libFLAC (WASM worker), native WAV writer |
-| AI denoise | [RNNoise](https://github.com/xiph/rnnoise) via `@echogarden/rnnoise-wasm` |
+| AI denoise | [RNNoise](https://github.com/xiph/rnnoise) WASM (vendored build, `src/vendor/rnnoise`) |
 | Persistence | IndexedDB (drafts/autosave/assets/presets) + `localStorage` settings |
 | Testing | [Vitest](https://vitest.dev) (unit), [Playwright](https://playwright.dev) (e2e + axe-core) |
-| Quality | ESLint, Prettier, Lighthouse CI gates |
+| Quality | ESLint, Prettier, coverage thresholds, bundle-size budget (CI-enforced) |
 
 Full dependency list: [`package.json`](package.json). Third-party notices:
 [`docs/THIRD_PARTY_NOTICES.md`](docs/THIRD_PARTY_NOTICES.md).
@@ -146,8 +146,8 @@ src/fx/         Effect definitions (registry) + DSP kernels and curves
 src/io/         Decode, export service + format catalog, WAV writer, ID3v2,
                 draft repository (IndexedDB)
 src/workers/    MP3 export, analysis, peaks workers
-src/worklets/   recorder.worklet (AudioWorklet capture)
-public/         Vendored runtimes (libFLAC WASM), PWA assets
+public/worklets/  recorder.worklet (AudioWorklet capture — same-origin file)
+public/         Vendored runtimes (libFLAC glue+wasm), PWA assets
 tests/          Vitest unit suites + Playwright e2e (incl. axe gate)
 docs/           Architecture, design, memory, database, breakdown docs
 scripts/        Deterministic sample generator, encoder validation
@@ -167,7 +167,7 @@ scripts/        Deterministic sample generator, encoder validation
 ```bash
 git clone https://github.com/MASUM79CSE/waveforge.git
 cd waveforge
-npm install --legacy-peer-deps   # peer-dep pinning is intentional
+npm ci   # lockfile install — the same command CI and Vercel run
 ```
 
 ### Run it
@@ -194,17 +194,19 @@ npm run preview          # serve the production build locally
 npm run validate:encoders # encoder contract checks
 ```
 
-CI (`.github/workflows/ci.yml`) runs typecheck, lint, and the unit suite
-with coverage on every push/PR to `main`. The full gate bar per change:
-**720/720 unit · 59/59 e2e · lint 0 · tsc clean · Lighthouse ≥ 95**.
+CI (`.github/workflows/ci.yml`) runs typecheck, lint, the unit suite
+with coverage thresholds, a bundle-size budget check, and the production
+build on every push/PR, plus a separate job for the full Playwright e2e
+suite. Lighthouse is measured at release/audit time (desktop
+100/100/100/91, mobile 99/100/100/91) rather than gated in CI.
 
 ## ✅ Testing
 
 | Suite | Command | Coverage |
 |---|---|---|
-| **Unit** | `npm run test` | 720 tests across 86 files — pure DSP kernels with analytic anchors (true-peak, RBJ, RT60, WOLA, SNR), edit/history byte economics, storage round-trips, catalogs, reducer state |
+| **Unit** | `npm run test` | 765 tests across 93 files — pure DSP kernels with analytic anchors (true-peak, RBJ, RT60, WOLA, SNR), edit/history byte economics, storage round-trips, catalogs, reducer state |
 | **End-to-end** | `npm run e2e` | Playwright in Chromium with fake media — full user flows (load → edit → effect → export, record, drafts, shortcuts) plus a permanent **axe-core WCAG 2.1 AA zero-violations** gate |
-| **Quality gates** | `lint` / `typecheck` / `build` | ESLint 0 findings, strict tsc, production build; Lighthouse **99/100/100/100** desktop, **99** mobile performance |
+| **Quality gates** | `lint` / `typecheck` / `build` / coverage thresholds / bundle budget | ESLint 0 findings, strict tsc, production build; Lighthouse measured **100/100/100/91** desktop, **99/100/100/91** mobile (perf/a11y/BP/SEO, 2026-10-13) |
 
 DSP accuracy is anchor-tested, not eyeballed: every effects kernel ships
 with analytic or reference tolerances (see
@@ -236,7 +238,7 @@ HTTPS, or `localhost` for local development.
 | **MP3/FLAC export** fails in a hardened browser | WASM compilation requires `wasm-unsafe-eval`; some corporate browsers block it. Allow WASM for the site, or export WAV (no WASM needed). |
 | **Crash-recovery banner** appeared | Autosave found a newer snapshot than your last manual save — choose **Restore** or **Discard**. Recovery is never auto-applied. |
 | Drafts don't appear on another device/browser | By design: IndexedDB is per-origin and per-browser, and drafts never leave the device. |
-| Avatar shows an **"MM" monogram** instead of the photo | The developer avatar loads from an external CDN; offline or blocked it falls back to the monogram by design. |
+| Avatar shows an **"MM" monogram** instead of the photo | By design: the avatar is a local monogram mark — no external avatar/CDN request exists. |
 | `Port already in use` on dev/preview | Another dev or preview server is still running — stop it, or pass a different `--port`. |
 
 ## 📚 Documentation

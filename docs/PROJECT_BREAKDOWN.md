@@ -11,9 +11,9 @@
 |---|---|
 | Commits | **192** (conventional-commit discipline throughout) |
 | Source | **23,119 LOC** across 6 modules (`app` 12.6k, `engine` 5.1k, `fx` 4.6k, `io` 0.65k, `workers` 0.28k, `worklets` 0.06k) |
-| Tests | **13,980 LOC** — **720 unit** (86 files) + **59 e2e** (Chromium, fake media, incl. axe) |
+| Tests | **15,171 LOC** — **765 unit** (93 files) + **64 e2e** (Chromium, fake media, incl. axe/egress/CSP) + 3 production smoke |
 | Governance docs | 56 in-repo docs · **10 ADRs** (000–009) · analysis + plan + stamp per feature series |
-| Performance | Lighthouse **99/100/100/100** desktop, **99** mobile perf; main JS ≈ 119.5 KB gz |
+| Performance | Lighthouse **100/100/100/91** desktop, **99/100/100/91** mobile (2026-10-13); main JS entry **118,171 B gz** (CI budget 122,132) |
 | Product | Pure-client PWA audio editor: multitrack, clips, 30+ effects + automation + rack, studio recording, mastering suite, pro export |
 
 ## 2. Build timeline (phase by phase)
@@ -152,8 +152,9 @@ repo cleanup; CSP avatar allowance.
 | Y | cross-browser pass (FF 44/45, WK 43/45), acceptance trace |
 | Launch | e2e `retries: 1`; README screenshots from the real app |
 
-Current status: **720/720 unit · 59/59 e2e · lint 0 · tsc clean ·
-LH 99/100/100/100 · axe 0 · tree clean.**
+Current status (audit branch, 2026-10-13): **765/765 unit · 64/64 e2e ·
+lint 0 · tsc clean · LH 100/100/100/91 desktop, 99/100/100/91 mobile ·
+axe 0 · tree clean.**
 
 ## 5. Deferred / parked
 
@@ -167,7 +168,7 @@ LH 99/100/100/100 · axe 0 · tree clean.**
 
 - [x] Feature-complete v1 scope (PRD §11 deltas closed — C5/Z stamps)
 - [x] All gates green at head `c0a1baa`
-- [x] Lighthouse ≥ 95 all categories (99/100/100/100)
+- [x] Lighthouse ≥ 95 all categories (100/100/100/91 desktop, 99/100/100/91 mobile)
 - [x] Accessibility: axe 0 violations, keyboard-complete
 - [x] PWA offline + installable; crash-recovery verified
 - [x] Docs: README v2 + ARCHITECTURE/DESIGN/MEMORY/DATABASE/BREAKDOWN + 10 ADRs
@@ -187,7 +188,7 @@ About-dialog developer card evolved in place (no UI/UX change): name
 ("Full-Stack Software Engineer, System Architect & Audio Engineer"),
 added the note "Designed, architected & developed from scratch."
 i18n-keyed, token-styled (theme-agnostic), e2e contract #58 extended.
-Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK;**
+Gates: **765/765 unit, 64/64 e2e, lint 0, tsc clean, build OK;**
 verified at 1280 px and 375 px.
 
 ## Appendix — v1.0.0 release stamp (2026-09-26)
@@ -196,7 +197,7 @@ Version bumped 0.1.0 → **1.0.0** (brand.ts + package.json) to match the
 shipped production reality the documentation set already claimed.
 Lighthouse re-stamped after the credit change: **desktop 97/100/100/100
 (perf varies 97–99 across runs, gate ≥95), mobile 99.** Gates:
-**720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
+**765/765 unit, 64/64 e2e, lint 0, tsc clean, build OK.**
 
 ## Appendix — full gap audit (2026-09-26, v1.0.0)
 
@@ -207,7 +208,7 @@ dead `toastNotYet` code path, CI now runs the e2e suite (dedicated job
 + report artifact). Open-by-decision items recorded in
 **docs/GAP_ANALYSIS.md** (cloud M12 parked, CSP report-only,
 cross-browser partial, >400-line file debt, og:image post-domain).
-Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
+Gates: **765/765 unit, 64/64 e2e, lint 0, tsc clean, build OK.**
 
 ## Appendix — PRODUCTION DEPLOY verified (2026-09-26)
 
@@ -230,4 +231,4 @@ to restore 100.
   (public/og-image.png), og:url + large-image card meta added — link
   previews now show the actual editor (post-deploy gap closed).
 - LH after: **desktop 98/100/100/100, mobile 99** (best-practices 96 → 100).
-Gates: **720/720 unit, 59/59 e2e, lint 0, tsc clean, build OK.**
+Gates: **765/765 unit, 64/64 e2e, lint 0, tsc clean, build OK.**

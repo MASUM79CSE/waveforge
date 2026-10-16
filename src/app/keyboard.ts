@@ -20,7 +20,6 @@ import {
   exportOpen,
   recordSettingsOpen,
   shortcutsOpen,
-  urlOpen,
   welcomeOpen,
 } from './state';
 
@@ -40,7 +39,6 @@ export function bindKeyboard(): void {
       if (effectDialogId.value) closeEffectDialog();
       else if (recordSettingsOpen.value) closeRecordSettings();
       else if (exportOpen.value) closeExportDialog();
-      else if (urlOpen.value) urlOpen.value = false;
       else if (doctorOpen.value) closeDoctor();
       else if (shortcutsOpen.value) closeShortcuts();
       else if (aboutOpen.value) aboutOpen.value = false;
@@ -107,6 +105,22 @@ export function bindKeyboard(): void {
       case 'Q':
       case '~':
         edit.deselect();
+        break;
+      case 'b':
+      case 'B':
+        runCommand('marker.add'); // 'm' is taken: metronome (BandLab parity)
+        break;
+      case '[':
+        runCommand('marker.jumpPrev');
+        break;
+      case ']':
+        runCommand('marker.jumpNext');
+        break;
+      case '{': // Shift+[ — select back to the previous marker
+        runCommand('marker.selectPrev');
+        break;
+      case '}': // Shift+] — select forward to the next marker
+        runCommand('marker.selectNext');
         break;
       default:
         break;

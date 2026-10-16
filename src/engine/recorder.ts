@@ -5,7 +5,7 @@
  * the take as channel arrays at the context rate. Streams/nodes are fully
  * torn down on stop and error (ADR 006 security review).
  */
-import workletUrl from '../worklets/recorder.worklet.js?url';
+const workletUrl = '/worklets/recorder.worklet.js';
 import { meterLevel, type MeterLevel } from './meter';
 import { RecordBuffer } from './recordBuffer';
 

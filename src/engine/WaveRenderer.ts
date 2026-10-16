@@ -16,6 +16,7 @@ export class WaveRenderer {
   view: V.ViewState = { spp: 1024, start: 0 };
   cursor = 0;
   private beats: number[] = [];
+  private markers: Array<{ t: number; label: string }> = [];
   selection: { start: number; end: number } | null = null;
 
   onSeek: ((t: number) => void) | null = null;
@@ -32,6 +33,7 @@ export class WaveRenderer {
   private dpr = 1;
   private frameQueued = false;
   private axis = true;
+  private limits = false;
   private vzoom = 1;
   /** frame2 (UX-4): playhead drawn on a separate overlay layer, not here. */
   overlayPlayhead = false;
@@ -43,6 +45,9 @@ export class WaveRenderer {
   dbScale = false;
   private pendingRaw = new Map<number, Float32Array>();
   private drag: { mode: 'scrub' | 'select'; anchor: number; startX: number } | null = null;
+  /** PF-07/AM-02: two-pointer pinch-zoom + pan (touch parity). */
+  private pointers = new Map<number, { x: number; y: number }>();
+  private pinch: { dist: number; midX: number } | null = null;
 
   attach(canvas: HTMLCanvasElement): void {
     this.canvas = canvas;
@@ -66,6 +71,15 @@ export class WaveRenderer {
     this.beats = beats;
     this.requestDraw();
   }
+
+  /** PF-01: user markers (seconds + label) drawn as labeled flags. */
+  setMarkers(markers: Array<{ t: number; label: string }>): void {
+    this.markers = markers;
+    this.requestDraw();
+  }
+
+  /** Set by the app layer: canvas double-click at time `t` seconds. */
+  onCanvasDoubleClick: ((t: number) => void) | null = null;
 
   setDocument(doc: AudioDocument | null, peaks: PeakClient | null, opts?: { keepView?: boolean }): void {
     this.doc = doc;
@@ -135,6 +149,12 @@ export class WaveRenderer {
     this.requestDraw();
   }
 
+  /** AM-08: toggle full-scale peak-separator lines (reference parity). */
+  setLimits(visible: boolean): void {
+    this.limits = visible;
+    this.requestDraw();
+  }
+
   /** D5: vertical zoom — wave amplitude scale (0.5..3). */
   setVZoom(scale: number): void {
     this.vzoom = scale;
@@ -201,8 +221,10 @@ export class WaveRenderer {
       cursor: this.cursor,
       selection: this.selection,
       beats: this.beats,
+      markers: this.markers,
       pendingRaw: this.pendingRaw,
       axis: this.axis,
+      limits: this.limits,
       vzoom: this.vzoom,
       overlayPlayhead: this.overlayPlayhead,
       batchedLanes: this.batchedLanes,
@@ -221,7 +243,18 @@ export class WaveRenderer {
     canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
     canvas.addEventListener('pointermove', (e) => this.onPointerMove(e));
     canvas.addEventListener('pointerup', (e) => this.onPointerUp(e));
-    canvas.addEventListener('pointercancel', () => (this.drag = null));
+    canvas.addEventListener('pointercancel', (e) => {
+      this.pointers.delete(e.pointerId);
+      if (this.pointers.size < 2) this.pinch = null;
+      this.drag = null;
+    });
+    canvas.addEventListener('dblclick', (e) => {
+      const env = this.env();
+      if (!this.onCanvasDoubleClick || !this.doc || !env) return;
+      const rect = this.canvas!.getBoundingClientRect();
+      const t = V.timeAtX(this.view, env, e.clientX - rect.left);
+      this.onCanvasDoubleClick(t);
+    });
     canvas.addEventListener(
       'wheel',
       (e) => this.onWheel(e),
@@ -242,6 +275,14 @@ export class WaveRenderer {
   private onPointerDown(e: PointerEvent): void {
     if (!this.doc || !this.canvas) return;
     this.canvas.setPointerCapture(e.pointerId);
+    this.pointers.set(e.pointerId, { x: this.localX(e), y: this.localY(e) });
+    if (this.pointers.size === 2) {
+      // two fingers: switch to pinch/pan and cancel any single-finger drag
+      this.drag = null;
+      this.startPinch();
+      return;
+    }
+    if (this.pointers.size > 2) return;
     const x = this.localX(e) - (this.axis ? RAIL_W : 0);
     const env = this.env();
     if (!env) return;
@@ -256,6 +297,13 @@ export class WaveRenderer {
   }
 
   private onPointerMove(e: PointerEvent): void {
+    if (this.pointers.has(e.pointerId)) {
+      this.pointers.set(e.pointerId, { x: this.localX(e), y: this.localY(e) });
+    }
+    if (this.pinch && this.pointers.size >= 2) {
+      this.movePinch();
+      return;
+    }
     const drag = this.drag;
     const env = this.env();
     const doc = this.doc;
@@ -278,6 +326,11 @@ export class WaveRenderer {
   }
 
   private onPointerUp(e: PointerEvent): void {
+    this.pointers.delete(e.pointerId);
+    if (this.pinch) {
+      if (this.pointers.size < 2) this.pinch = null;
+      return; // a pinch gesture never ends in a click-seek
+    }
     const drag = this.drag;
     const env = this.env();
     const doc = this.doc;
@@ -297,6 +350,33 @@ export class WaveRenderer {
       this.onSelectionChange?.(null);
     }
     this.requestDraw();
+  }
+
+  private startPinch(): void {
+    const pts = [...this.pointers.values()];
+    const a = pts[0];
+    const b = pts[1];
+    if (!a || !b) return;
+    this.pinch = { dist: Math.max(1, Math.abs(a.x - b.x) + Math.abs(a.y - b.y)), midX: (a.x + b.x) / 2 };
+  }
+
+  private movePinch(): void {
+    const env = this.env();
+    const pts = [...this.pointers.values()];
+    const a = pts[0];
+    const b = pts[1];
+    if (!env || !a || !b || !this.pinch) return;
+    const dist = Math.max(1, Math.abs(a.x - b.x) + Math.abs(a.y - b.y));
+    const midX = (a.x + b.x) / 2;
+    const rail = this.axis ? RAIL_W : 0;
+    const factor = dist / this.pinch.dist;
+    if (Number.isFinite(factor) && factor > 0) {
+      this.zoom(factor, (midX - rail) / Math.max(1, this.cssW - rail));
+    }
+    // midpoint travel pans (content follows the fingers)
+    const dx = midX - this.pinch.midX;
+    if (dx !== 0) this.setStart(this.view.start - (dx * this.view.spp) / env.sampleRate);
+    this.pinch = { dist, midX };
   }
 
   private onWheel(e: WheelEvent): void {

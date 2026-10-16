@@ -18,7 +18,7 @@ import { startPreview, stopPreview, togglePreviewAB } from '../preview';
 import { closeEffectDialog } from '../actions';
 import { effectDialogId, previewActive } from '../state';
 import { getDoc } from '../runtime';
-import { decodeArrayBuffer } from '../../io/decode';
+import { decodeBlob } from '../../io/decode';
 import { t } from '../../i18n';
 import { Modal } from './Modal';
 import { ParamRow } from './EffectDialog';
@@ -69,7 +69,8 @@ export function Reverb2Dialog(): JSX.Element | null {
 
   const onImportFile = async (file: File): Promise<void> => {
     try {
-      const decoded = await decodeArrayBuffer(await file.arrayBuffer());
+      // WF-009: guarded pipeline (decoded-size budget + watchdog), like every import
+      const decoded = await decodeBlob(file);
       const doc = getDoc();
       const sr = doc?.sampleRate ?? decoded.sampleRate;
       let channels: Float32Array[] = [];

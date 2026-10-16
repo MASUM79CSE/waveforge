@@ -6,6 +6,7 @@
  */
 import { logger } from '../core/logger-instance';
 import { sanitizeFilename, estimateExportBytes, type ExportFormat } from '../io/exportName';
+import { formatInfo } from '../io/exportFormats';
 import { runExport } from '../io/exportService';
 import { buildId3Tag } from '../io/id3';
 import { sliceRegion } from '../engine/editOps';
@@ -29,13 +30,18 @@ interface SavePickerWindow {
   }>;
 }
 
+// WF-010: the format catalog is the single authority for MIME/extension
 const MIME_BY_FORMAT: Record<ExportFormat, string> = {
-  wav: 'audio/wav',
-  mp3: 'audio/mpeg',
-  flac: 'audio/flac',
+  wav: formatInfo('wav').mime,
+  mp3: formatInfo('mp3').mime,
+  flac: formatInfo('flac').mime,
 };
 
-const EXTENSION: Record<ExportFormat, string> = { wav: 'wav', mp3: 'mp3', flac: 'flac' };
+const EXTENSION: Record<ExportFormat, string> = {
+  wav: formatInfo('wav').ext,
+  mp3: formatInfo('mp3').ext,
+  flac: formatInfo('flac').ext,
+};
 
 export function defaultExportName(): string {
   const doc = getDoc();
@@ -62,10 +68,14 @@ export async function performExport(
   const range = targetRange();
   if (!doc || !range || S.exportBusy.value) return;
 
-  const channels =
-    range.start === 0 && range.len === doc.length
-      ? currentChannels()
-      : sliceRegion(currentChannels(), range.start, range.len);
+  // Full range passes the canonical document channels (WF-002: never
+  // transferred — the worker boundary clones them). A sub-range hands
+  // over fresh sliceRegion copies the caller never reads again, so the
+  // worker request can be transferred (zero-copy move).
+  const fullRange = range.start === 0 && range.len === doc.length;
+  const channels = fullRange
+    ? currentChannels()
+    : sliceRegion(currentChannels(), range.start, range.len);
 
   const safeName = sanitizeFilename(filename);
   const fullName = `${safeName}.${EXTENSION[format]}`;
@@ -95,6 +105,7 @@ export async function performExport(
       channels,
       sampleRate: doc.sampleRate,
       options: { format, quality },
+      transferChannels: !fullRange,
       onProgress: (fraction) => {
         S.exportProgress.value = fraction;
       },

@@ -48,6 +48,8 @@ export interface DraftInput {
    * the track metas; PCM = deduped per-asset blocks). */
   tracks?: DraftTrackPayload[];
   assets?: DraftAssetPayload[];
+  /** PF-01: user markers (header field, no version bump). */
+  markers?: Array<{ id: string; t: number; label: string }>;
 }
 
 export interface DraftRecord {
@@ -250,6 +252,7 @@ export class IdbDraftRepository {
       cursor: input.cursor,
       selection: input.selection,
       noisePrint: input.noisePrint,
+      markers: input.markers,
     });
     const payload = await encodeDraft(header, input.audio, { compress: supportsCompression() });
     const hash = await hashPcm(input.audio);
@@ -320,6 +323,7 @@ export class IdbDraftRepository {
       cursor: input.cursor,
       selection: input.selection,
       noisePrint: input.noisePrint,
+      markers: input.markers,
     });
     const payload = await encodeDraft(header, input.audio, { compress });
     const hash = await hashPcm(input.audio);

@@ -5,7 +5,7 @@
  * start(when, offset, dur) args. ProjectPlayback consumes the result;
  * ProjectPlayback (class) owns the graph, this file owns the math.
  */
-import type { AudioAsset, AudioClip } from './clips';
+import { clipGainAt, type AudioAsset, type AudioClip } from './clips';
 import { trackEffectiveGain } from './project';
 
 /** Clip-world track view (clips reference shared immutable assets). */
@@ -35,6 +35,12 @@ export interface ScheduledClip {
   spanStart: number;
   /** Span length copied into the source buffer (samples). */
   spanLen: number;
+  /**
+   * PF-02: per-sample gain over the copied span (fade in/out + crossfade),
+   * present only when the clip carries fades or a crossfade marker —
+   * undefined keeps the copy loop at full gain (zero cost elsewhere).
+   */
+  envelope?: Float32Array;
 }
 
 /**
@@ -68,6 +74,16 @@ export function expandClipPass(
       const vS = Math.max(cS, winS, passS);
       const vE = Math.min(cE, winE);
       if (vE - vS <= 0) continue;
+      const hasEnvelope =
+        (clip.fadeIn ?? 0) > 0 || (clip.fadeOut ?? 0) > 0 || clip.xfadeWith !== undefined ||
+        t.clips.some((other) => other.xfadeWith === clip.id);
+      let envelope: Float32Array | undefined;
+      if (hasEnvelope) {
+        envelope = new Float32Array(clip.duration);
+        for (let i = 0; i < clip.duration; ++i) {
+          envelope[i] = clipGainAt(clip, t.clips, sampleRate, i);
+        }
+      }
       list.push({
         trackIndex: ti,
         asset,
@@ -76,6 +92,7 @@ export function expandClipPass(
         dur: (vE - vS) / sampleRate,
         spanStart: clip.offset,
         spanLen: clip.duration,
+        envelope,
       });
     }
   }

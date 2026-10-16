@@ -68,11 +68,35 @@ generation-keyed — a new document never repaints from a stale cache.
 
 ## 5. Worker memory discipline
 
-Encode (MP3/FLAC/WAV) and analysis (LUFS/BPM/report) jobs receive
-**transferred** `Float32Array` buffers (zero-copy), allocate scratch
-locally, and return transferred results. Cancellation frees the job at
-chunk boundaries (MP3) or via worker-side flags (FLAC/analysis). The
-main thread therefore never doubles audio memory for an export.
+Export/analysis workers communicate by message with explicit buffer
+ownership (WF-002 audit):
+
+- **Worker requests.** By default the channel `Float32Array`s are
+  structured-cloned at the `postMessage` boundary — one transient
+  full-size copy, measured at ~46 ms / +40 MB RSS for a 120 s stereo
+  44.1 kHz document (40.4 MB payload). This is deliberate: the
+  canonical AudioDocument buffers must never be listed in a transfer
+  list (transfer would detach them). Callers that hold **exclusive**
+  buffers they never read again (the range-export `sliceRegion`
+  copies) set `transferChannels: true` and the request is moved
+  zero-copy instead — measured 22 ms vs 72 ms for the same payload
+  (Node 20, median of 5; see audit EVIDENCE_LOG E-006). Stem export
+  intentionally keeps the clone: `trackChannels` has a zero-copy fast
+  path that can return asset PCM references.
+- **Worker results** (MP3/FLAC output bytes) are transferred back
+  (`[out.buffer]`) and wrapped in a `Blob` on the main thread.
+- Analysis (LUFS/BPM/report) jobs receive transferred copies made at
+  the call site (`PeakClient` slices per channel before transfer).
+- Cancellation frees the job at chunk boundaries (MP3) or via
+  worker-side flags (FLAC/analysis). The export cancel watcher stops
+  on every terminal path (WF-001), so no job closure outlives its
+  export.
+- WAV encoding runs in its own module worker (WF-003): the pure
+  `encodeWavChunked` kernel converts in 65,536-frame chunks with real
+  progress and cancel between chunks; the main thread only orchestrates
+  and wraps the transferred result in a `Blob` (measured main-thread
+  blocking moved from 134/137/1161 ms to zero long tasks for a 120 s
+  stereo export; audit EVIDENCE_LOG E-007).
 
 ## 6. Session state (non-durable)
 
@@ -102,8 +126,9 @@ noise prints persist inside draft headers so NR survives reload.
 | Item | Budget / observed |
 |---|---|
 | Undo retention | < 250 MB hard, ≥ 100 steps (tested) |
+| Decoded audio (document/asset/IR) | ≤ 512 MiB decoded PCM — WF-009 guard (≈45 min stereo 44.1 kHz); files > 512 MB rejected pre-decode; decode watchdog 60 s |
 | Peaks cache | ~ KBs–low MBs (mip levels × channels) |
-| Main JS bundle | ≈ 119.5 KB gzipped |
+| Main JS bundle | ≈ 118 KB gzipped (entry 118,171 B, CI budget 122,132 B — WF-007 gate) |
 | Autosave ring | bounded (oldest snapshots evicted) |
 | Error log ring | bounded entries, session-scoped |
 | Long-session behavior | memory flat after eviction; no per-keystroke growth |

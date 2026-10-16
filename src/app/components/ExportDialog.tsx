@@ -32,7 +32,7 @@ export function ExportDialog() {
   const doc = docInfo.value;
   // initial state is computed at mount — App mounts this dialog fresh for
   // every open (see <ExportDialog/> below), so no reset effect is needed
-  const [format, setFormat] = useState<ExportFormat>('wav');
+  const [format, setFormat] = useState<ExportFormat | 'amss'>('wav');
   const [quality, setQuality] = useState(formatInfo('wav').defaultQuality);
   const [useSelection, setUseSelection] = useState(false);
   const [filename, setFilename] = useState(defaultExportName());
@@ -44,8 +44,9 @@ export function ExportDialog() {
     setFormat(next);
     setQuality(formatInfo(next).defaultQuality);
   };
-  const info = formatInfo(format);
-  const estimate = currentEstimate(format, quality);
+  const isSession = format === 'amss';
+  const info = isSession ? formatInfo('wav') : formatInfo(format);
+  const estimate = format === 'amss' ? 0 : currentEstimate(format, quality);
 
   return (
     <Modal title={t().exportTitle} onClose={closeExportDialog}>
@@ -71,7 +72,24 @@ export function ExportDialog() {
             </button>
           ))}
         </div>
-
+        {projectOpen.value && (
+          <div class="export-cards" role="radiogroup" aria-label={t().exportFormat}>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={isSession}
+              class={`export-card ${isSession ? 'selected' : ''}`}
+              data-testid="export-format-amss"
+              onClick={() => setFormat('amss')}
+            >
+              <span class="export-card-head">
+                <span class="export-card-name">{t().exportSession}</span>
+              </span>
+              <span class="export-card-blurb">{t().exportSessionBlurb}</span>
+            </button>
+          </div>
+        )}
+        {!isSession && (
         <div class="fx-row">
           <label class="fx-label" for="export-quality">
             {info.id === 'wav' ? t().exportWavBits : info.id === 'mp3' ? t().exportMp3Bitrate : t().exportFlacLevel}
@@ -88,8 +106,9 @@ export function ExportDialog() {
               </option>
             ))}
           </select>
-          <span class="export-hint">{qualityHint(format, quality)}</span>
+          {!isSession && <span class="export-hint">{qualityHint(format, quality)}</span>}
         </div>
+        )}
 
         {format === 'mp3' && (
           <div class="fx-row">
@@ -165,12 +184,19 @@ export function ExportDialog() {
           <button
             class="btn-primary"
             disabled={exportBusy.value || !doc}
-            onClick={() => void performExport(format, quality, filename)}
+            onClick={() => {
+              if (format === 'amss') {
+                // reference: the session radio routes the SAME Export button
+                void import('../sessionActions').then((m) => m.saveSessionFile(filename));
+                return;
+              }
+              void performExport(format, quality, filename);
+            }}
           >
             {t().exportButton}
           </button>
         </div>
-        {projectOpen.value && (
+        {projectOpen.value && !isSession && (
           <div class="fx-actions">
             <span class="lane-export-hint">{t().projectExportHint}</span>
             <span class="fx-spacer" />

@@ -115,7 +115,7 @@ test('bn locale — core chrome renders Bengali; labels do not clip', async ({ p
 
 test('axe — flag-ON states stay clean (loaded, welcome, 390px)', async ({ page }) => {
   const run = async (): Promise<string[]> => {
-    await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+    await page.addScriptTag({ url: '/node_modules/axe-core/axe.min.js' }) // same-origin: CSP-compliant under CSP_ENFORCE=1;
     return page.evaluate(async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const a = (window as any).axe;
@@ -127,7 +127,7 @@ test('axe — flag-ON states stay clean (loaded, welcome, 390px)', async ({ page
     });
   };
   await page.goto('/?ui2=1'); // welcome dialog open
-  await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+  await page.addScriptTag({ url: '/node_modules/axe-core/axe.min.js' }) // same-origin: CSP-compliant under CSP_ENFORCE=1;
   const welcomeViolations = await run();
   expect(welcomeViolations).toEqual([]);
 
@@ -198,7 +198,7 @@ test('menubar keyboard — roving titles, arrows open menus, Escape restores (F-
   // axe scan with a menu OPEN — the new menubar roles must stay clean
   await file.click();
   await expect(page.locator('.menu-dropdown[data-menu="file"]')).toBeVisible();
-  await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+  await page.addScriptTag({ url: '/node_modules/axe-core/axe.min.js' }) // same-origin: CSP-compliant under CSP_ENFORCE=1;
   const openViolations = await page.evaluate(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const a = (window as any).axe;

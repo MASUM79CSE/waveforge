@@ -1,4 +1,5 @@
 import { createTakes, type TakesState } from '../engine/takes';
+import type { Marker } from '../engine/markers';
 import { signal } from '@preact/signals';
 import { STORAGE_PREFIX } from '../core/constants';
 
@@ -34,6 +35,16 @@ export const docInfo = signal<DocInfo | null>(null);
 export const playing = signal(false);
 export const looping = signal(false);
 export const cursorPos = signal(0);
+/** PF-01/AM-07: user markers (samples) — document-anchored annotations. */
+export const markers = signal<Marker[]>([]);
+/** Open marker-name prompt ('add' targets the cursor/selection start). */
+export const markerPrompt = signal<{
+  mode: 'add' | 'rename';
+  id?: string;
+  initial: string;
+  /** canvas double-click anchor (samples) — overrides cursor/selection */
+  anchor?: number;
+} | null>(null);
 
 // view
 export const viewSpp = signal(1024);
@@ -55,9 +66,14 @@ export const doctorOpen = signal(false);
 export const shortcutsOpen = signal(false);
 /** E6a noise print held across the session; persisted in draft headers (M7). */
 export const sessionNoisePrint = signal<Float32Array | null>(null);
-export const urlOpen = signal(false);
 export const gainPromptOpen = signal(false);
+/** PF-06/AM-11: seamless-loop maker dialog. */
+export const seamlessOpen = signal(false);
+/** PF-02/AM-06: clip fade dialog. */
+export const clipFadesOpen = signal(false);
 export const normalizePromptOpen = signal(false);
+/** Open Audio Repair dialog (PF-03, doc mode only). */
+export const repairPromptOpen = signal(false);
 
 // editing
 export const canUndo = signal(false);
@@ -189,6 +205,15 @@ export const beats = signal<number[]>([]); // seconds, ascending
 export const analysisBusy = signal<'bpm' | 'lufs' | 'report' | null>(null);
 export const analysisPanelOpen = signal(readStoredBool('analysis', false));
 export const beatsShown = signal(readStoredBool('beats', true));
+/** PF-08: the analysis panel runs detached (floating) — session-only. */
+export const analysisDetached = signal(false);
+/** PF-08: floating position (css px); null = not yet placed (default spot). */
+export const analysisPanelPos = signal<{ x: number; y: number } | null>(null);
+
+export function setAnalysisDetached(value: boolean): void {
+  analysisDetached.value = value;
+  if (!value) analysisPanelPos.value = null;
+}
 
 export function setAnalysisPanelOpen(value: boolean): void {
   analysisPanelOpen.value = value;
@@ -259,6 +284,8 @@ function writeStoredBool(key: string, value: boolean): void {
 export const zeroCrossEnabled = signal(readStoredBool('zerocross', true));
 /** D4: amplitude axis + channel rail along the canvas edges (reference parity). */
 export const amplitudeAxis = signal(readStoredBool('amplitudeaxis', true));
+/** AM-08: full-scale (0 dBFS) peak-separator lines on the waveform (reference parity). */
+export const waveLimits = signal(readStoredBool('wavelimits', false));
 /** D5: vertical zoom — wave amplitude scale, clamped 0.5..3 (reference parity). */
 export const VZOOM_MIN = 0.5;
 export const VZOOM_MAX = 3;
@@ -285,6 +312,11 @@ export function setZeroCrossEnabled(value: boolean): void {
 export function setAmplitudeAxis(value: boolean): void {
   amplitudeAxis.value = value;
   writeStoredBool('amplitudeaxis', value);
+}
+
+export function setWaveLimits(value: boolean): void {
+  waveLimits.value = value;
+  writeStoredBool('wavelimits', value);
 }
 
 // toasts

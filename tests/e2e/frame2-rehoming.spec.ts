@@ -272,7 +272,7 @@ test('re-homing walk — every capability executed once through its v2 surface',
 test('axe — flag-ON main state stays clean (wcag2a+2aa)', async ({ page }) => {
   await page.goto('/?ui2=1');
   await dismissWelcome(page);
-  await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+  await page.addScriptTag({ url: '/node_modules/axe-core/axe.min.js' }) // same-origin: CSP-compliant under CSP_ENFORCE=1;
   const violations = await page.evaluate(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const a = (window as any).axe;

@@ -2,6 +2,25 @@ import { defineConfig } from 'vitest/config';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// WF-004: set CSP_ENFORCE=1 to serve the FUTURE enforcing policy from the
+// dev/preview servers (used by the e2e suite to prove zero violations
+// before flipping the production header in vercel.json). Off by default —
+// local dev behaviour is unchanged.
+const CSP_ENFORCED = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "worker-src 'self' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "media-src 'self' blob: data:",
+  "connect-src 'self' data: blob:",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+  "form-action 'self'",
+].join('; ');
+
 export default defineConfig({
   // pre-bundle worker deps so first export never triggers a mid-session
   // dependency re-optimization (which force-reloads the page)
@@ -38,21 +57,48 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
     port: 5173,
+    ...(process.env.CSP_ENFORCE === '1' ? { headers: { 'Content-Security-Policy': CSP_ENFORCED } } : {}),
   },
   preview: {
     host: true,
     allowedHosts: true,
     port: 4173,
+    ...(process.env.CSP_ENFORCE === '1' ? { headers: { 'Content-Security-Policy': CSP_ENFORCED } } : {}),
   },
   build: {
     target: 'es2022',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // E-031: keep zod in ONE chunk. The dynamic-entry split (PF-05)
+        // otherwise duplicates zod, and the copy outside the entry never
+        // sees `z.config({ jitless: true })` (main.tsx) — its first parse
+        // JIT-probes `new Function`, which the enforcing CSP blocks (9
+        // violations + console errors per load). One shared chunk = one
+        // instance, configured at boot before any parse.
+        manualChunks(id: string) {
+          // zodConfig rides IN the zod chunk so the jitless flag is applied
+          // during zod's own module load — before any importer's body runs
+          // (the boot-time probe read happens in an importer's module scope).
+          if (id.includes('node_modules/zod') || id.includes('core/zodConfig')) return 'zod';
+        },
+      },
+    },
   },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     coverage: {
       provider: 'v8',
+      // WF-007: floors measured at audit time (2026-10-13:
+      // 96.38/76.76/94.96/97.92, rounded down) — CI fails if coverage
+      // regresses below these.
+      thresholds: {
+        statements: 96,
+        branches: 76,
+        functions: 94,
+        lines: 97,
+      },
       include: [
         // pure modules — TDD'd; browser classes join as their harnesses land
         'src/core/**',

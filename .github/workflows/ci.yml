@@ -19,6 +19,8 @@ jobs:
       - run: npm run lint
       - run: npm run test:coverage
       - run: npm run build
+      - name: Bundle budget (entry gz)
+        run: node scripts/check-bundle.mjs
 
   e2e:
     runs-on: ubuntu-latest
