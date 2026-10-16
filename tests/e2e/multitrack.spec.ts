@@ -111,7 +111,7 @@ test('multitrack: drafts v2 round-trip + mixdown/stems export (M8e)', async ({ p
   await expect(page.locator('.lane', { hasText: 'stem-a' })).toBeVisible();
 
   // save draft (v2: lanes ride the payload)
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /save draft/i }).click();
   const saveDialog = page.getByRole('dialog', { name: /save draft/i });
   await saveDialog.locator('#draft-name').fill('e2e project');
@@ -123,7 +123,7 @@ test('multitrack: drafts v2 round-trip + mixdown/stems export (M8e)', async ({ p
   // reload → reopen the draft → both lanes are back
   await page.reload();
   await page.mouse.click(4, 400); // dismiss welcome
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /drafts/i }).click();
   const manager = page.getByTestId('drafts-dialog');
   await manager.getByTestId('draft-e2e project').getByRole('button', { name: 'Open' }).click();
@@ -132,7 +132,7 @@ test('multitrack: drafts v2 round-trip + mixdown/stems export (M8e)', async ({ p
   await expect(page.locator('.lane')).toHaveCount(3); // doc lane + stem-a + import lane
 
   // mixdown export → one download (~9.3 s stereo 16-bit WAV)
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const dialog = page.getByRole('dialog', { name: /export/i });
   await expect(dialog.getByRole('button', { name: /Export mixdown/ })).toBeVisible();
@@ -174,7 +174,7 @@ test('multitrack: effects apply to the active lane and record lands a lane (M8f)
   await expect(page.locator('.lane.active', { hasText: 'vox' })).toBeVisible();
 
   // De-esser applies to the LANE (dialog effects route by active lane)
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /^De-esser/ }).click();
   const fxPanel = page.getByRole('dialog');
   await expect(fxPanel).toBeVisible();
@@ -221,7 +221,7 @@ test('multitrack: quick edit commands (Reverse) target the active lane (M8f+)', 
   await expect(page.locator('.lane.active', { hasText: 'take9' })).toBeVisible();
 
   // quick command (no dialog) on the lane, then project-history undo
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /^Reverse$/ }).click();
   await page.keyboard.press('Control+z');
   await expect(page.locator('.toast-msg').last()).toContainText(/Undid/i, { timeout: 8000 });
@@ -322,7 +322,7 @@ test('drafts v3: arranged project survives save/reload with clip lists (M9f)', a
   await expect(clipsOf).toHaveText('2');
 
   // save as a draft (v3: clips + assets ride the payload)
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /save draft/i }).click();
   const saveDialog = page.getByRole('dialog', { name: /save draft/i });
   await saveDialog.locator('#draft-name').fill('arranged e2e');
@@ -334,7 +334,7 @@ test('drafts v3: arranged project survives save/reload with clip lists (M9f)', a
   // reload → reopen → the ARRANGEMENT is back (two clips on the take lane)
   await page.reload();
   await page.mouse.click(4, 400);
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /drafts/i }).click();
   const manager = page.getByTestId('drafts-dialog');
   await manager.getByTestId('draft-arranged e2e').getByRole('button', { name: 'Open' }).click();

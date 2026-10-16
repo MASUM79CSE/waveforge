@@ -12,7 +12,7 @@ async function openExport(page: import('@playwright/test').Page): Promise<void> 
   const welcome = page.getByRole('dialog', { name: /welcome/i });
   await welcome.getByRole('button', { name: /load sample/i }).click();
   await expect(page.getByText('demo.wav', { exact: true })).toBeVisible({ timeout: 10_000 });
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();

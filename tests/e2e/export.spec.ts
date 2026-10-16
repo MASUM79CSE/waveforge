@@ -21,7 +21,7 @@ async function loadSample(page: import('@playwright/test').Page): Promise<void> 
 for (const [format] of [['wav']] as const) {
   test(`flow #4: export ${format.toUpperCase()} is a valid RIFF file`, async ({ page }) => {
     await loadSample(page);
-    await page.getByRole('button', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'File' }).click();
     await page.getByRole('menuitem', { name: /export/i }).click();
     const panel = page.getByRole('dialog');
     await expect(panel).toBeVisible();
@@ -42,7 +42,7 @@ for (const [format] of [['wav']] as const) {
 
 test('flow #4: export MP3 produces frame-synced MPEG audio', async ({ page }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'File' }).click();
+  await page.getByRole('menuitem', { name: 'File' }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const panel = page.getByRole('dialog');
   await panel.getByTestId('export-format-mp3').click();
@@ -63,7 +63,7 @@ test('flow #4: export MP3 produces frame-synced MPEG audio', async ({ page }) =>
 
 test('flow #4: export FLAC runs the vendored wasm encoder (fLaC magic)', async ({ page }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'File' }).click();
+  await page.getByRole('menuitem', { name: 'File' }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const panel = page.getByRole('dialog');
   await panel.getByTestId('export-format-flac').click();

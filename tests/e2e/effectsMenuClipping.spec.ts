@@ -25,7 +25,7 @@ test('effects menu: complete labels, in viewport, no page h-scroll at every size
 
   for (const [width, height] of SIZES) {
     await page.setViewportSize({ width, height });
-    await page.getByRole('button', { name: 'Effects', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
     const dropdown = page.locator('.menu-dropdown');
     await expect(dropdown).toBeVisible();
 
@@ -74,7 +74,7 @@ test('effects menu: complete labels, in viewport, no page h-scroll at every size
     // (the desktop chrome itself overflows below ~460px — pre-existing,
     // out of scope; the dropdown must not add to it)
     const open = await page.evaluate(() => document.documentElement.scrollWidth);
-    await page.getByRole('button', { name: 'Effects', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
     await expect(dropdown).toHaveCount(0);
     const closed = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(open, `menu-induced page h-scroll at ${width}px`).toBeLessThanOrEqual(closed + 1);

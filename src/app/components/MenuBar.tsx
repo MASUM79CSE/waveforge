@@ -1,11 +1,27 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { t } from '../../i18n';
 import { foldMenuItems, menus } from '../menus';
+import { menuStep, titleStep, typeaheadStep } from '../menubarNav';
 import { commands, type Command } from '../commands';
 import { Brand } from '../../brand';
 
 export function MenuBar() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [rovedId, setRovedId] = useState(menus[0]?.id ?? '');
   const rootRef = useRef<HTMLDivElement>(null);
+  // 'first' | 'last' when the menu was opened by keyboard — the dropdown
+  // focuses the corresponding item once rendered (APG menubar pattern)
+  const openFocus = useRef<'first' | 'last' | null>(null);
+
+  const focusTitle = (id: string): void => {
+    rootRef.current?.querySelector<HTMLButtonElement>(`[data-menu-id="${id}"]`)?.focus();
+    setRovedId(id);
+  };
+  const openMenu = (id: string, focus: 'first' | 'last'): void => {
+    openFocus.current = focus;
+    setRovedId(id);
+    setOpenId(id);
+  };
   // true when the current menu was opened by hovering another title —
   // a click on the freshly-switched title must keep it open (native
   // menu behaviour), not toggle it straight back closed
@@ -19,6 +35,39 @@ export function MenuBar() {
     return () => window.removeEventListener('pointerdown', close);
   }, []);
 
+  // APG menubar: roving titles (one tab stop), arrows switch titles —
+  // opening the switched-to menu when one is already open (the keyboard
+  // equivalent of the hover switch) — Down/Up open with first/last item.
+  const onMenubarKey = (e: KeyboardEvent): void => {
+    const btn = (e.target as HTMLElement).closest?.('button.menu-title') as HTMLButtonElement | null;
+    if (!btn) return;
+    const ids = menus.map((m) => m.id);
+    const cur = btn.dataset.menuId ?? '';
+    const first = ids[0] ?? cur;
+    const last = ids[ids.length - 1] ?? cur;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const next = titleStep(ids, cur, e.key === 'ArrowRight' ? 1 : -1);
+      if (openId !== null) openMenu(next, 'first');
+      else focusTitle(next);
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      openMenu(cur, e.key === 'ArrowDown' ? 'first' : 'last');
+    } else if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      const next = e.key === 'Home' ? first : last;
+      if (openId !== null) openMenu(next, 'first');
+      else focusTitle(next);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openMenu(cur, 'first');
+    } else if (e.key === 'Escape') {
+      setOpenId(null);
+    } else if (e.key === 'Tab' && openId !== null) {
+      setOpenId(null); // close; native focus order takes over
+    }
+  };
+
   return (
     <div class="menubar" ref={rootRef}>
       <div class="menubar-brand">
@@ -26,10 +75,16 @@ export function MenuBar() {
         <span class="brand-name">{Brand.name}</span>
       </div>
 
+      <div class="menubar-menus" role="menubar" aria-label={t().menubarLabel} onKeyDown={onMenubarKey}>
       {menus.map((menu) => (
         <div class="menu" key={menu.id}>
           <button
             class={`menu-title ${openId === menu.id ? 'open' : ''}`}
+            role="menuitem"
+            aria-haspopup="menu"
+            aria-expanded={openId === menu.id}
+            tabindex={rovedId === menu.id ? 0 : -1}
+            data-menu-id={menu.id}
             onClick={() => {
               if (openId === menu.id) {
                 if (hoverSwitched.current) {
@@ -51,9 +106,30 @@ export function MenuBar() {
           >
             {menu.title()}
           </button>
-          {openId === menu.id && <MenuDropdown menuId={menu.id} items={menu.items} onRun={() => setOpenId(null)} />}
+          {openId === menu.id && (
+            <MenuDropdown
+              menuId={menu.id}
+              items={menu.items}
+              focusItem={openFocus.current}
+              onFocusDone={() => {
+                openFocus.current = null;
+              }}
+              onRun={() => setOpenId(null)}
+              onTitleArrow={(delta) => {
+                // APG: with a submenu open, Left/Right move to the adjacent
+                // menubar item and open its submenu (hover-switch equivalent)
+                const ids = menus.map((m) => m.id);
+                openMenu(titleStep(ids, menu.id, delta), 'first');
+              }}
+              onEscape={() => {
+                focusTitle(menu.id); // restore focus to the title (APG)
+                setOpenId(null);
+              }}
+            />
+          )}
         </div>
       ))}
+      </div>
     </div>
   );
 }
@@ -82,10 +158,18 @@ export function MenuDropdown({
   menuId,
   items,
   onRun,
+  focusItem,
+  onFocusDone,
+  onEscape,
+  onTitleArrow,
 }: {
   menuId: string;
   items: import('../menus').MenuItemDef[];
   onRun: () => void;
+  focusItem: 'first' | 'last' | null;
+  onFocusDone: () => void;
+  onEscape: () => void;
+  onTitleArrow: (delta: 1 | -1) => void;
 }) {
   const rows = foldMenuItems(items, (id) => commands.find((c) => c.id === id)?.label() ?? id);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -97,6 +181,12 @@ export function MenuDropdown({
   useLayoutEffect(() => {
     const el = dropRef.current;
     if (!el) return;
+    if (focusItem) {
+      const its = [...el.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')];
+      const target = focusItem === 'first' ? its[0] : its[its.length - 1];
+      target?.focus();
+      onFocusDone();
+    }
     const margin = 8;
     const rect = el.getBoundingClientRect();
     const over = rect.right - (window.innerWidth - margin);
@@ -113,8 +203,51 @@ export function MenuDropdown({
       groups.set(row.group, list);
     }
   }
+  // In-menu keyboard (APG): Up/Down cycle items (wrapping), Home/End,
+  // typeahead by first letter, Escape closes + refocuses the title, Tab
+  // closes and lets native focus order proceed, Enter/Space activate and
+  // return focus to the menubar (native menubar behavior).
+  const onMenuKey = (e: KeyboardEvent): void => {
+    const el = dropRef.current;
+    if (!el) return;
+    const btns = [...el.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')];
+    if (btns.length === 0) return;
+    const ids = btns.map((b) => b.dataset.cmdId ?? '');
+    const active = document.activeElement as HTMLButtonElement | null;
+    const cur = active && btns.includes(active) ? (active.dataset.cmdId ?? '') : (ids[0] ?? '');
+    const labelOf = (id: string): string => commands.find((c) => c.id === id)?.label() ?? id;
+    const focusId = (id: string): void => {
+      btns[ids.indexOf(id)]?.focus();
+    };
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      focusId(menuStep(ids, cur, e.key === 'ArrowDown' ? 1 : -1));
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      onTitleArrow(e.key === 'ArrowRight' ? 1 : -1);
+    } else if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      focusId(e.key === 'Home' ? (ids[0] ?? '') : (ids[ids.length - 1] ?? ''));
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      onEscape();
+    } else if (e.key === 'Tab') {
+      onRun();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      active?.click();
+      onEscape();
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const hit = typeaheadStep(ids, cur, e.key, labelOf);
+      if (hit) {
+        e.preventDefault();
+        focusId(hit);
+      }
+    }
+  };
+
   return (
-    <div ref={dropRef} class="menu-dropdown" role="menu" data-menu={menuId}>
+    <div ref={dropRef} class="menu-dropdown" role="menu" data-menu={menuId} onKeyDown={onMenuKey}>
       {rows.map((row, i) => {
         if (row.kind === 'header') {
           return (
@@ -143,6 +276,8 @@ function MenuItem({ cmd, onRun }: { cmd: Command; onRun: () => void }) {
     <button
       class="menu-item"
       role="menuitem"
+      tabindex={-1}
+      data-cmd-id={cmd.id}
       onClick={() => {
         onRun();
         cmd.run();

@@ -80,7 +80,7 @@ test('automation: draw envelope, play, save/reload draft — curve intact (A5)',
   await page.getByRole('button', { name: /^Pause \(Space\)/ }).click();
 
   // save draft → reload → reopen
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /save draft/i }).click();
   const saveDialog = page.getByRole('dialog', { name: /save draft/i });
   await saveDialog.locator('#draft-name').fill('envelope e2e');
@@ -91,7 +91,7 @@ test('automation: draw envelope, play, save/reload draft — curve intact (A5)',
 
   await page.reload();
   await page.mouse.click(4, 400);
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /drafts/i }).click();
   const manager = page.getByTestId('drafts-dialog');
   await manager.getByTestId('draft-envelope e2e').getByRole('button', { name: 'Open' }).click();

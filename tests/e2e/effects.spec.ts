@@ -22,7 +22,7 @@ async function applyEffect(
   page: import('@playwright/test').Page,
   label: RegExp,
 ): Promise<void> {
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: label }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();
@@ -47,7 +47,7 @@ test('effects: LUFS Normalize applies at full length', async ({ page }) => {
 
 test('effects: 8-band parametric EQ renders curve, applies, undoes', async ({ page }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /Parametric EQ \(8-band\)/i }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();
@@ -131,7 +131,7 @@ test('effects: Noise Reduction learns a print from the selection, applies, undoe
   page,
 }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /^Noise Reduction \(print\)/ }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();
@@ -151,7 +151,7 @@ test('effects: Noise Reduction v3 applies with no print (auto mode) and undoes (
   page,
 }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /^Noise Reduction v3/ }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();
@@ -173,7 +173,7 @@ test('effects: Stretch / Pitch applies ×1.25 from the Effects menu (promoted, Z
 }) => {
   await loadSample(page);
   // Z1 promotion: a first-class menu item — no experimental gate
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   const stretch = page.getByRole('menuitem', { name: /^Stretch \/ Pitch/ });
   await expect(stretch).toBeVisible();
   await stretch.click();
@@ -200,7 +200,7 @@ test('effects: Stretch / Pitch applies ×1.25 from the Effects menu (promoted, Z
  */
 test('effects menu is organized into labelled sections', async ({ page }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   const dropdown = page.locator('.menu-dropdown');
 
   // section headers are visible

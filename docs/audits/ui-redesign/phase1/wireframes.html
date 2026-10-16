@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ui-redesign Phase 1 — layout options A/B/C (wireframes)</title>
+<style>
+  :root { color-scheme: light; }
+  body { font: 14px/1.45 system-ui, sans-serif; margin: 24px; background: #f4f4f6; color: #17181c; }
+  h1 { font-size: 20px; margin: 0 0 4px; } p.note { color: #555; margin: 0 0 24px; max-width: 900px; }
+  .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; max-width: 1400px; }
+  .opt { background: #fff; border: 1px solid #d8d9de; border-radius: 10px; padding: 14px; }
+  .opt h2 { font-size: 15px; margin: 0 0 2px; } .opt h2 .tag { background: #b7f0c0; border-radius: 4px; padding: 1px 6px; font-size: 11px; vertical-align: middle; margin-left: 6px; }
+  .opt p { color: #555; font-size: 12.5px; margin: 4px 0 10px; }
+  .frame { border: 2px solid #43454d; border-radius: 6px; overflow: hidden; font-size: 10px; }
+  .row { display: flex; gap: 2px; padding: 3px 4px; background: #ececf0; border-bottom: 1px solid #b9bac2; align-items: center; min-height: 26px; flex-wrap: nowrap; }
+  .row.menubar { background: #e2e3e9; font-weight: 600; }
+  .logo { background: #43454d; color: #fff; border-radius: 3px; padding: 2px 5px; margin-right: 4px; white-space: nowrap; }
+  .m { padding: 2px 5px; border-radius: 3px; background: #d6d7de; white-space: nowrap; }
+  .grp { display: flex; gap: 2px; padding: 2px 4px; border: 1px dashed #83858f; border-radius: 3px; background: #fff; align-items: center; white-space: nowrap; }
+  .btn { width: 14px; height: 14px; border-radius: 2px; background: #c9cad2; display: inline-block; }
+  .btn.acc { background: #7aa7ff; } .btn.rec { background: #ff7a7a; }
+  .lbl { color: #55565e; padding: 0 2px; }
+  .val { font-family: ui-monospace, monospace; background: #f6f6f9; border: 1px solid #c2c3cb; border-radius: 2px; padding: 1px 4px; }
+  .row.ruler { background: #fafafb; min-height: 18px; color: #71727a; font-family: ui-monospace, monospace; justify-content: space-between; }
+  .graph { display: flex; background: #fff; border-bottom: 1px solid #b9bac2; }
+  .hdr { width: 74px; border-right: 1px solid #b9bac2; background: #f2f2f6; padding: 4px; display: flex; flex-direction: column; gap: 3px; }
+  .lane { flex: 1; position: relative; height: 56px; background: #eef4ff; border-bottom: 1px solid #dfe3ea; }
+  .lane + .hdrpad { height: 56px; }
+  .wave { position: absolute; inset: 8px 6px; background: repeating-linear-gradient(90deg, #9db8e8 0 2px, #eef4ff 2px 5px); border-radius: 2px; }
+  .ph { position: absolute; top: 0; bottom: 0; left: 18%; width: 2px; background: #e2574b; }
+  .scale { width: 26px; background: #f2f2f6; border-left: 1px solid #d4d5db; display: flex; flex-direction: column; justify-content: space-between; align-items: center; color: #71727a; font-family: ui-monospace, monospace; padding: 4px 0; }
+  .status { display: flex; justify-content: space-between; background: #ececf0; padding: 3px 6px; color: #55565e; font-family: ui-monospace, monospace; min-height: 20px; }
+  .dock { border: 2px dotted #b06ed3; border-radius: 4px; padding: 2px; margin: 2px; color: #7c3a96; }
+  .float { position: relative; margin: 4px 0 0 40%; width: 150px; background: #fff; border: 1px solid #83858f; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,.18); padding: 3px; }
+  .meta { margin-top: 8px; font-size: 12px; color: #55565e; }
+  .meta b { color: #17181c; }
+</style>
+</head>
+<body>
+<h1>WaveForge editor frame — layout options (Phase 1 wireframes)</h1>
+<p class="note">Schematic only — shapes and slots, not visual design. All three host the identical re-homing map (IA.md §3) and Z1–Z9 zones. Full tradeoffs: LAYOUT-OPTIONS.md. Recommendation: <b>Option B</b> (UX-D4).</p>
+
+<div class="opts">
+  <section class="opt">
+    <h2>Option A — Classic stacked</h2>
+    <p>Menu + 2 fixed command rows. Most deterministic, most chrome (~184px). Weakest clean-slate story.</p>
+    <div class="frame">
+      <div class="row menubar"><span class="logo">WaveForge</span><span class="m">File</span><span class="m">Edit</span><span class="m">Effects</span><span class="m">Analyze</span><span class="m">View</span><span class="m">Help</span></div>
+      <div class="row">
+        <span class="grp"><span class="btn acc"></span><span class="btn"></span><span class="btn"></span><span class="btn"></span><span class="btn rec"></span><span class="lbl">transport</span></span>
+        <span class="grp"><span class="btn"></span><span class="btn"></span><span class="btn"></span><span class="btn"></span><span class="lbl">edit</span></span>
+        <span class="grp"><span class="btn"></span><span class="btn"></span><span class="btn"></span><span class="lbl">tools</span></span>
+      </div>
+      <div class="row">
+        <span class="lbl">POS</span><span class="val">0:00.000</span>
+        <span class="lbl">SEL</span><span class="val">0:00.000</span><span class="val">0:09.272</span><span class="val">9.272s</span>
+        <span class="grp"><span class="btn"></span><span class="lbl">SNAP</span><span class="btn"></span><span class="lbl">BEAT</span></span>
+        <span class="grp"><span class="btn"></span><span class="lbl">meters</span></span>
+      </div>
+      <div class="row ruler"><span>0:00</span><span>0:01</span><span>0:02</span><span>0:03</span><span>0:04</span><span>▾</span></div>
+      <div class="graph">
+        <div class="hdr"><span class="val" style="font-size:9px">Track 1</span><span class="grp"><span class="btn"></span><span class="btn"></span></span></div>
+        <div class="lane"><div class="wave"></div><div class="ph"></div></div>
+        <div class="scale"><span>0</span><span>-6</span><span>-20</span><span>-∞</span></div>
+      </div>
+      <div class="status"><span>demo.wav · 44.1 kHz · Stereo · 9.27 s</span><span>9.27 s ×326 · v1.0.0</span></div>
+    </div>
+    <div class="meta"><b>Chrome:</b> menu 40 + tools 44 + readouts 44 + ruler 28 + status 28 = <b>184px</b></div>
+  </section>
+
+  <section class="opt">
+    <h2>Option B — Unified two-row <span class="tag">RECOMMENDED · UX-D4</span></h2>
+    <p>Menu + transport + readouts share row 1; edit/tools/snap/meters row 2. ~140px chrome, maximal graph, fixed order + overflow.</p>
+    <div class="frame">
+      <div class="row menubar"><span class="logo">WaveForge</span><span class="m">File</span><span class="m">Edit</span><span class="m">Effects</span><span class="m">Analyze</span><span class="m">View</span><span class="m">Help</span><span class="grp" style="margin-left:auto"><span class="btn acc"></span><span class="btn"></span><span class="btn rec"></span></span><span class="lbl">POS</span><span class="val">0:00.000</span></div>
+      <div class="row">
+        <span class="lbl">SEL</span><span class="val">0:00.000</span><span class="val">0:09.272</span><span class="val">9.272s</span>
+        <span class="grp"><span class="btn"></span><span class="lbl">SNAP</span><span class="btn"></span><span class="lbl">BEAT</span><span class="val">BPM</span></span>
+        <span class="grp" style="margin-left:auto"><span class="btn"></span><span class="btn"></span><span class="lbl">edit+tools+view ⋯</span></span>
+        <span class="grp"><span class="btn"></span><span class="lbl">meters</span><span class="val">vol</span></span>
+      </div>
+      <div class="row ruler"><span>0:00</span><span>0:01</span><span>0:02</span><span>0:03</span><span>0:04</span><span>▾</span></div>
+      <div class="graph">
+        <div class="hdr"><span class="val" style="font-size:9px">Track 1</span><span class="grp"><span class="btn"></span><span class="btn"></span></span></div>
+        <div class="lane"><div class="wave"></div><div class="ph"></div></div>
+        <div class="scale"><span>0</span><span>-6</span><span>-20</span><span>-∞</span></div>
+      </div>
+      <div class="status"><span>demo.wav · 44.1 kHz · Stereo · 9.27 s</span><span>9.27 s ×326 · v1.0.0</span></div>
+    </div>
+    <div class="meta"><b>Chrome:</b> command 40+44 + ruler 28 + status 28 = <b>140px</b> (−44 vs A ≈ +0.8 track height). Overflow priority: transport &gt; selection &gt; edit &gt; tools &gt; meters.</div>
+  </section>
+
+  <section class="opt">
+    <h2>Option C — Hybrid dockable</h2>
+    <p>A's default + groups draggable between upper/lower docks, floatable, persisted. Rejected in UX-D4 (drag infra + a11y + test-matrix cost).</p>
+    <div class="frame">
+      <div class="row menubar"><span class="logo">WaveForge</span><span class="m">File</span><span class="m">Edit</span><span class="m">Effects</span><span class="m">Analyze</span><span class="m">View</span><span class="m">Help</span></div>
+      <div class="dock"><div class="row" style="border:none;background:none;padding:1px">
+        <span class="grp"><span class="btn acc"></span><span class="btn"></span><span class="btn rec"></span><span class="lbl">⠿ transport</span></span>
+        <span class="grp"><span class="btn"></span><span class="btn"></span><span class="btn"></span><span class="lbl">⠿ edit</span></span>
+      </div></div>
+      <div class="row"><span class="lbl">POS</span><span class="val">0:00.000</span><span class="lbl">SEL</span><span class="val">0:00.000</span><span class="val">0:09.272</span></div>
+      <div class="row ruler"><span>0:00</span><span>0:01</span><span>0:02</span><span>▾</span></div>
+      <div class="graph">
+        <div class="hdr"><span class="val" style="font-size:9px">Track 1</span></div>
+        <div class="lane"><div class="wave"></div><div class="ph"></div>
+          <div class="float"><span class="grp"><span class="btn"></span><span class="btn"></span><span class="btn"></span><span class="lbl">⠿ floated tools</span></span></div>
+        </div>
+        <div class="scale"><span>0</span><span>-20</span><span>-∞</span></div>
+      </div>
+      <div class="dock"><div class="row" style="border:none;background:none;padding:1px">
+        <span class="grp"><span class="btn"></span><span class="lbl">⠿ lower dock (meters)</span></span>
+      </div></div>
+      <div class="status"><span>demo.wav · 44.1 kHz</span><span>v1.0.0</span></div>
+    </div>
+    <div class="meta"><b>Cost:</b> drag+keyboard docking, persistence, collision layout; a11y/test matrix ×groups×docks×states. Even Audacity 2026 keeps only one movable toolbar (CLEAN_ROOM_LOG row 4).</div>
+  </section>
+</div>
+</body>
+</html>

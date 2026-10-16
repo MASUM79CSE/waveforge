@@ -10,8 +10,16 @@ import { App } from './app/components/App';
 import { ErrorBoundary } from './app/components/ErrorBoundary';
 import { probeAutosave } from './app/draftActions';
 import * as S from './app/state';
+import { setLocale } from './i18n';
 
 function bootstrap(): void {
+  // UX-5 (F-6): actually wire the documented locale key (was never read)
+  try {
+    const locale = localStorage.getItem('waveforge.locale');
+    if (locale) setLocale(locale);
+  } catch {
+    /* private mode */
+  }
   bindKeyboard();
   bindTooltips();
   // crash recovery probe + PWA update prompt (M6) — both best-effort

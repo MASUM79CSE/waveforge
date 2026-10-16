@@ -29,7 +29,7 @@ test('rnvoice: dialog gates on model ready, apply, undo, redo (E7b)', async ({ p
 
   // select all so the effect targets a region
   await page.keyboard.press('Shift+a');
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /AI Voice Clarity/i }).click();
   const panel = page.getByRole('dialog');
   await expect(panel).toBeVisible();

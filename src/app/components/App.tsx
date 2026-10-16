@@ -33,9 +33,12 @@ import { applyTheme } from '../theme';
 import { DoctorPanel } from './DoctorPanel';
 import { ShortcutsOverlay } from './ShortcutsOverlay';
 import { UpdateBanner } from './UpdateBanner';
+import { isFrame2 } from '../frame2/flag';
+import { Frame2 } from '../frame2/Frame2';
 
 export function App() {
   applyTheme(); // mirror persisted theme/accent onto <html> before first paint
+  if (isFrame2()) return <Frame2 />;
   return (
     <div class="shell">
       <RestoreBanner />

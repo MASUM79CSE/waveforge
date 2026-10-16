@@ -11,6 +11,8 @@ import {
 } from './actions';
 import { resolveShortcut } from './shortcuts';
 import { cancelCountIn } from './recordActions';
+import { closeDraftsDialog, closeSaveDraftDialog } from './draftActions';
+import { draftsOpen, draftSaveOpen, metadataOpen } from './state';
 import {
   aboutOpen,
   doctorOpen,
@@ -42,6 +44,9 @@ export function bindKeyboard(): void {
       else if (doctorOpen.value) closeDoctor();
       else if (shortcutsOpen.value) closeShortcuts();
       else if (aboutOpen.value) aboutOpen.value = false;
+      else if (draftSaveOpen.value) closeSaveDraftDialog();
+      else if (draftsOpen.value) closeDraftsDialog();
+      else if (metadataOpen.value) metadataOpen.value = false;
       else if (welcomeOpen.value) welcomeOpen.value = false;
       return;
     }

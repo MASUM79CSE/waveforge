@@ -179,3 +179,15 @@
   --cv-clip-edge: rgba(2, 132, 160, 0.55);
   --cv-clip-selected: rgba(2, 132, 160, 0.95);
 }
+
+/* frame2 additions (phase 2, TOKENS.md §2) — additive; consumed only when
+   the ui.cleanSlateLayout flag is ON. Legacy styles never reference these. */
+:root {
+  --z-menu: 30;
+  --z-command: 32;
+  --z-overlay: 60;
+  --target-min: 24px;
+  --target-touch: 40px;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+}

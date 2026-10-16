@@ -31,7 +31,7 @@ test('flow #1: load sample → play → select → cut → undo', async ({ page 
   await page.mouse.move(box.x + box.width * 0.4, box.y + box.height / 2, { steps: 8 });
   await page.mouse.up();
 
-  await page.getByRole('button', { name: 'Edit' }).click();
+  await page.getByRole('menuitem', { name: 'Edit' }).click();
   await page.getByRole('menuitem', { name: /cut/i }).click();
   await page.waitForTimeout(300);
 

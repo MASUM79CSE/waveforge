@@ -18,14 +18,14 @@ async function loadSample(page: import('@playwright/test').Page): Promise<void> 
 test('analysis: spectrum panel + LUFS measurement', async ({ page }) => {
   await loadSample(page);
 
-  await page.getByRole('button', { name: 'Analyze' }).click();
+  await page.getByRole('menuitem', { name: 'Analyze' }).click();
   await page.getByRole('menuitem', { name: /spectrum panel/i }).click();
   await expect(page.locator('.analysis-panel')).toBeVisible();
   await expect(page.locator('.analysis-spectrum')).toBeVisible();
   // readouts idle before a measurement
   await expect(page.locator('.analysis-panel').getByText('—').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Analyze' }).click();
+  await page.getByRole('menuitem', { name: 'Analyze' }).click();
   await page.getByRole('menuitem', { name: /loudness/i }).click();
   // toast confirms completion with a numeric LUFS value (toasts stack — take newest)
   await expect(page.locator('.toast-msg').last()).toContainText(/LUFS/, { timeout: 15_000 });
@@ -33,14 +33,14 @@ test('analysis: spectrum panel + LUFS measurement', async ({ page }) => {
   await expect(page.locator('.analysis-val').first()).not.toHaveText('—');
 
   // the menu reflects the toggle state (✔ glyph — see MenuBar)
-  await page.getByRole('button', { name: 'Analyze' }).click();
+  await page.getByRole('menuitem', { name: 'Analyze' }).click();
   await expect(page.getByRole('menuitem', { name: /spectrum panel/i })).toContainText('✔');
 });
 
 /** BPM detection runs and reports via toast. */
 test('analysis: BPM detection reports a result', async ({ page }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'Analyze' }).click();
+  await page.getByRole('menuitem', { name: 'Analyze' }).click();
   await page.getByRole('menuitem', { name: /tempo/i }).click();
   // toasts stack — a new one beyond 'Loaded demo.wav' proves the run completed
   await expect(page.locator('.toast-msg').nth(1)).toBeVisible({ timeout: 15_000 });
@@ -49,7 +49,7 @@ test('analysis: BPM detection reports a result', async ({ page }) => {
 /** MP3 export embeds the ID3v2.4 tag set via Song Info. */
 test('analysis: MP3 export embeds song info as ID3', async ({ page }) => {
   await loadSample(page);
-  await page.getByRole('button', { name: 'File' }).click();
+  await page.getByRole('menuitem', { name: 'File' }).click();
   await page.getByRole('menuitem', { name: /export/i }).click();
   const panel = page.getByRole('dialog');
   await panel.getByTestId('export-format-mp3').click();

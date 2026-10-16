@@ -22,7 +22,7 @@ test('flow #5: save draft → reload → reopen → same document', async ({ pag
   await loadSample(page);
 
   // save under a known name
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /save draft/i }).click();
   const saveDialog = page.getByRole('dialog', { name: /save draft/i });
   await saveDialog.locator('#draft-name').fill('e2e draft');
@@ -39,7 +39,7 @@ test('flow #5: save draft → reload → reopen → same document', async ({ pag
   await expect(page.getByRole('dialog', { name: /welcome/i })).toHaveCount(0);
 
   // reopen the drafts manager and open the saved draft
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /drafts/i }).click();
   const manager = page.getByTestId('drafts-dialog');
   await expect(manager.getByTestId('draft-e2e draft')).toBeVisible();
@@ -64,7 +64,7 @@ test('flow #5c: the NR noise print survives a draft save / reload / reopen', asy
   await page.mouse.move(box.x + box.width * 0.3, box.y + box.height / 2, { steps: 6 });
   await page.mouse.up();
 
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /^Noise Reduction \(print\)/ }).click();
   const nr = page.getByRole('dialog');
   await expect(nr).toBeVisible();
@@ -73,7 +73,7 @@ test('flow #5c: the NR noise print survives a draft save / reload / reopen', asy
   await nr.getByRole('button', { name: 'Cancel' }).click();
 
   // save → reload → reopen (same choreography as flow #5)
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /save draft/i }).click();
   const saveDialog = page.getByRole('dialog', { name: /save draft/i });
   await saveDialog.locator('#draft-name').fill('e2e print draft');
@@ -87,7 +87,7 @@ test('flow #5c: the NR noise print survives a draft save / reload / reopen', asy
   await page.mouse.click(4, 400);
   await expect(page.getByRole('dialog', { name: /welcome/i })).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /drafts/i }).click();
   const manager = page.getByTestId('drafts-dialog');
   await expect(manager.getByTestId('draft-e2e print draft')).toBeVisible();
@@ -97,7 +97,7 @@ test('flow #5c: the NR noise print survives a draft save / reload / reopen', asy
   });
 
   // the print came back with the document
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /^Noise Reduction \(print\)/ }).click();
   const nr2 = page.getByRole('dialog');
   await expect(nr2).toBeVisible();
@@ -109,7 +109,7 @@ test('flow #5b: autosave ring offers crash recovery after a burst of edits', asy
 
   // 8 committed edits (AUTOSAVE_OPS) trigger a ring write after 1 s
   for (let i = 0; i < 8; ++i) {
-    await page.getByRole('button', { name: 'Effects', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
     await page.getByRole('menuitem', { name: /invert/i }).click();
     await page.waitForTimeout(120);
   }

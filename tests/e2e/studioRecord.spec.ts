@@ -32,7 +32,7 @@ test('studio record: arm → meter → roll → take → takes list', async ({ p
   await expect(page.getByText(/recording 1/i).first()).toBeVisible({ timeout: 10_000 });
 
   // 5) takes list in the record settings dialog (via the File menu)
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /record from microphone/i }).click();
   await expect(page.getByTestId('takes-list')).toBeVisible();
   await expect(page.locator('.take-chip').first()).toHaveText(/take 1/i);
@@ -40,13 +40,13 @@ test('studio record: arm → meter → roll → take → takes list', async ({ p
 
   // 6) metronome toggle via M + persistence across reload
   await page.keyboard.press('m');
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /record from microphone/i }).click();
   await expect(page.getByTestId('metronome-toggle')).toBeChecked();
   await page.getByRole('button', { name: /save & close/i }).click();
   await page.reload();
   await page.getByRole('button', { name: /skip|close|✕/i }).first().click().catch(() => {});
-  await page.getByRole('button', { name: 'File', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: /record from microphone/i }).click();
   await expect(page.getByTestId('metronome-toggle')).toBeChecked();
 });

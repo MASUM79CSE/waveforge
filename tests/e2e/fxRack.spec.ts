@@ -20,7 +20,7 @@ async function loadSample(page: Page): Promise<void> {
 
 async function openRack(page: Page): Promise<void> {
   await page.keyboard.press('Shift+a');
-  await page.getByRole('button', { name: 'Effects', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Effects', exact: true }).click();
   await page.getByRole('menuitem', { name: /FX Rack/i }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 }

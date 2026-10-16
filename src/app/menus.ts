@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import { commands } from './commands';
 
 /** Data-driven menu model → rendered by MenuBar. */
 export interface MenuDef {
@@ -120,3 +121,23 @@ export const menus: MenuDef[] = [
     items: ['help.welcome', 'help.shortcuts', 'help.about', 'help.doctor'],
   },
 ];
+
+export interface MenuEntryRef {
+  menu: string;
+  id: string;
+  label: string;
+}
+
+/** Flattened menu→command index (used by surface/re-homing audits). */
+export function menuEntries(): MenuEntryRef[] {
+  const labelOf = (id: string): string => commands.find((c) => c.id === id)?.label() ?? id;
+  return menus.flatMap((m) =>
+    m.items.flatMap((row) =>
+      row === '-'
+        ? []
+        : typeof row === 'string'
+          ? [{ menu: m.id, id: row, label: labelOf(row) }]
+          : row.items.map((id) => ({ menu: m.id, id, label: labelOf(id) })),
+    ),
+  );
+}

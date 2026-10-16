@@ -60,7 +60,7 @@ test('full analysis report: metrics, verdicts, jump-to-offender (P3)', async ({ 
   await importWav(page, clippedWav());
 
   // Analyze → Full report (opens the panel and runs the scan)
-  await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Analyze', exact: true }).click();
   await page.getByRole('menuitem', { name: /Full report/i }).click();
 
   const report = page.getByTestId('analysis-report');

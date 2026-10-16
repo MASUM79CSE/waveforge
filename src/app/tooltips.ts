@@ -41,17 +41,24 @@ export function bindTooltips(root: ParentNode = document): () => void {
     if ((e.target as Element | null)?.closest?.('[data-tip]')) hide();
   };
 
+  // §9 tooltip contract: Escape-dismissible (focus tooltip stays honest)
+  const onKey = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape') hide();
+  };
+
   root.addEventListener('pointerover', over);
   root.addEventListener('pointerout', out);
   root.addEventListener('focusin', over);
   root.addEventListener('focusout', hide);
   window.addEventListener('scroll', hide, true);
+  window.addEventListener('keydown', onKey);
   return () => {
     root.removeEventListener('pointerover', over);
     root.removeEventListener('pointerout', out);
     root.removeEventListener('focusin', over);
     root.removeEventListener('focusout', hide);
     window.removeEventListener('scroll', hide, true);
+    window.removeEventListener('keydown', onKey);
     el?.remove();
     el = null;
   };

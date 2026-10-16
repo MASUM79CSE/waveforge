@@ -49,3 +49,26 @@ export function niceTickFor(spp: number, sampleRate: number, minPx = 80): number
 export function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
 }
+
+/**
+ * Minor ruler tick subdivision (UX-4.1) — majors come from niceTickFor
+ * (1-2-5 series); minors are major/5, aligned to ABSOLUTE time and never
+ * coinciding with a major. Used by the frame2 ruler (flag ON only).
+ */
+export function minorTickStep(majorSec: number): number {
+  return majorSec / 5;
+}
+
+export function minorTicks(startSec: number, endSec: number, majorSec: number): number[] {
+  const step = minorTickStep(majorSec);
+  if (!(step > 0) || endSec <= startSec) return [];
+  const eps = step * 1e-6;
+  const out: number[] = [];
+  const first = Math.ceil((startSec + eps) / step) * step;
+  for (let t = first; t < endSec - eps; t += step) {
+    const rem = ((t % majorSec) + majorSec) % majorSec;
+    if (rem < eps || Math.abs(rem - majorSec) < eps) continue; // skip majors
+    out.push(Math.round(t / step) * step);
+  }
+  return out;
+}
