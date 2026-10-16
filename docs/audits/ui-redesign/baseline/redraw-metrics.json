@@ -1,24 +1,25 @@
 {
   "window": {
-    "ms": 5089,
+    "ms": 5048,
     "viewport": "1280x800",
     "theme": "light",
-    "state": "playing, sample loaded"
+    "state": "playing, sample loaded",
+    "url": "http://localhost:5180"
   },
   "drawCalls": {
-    "raf": 605,
+    "raf": 607,
     "clearRect": 0,
-    "fillRect": 764362,
+    "fillRect": 766893,
     "strokeRect": 0,
-    "beginPath": 302,
+    "beginPath": 303,
     "drawImage": 0,
     "arc": 0
   },
-  "rafCalls": 605,
+  "rafCalls": 607,
   "longAnimationFrame": {
     "count": 1,
-    "totalMs": 53,
-    "blockingMs": 3,
-    "worst": 53
+    "totalMs": 58,
+    "blockingMs": 8,
+    "worst": 58
   }
 }

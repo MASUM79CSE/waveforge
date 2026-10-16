@@ -184,7 +184,11 @@ window.addEventListener('unhandledrejection', (e) => {
 engine.onCursor = (t) => {
   S.cursorPos.value = t;
   renderer.cursor = t;
-  if (engine.playing && S.followCursor.value) renderer.followCursor(t);
+  let viewPaged = false;
+  if (engine.playing && S.followCursor.value) viewPaged = renderer.followCursor(t);
+  // frame2 (UX-4): with the overlay playhead the waveform only repaints when
+  // the follow-pager moved the view; the overlay layer tracks the signal.
+  if (renderer.overlayPlayhead && !viewPaged) return;
   renderer.requestDraw();
 };
 
@@ -209,7 +213,10 @@ bindDocChannels(() => {
 bindDocHistory(() => editor.canUndo());
 bindProjectCursor((t) => {
   renderer.cursor = t;
-  if (S.followCursor.value) renderer.followCursor(t);
+  let viewPaged = false;
+  if (S.followCursor.value) viewPaged = renderer.followCursor(t);
+  if (renderer.overlayPlayhead) S.cursorPos.value = t; // overlay tracks the signal (frame2)
+  if (renderer.overlayPlayhead && !viewPaged) return;
   renderer.requestDraw();
 });
 

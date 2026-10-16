@@ -11,7 +11,7 @@
  */
 import { useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
-import { CanvasPane } from '../components/CanvasPane';
+import { Graph } from './Graph';
 import { TrackLanes } from '../components/TrackLanes';
 import { MenuBar } from '../components/MenuBar';
 import { SelectionBar } from '../components/SelectionBar';
@@ -156,7 +156,7 @@ export function Frame2() {
         </div>
       </div>
       <main class={`workspace ${projectOpen.value ? 'with-lanes' : ''}`} data-zone="Z4-Z7">
-        <CanvasPane />
+        <Graph />
         <TrackLanes />
       </main>
       <AnalysisPanel />

@@ -41,8 +41,23 @@ with spectrogram; a literal `APPROVE TIER B: RMS` before Phase 4 revives it).
 | UX-2.5 | Z-shell Frame2 (Option B zones Z1–Z9, legacy bars mounted verbatim; capability parity flag-ON) | VERIFIED | `1f8b27c` | `src/app/frame2/Frame2.tsx` + `frame2.css` + App switch; live screenshot verified (waveform 1280×660) |
 | UX-2.6 | Full gate: flag OFF identical legacy; flag ON parity; LH; bundle | VERIFIED | `1f8b27c` | unit **90 f / 750 t** PASS · e2e **65 passed** (59 legacy + 6 frame2, both projects) · build PASS · bundle **120,361 B gz (+277 vs baseline)** · LH D **P100/A100/BP100/S91** · M **P99/A100/BP100/S91** = baseline parity |
 
-Phases: 0 PASSED · 1 PASSED · 2 PASSED (gate `ROCEED TO PHASE 3` read as the Phase-3
-token — in-sequence typo noted) · **3 complete pending PCA** · 4..6 pending.
+Phases: 0..3 PASSED · **4 complete pending PCA** · 5..6 pending
+(two-confirmation stop; awaiting own PCA then literal `PROCEED TO PHASE 5`).
+
+## Phase 4 — track panel + Tier-A audio graph (flag ON only)
+
+| Task | Description | Status | Commit | Evidence |
+|---|---|---|---|---|
+| UX-4.1 | Nice-interval ruler (existing 1-2-5 `niceTickFor`) + NEW minor ticks (major/5, absolute-time aligned, major-excluded — `core/zoom.ts` `minorTickStep/minorTicks`, 5 unit tests) | VERIFIED | (phase-4 commit) | tests/unit/frame2Ticks.test.ts; screenshot |
+| UX-4.2 | Vertical scale linear+dB with the analytic anchors 1.0→0 dB, 0.5→−6.02, 0.1→−20, floor −60→CENTER (`core/dbScale.ts` pure core; DOM panel labels AND the waveform painter consume the SAME mapping — picture tells the truth); panel Z5/Z6 in the frame2 grid | VERIFIED | (phase-4 commit) | tests/unit/frame2Scale.test.ts (5); screenshot: labels aligned to geometry |
+| UX-4.3 | Peaks-mip waveform: existing PeakClient pyramid reused; NEW batched painter — one Path2D fill per lane via `core/wavePath.ts` `lanePathPoints` (4 unit tests) behind `renderer.batchedLanes`; raw-lane path untouched | VERIFIED | (phase-4 commit) | tests/unit/frame2WavePath.test.ts |
+| UX-4.4 | Separate overlay layer owning the playhead (`Graph.tsx` overlay canvas; renderer `overlayPlayhead` skips main-frame playhead; runtime cursor loop repaints the waveform ONLY when follow-paging moves the view; legacy path default-off unchanged) | VERIFIED | (phase-4 commit) | redraw metrics below; playhead screenshot during playback |
+| UX-4.5 | Track panel (per-lane tags L/R, dB anchor labels, lane borders) + interactions preserved (click-seek/drag-select/wheel zoom on the unchanged renderer bindings) + e2e frame2 suites still green incl. selection drag & axe | VERIFIED | (phase-4 commit) | 70 e2e passed |
+
+**Redraw cost, 5 s playback @1280×800 (probe `redraw-probe.mjs --url …?ui2=1` vs legacy):**
+- legacy (flag OFF, re-verified this phase): rAF 607 · fillRect **766,893** · beginPath 303 · clearRect 0 · 1 LoAF 58 ms (baseline 605/764,362/302/0 — unchanged).
+- **frame2 (flag ON): rAF 610 · fillRect 823 (−99.89%) · beginPath 0 (Path2D) · clearRect 301 (overlay) · 1 LoAF 67 ms (blocking 17 ms).**
+Artifacts: `baseline/redraw-metrics.json` (legacy) + `baseline/redraw-metrics-frame2.json` (frame2).
 
 ## Phase 3 — toolbar re-homing + automated re-homing test
 

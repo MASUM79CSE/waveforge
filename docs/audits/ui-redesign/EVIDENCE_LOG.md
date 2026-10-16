@@ -37,3 +37,11 @@
 - LH (flag OFF, preview :4179): desktop **P100/A100/BP100/S91** (= baseline) · mobile **P98/A100/BP100/S91** (baseline P99 — −1 perf from +4.9 KB; A/BP/S unchanged).
 - **Bugs found & fixed during H (all flag-ON only):** (1) sticky Z2/Z3 bands stacked OVER menu dropdowns — menu items unclickable in frame2; fixed by raising `.f2-menubar` z above bands; (2) overflow plan oscillation (fold↔unfold under repeat ticks) — fixed by idempotent closed-loop recompute (UX-D10); (3) `menuEntries()` leaked `-` separators — fixed.
 - **Findings:** F-6 i18n is English-only today (`catalogs = { en }` in `src/i18n/index.ts`; `waveforge.locale=bn` falls back to en) — bn catalog lands in Phase 5 on the existing seam. F-7 SaveDraft dialog ignores Escape (pre-existing, BOTH frames verified) — Phase-5 a11y ticket; the walk closes it via its Cancel button.
+
+## UX-4.x — Phase 4 gates (verbatim)
+- unit: **95 files / 780 tests PASS** (+3 files: ticks 5, scale 5, wavePath 4) · tsc 0 · eslint 0 · e2e **70 passed**.
+- build PASS · bundle **127,187 B gz / 410,940 B raw** (baseline 120,084 gz → +7,103 gz cumulative incl. phase-3 system).
+- LH (flag OFF): desktop **P100/A100/BP100/S91** (= baseline) · mobile **P98**/A100/BP100/S91 (−1 perf, +1.9 KB this phase).
+- Redraw before/after: see PROGRESS Phase-4 table — fillRect **766,893 → 823 (−99.89%)**, playhead overlay 301 clearRect at rAF cadence; waveform repaints only on view paging.
+- Screenshots (viewed): dB-scaled lanes with aligned DOM anchor labels (stopped + playing, playhead mid-clip).
+- Scope note: canvas accessible summary + keyboard selection/seek equivalents land in Phase 5 (a11y gate) per the master prompt's phase split; interactions remain unchanged this phase.

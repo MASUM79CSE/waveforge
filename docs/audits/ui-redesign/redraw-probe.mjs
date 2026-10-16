@@ -8,7 +8,10 @@ import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 const BASE = process.argv.includes('--base') ? process.argv[process.argv.indexOf('--base') + 1] : 'http://localhost:5180';
-const OUT = new URL('./baseline/redraw-metrics.json', import.meta.url).pathname;
+const URL_ARG = process.argv.includes('--url') ? process.argv[process.argv.indexOf('--url') + 1] : null;
+const OUT = URL_ARG && URL_ARG.includes('ui2=1')
+  ? new URL('./baseline/redraw-metrics-frame2.json', import.meta.url).pathname
+  : new URL('./baseline/redraw-metrics.json', import.meta.url).pathname;
 mkdirSync(new URL('./baseline/', import.meta.url).pathname, { recursive: true });
 
 const browser = await chromium.launch();
@@ -28,7 +31,7 @@ await page.addInitScript(() => {
   po.observe({ type: 'long-animation-frame', buffered: false });
 });
 
-await page.goto(BASE, { waitUntil: 'networkidle' });
+await page.goto(URL_ARG ?? BASE, { waitUntil: 'networkidle' });
 await page.getByRole('dialog', { name: /welcome/i }).getByRole('button', { name: /load sample/i }).click();
 await page.waitForTimeout(500);
 await page.getByTestId('transport-play').click();
@@ -39,7 +42,7 @@ const loaf = await page.evaluate(() => window.__loaf);
 await page.getByTestId('transport-stop').click();
 
 const out = {
-  window: { ms: Date.now() - t0, viewport: '1280x800', theme: 'light', state: 'playing, sample loaded' },
+  window: { ms: Date.now() - t0, viewport: '1280x800', theme: 'light', state: 'playing, sample loaded', url: URL_ARG ?? BASE },
   drawCalls: probe,
   rafCalls: probe.raf,
   longAnimationFrame: { count: loaf.length, totalMs: loaf.reduce((s, e) => s + e.d, 0), blockingMs: loaf.reduce((s, e) => s + e.b, 0), worst: loaf.reduce((m, e) => Math.max(m, e.d), 0) },

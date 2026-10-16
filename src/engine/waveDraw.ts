@@ -7,7 +7,9 @@
  * by the renderer and is passed by reference.
  */
 import { fmtRuler } from '../core/format';
-import { clamp, niceTickFor, pickPeakLevel } from '../core/zoom';
+import { clamp, minorTicks, niceTickFor, pickPeakLevel } from '../core/zoom';
+import { lanePathPoints } from '../core/wavePath';
+import { dBValueMapper } from '../core/dbScale';
 import type { AudioDocument } from './AudioDocument';
 import type { PeakClient } from './peakClient';
 import { tilesForRange } from './protocol';
@@ -126,6 +128,14 @@ export interface WaveDrawCtx {
   axis: boolean;
   /** D5: vertical zoom amplitude scale (0.5..3) */
   vzoom: number;
+  /** frame2 (UX-4): playhead lives on a separate overlay layer — skip it here */
+  overlayPlayhead?: boolean;
+  /** frame2 (UX-4): one Path2D fill per lane instead of per-pixel fillRects */
+  batchedLanes?: boolean;
+  /** frame2 (UX-4): minor ruler ticks under the majors */
+  minorTicks?: boolean;
+  /** frame2 (UX-4): vertical scale linear-in-dB (batched lanes only) */
+  dbScale?: boolean;
   /** schedule a redraw (rAF-coalesced in the renderer) */
   requestDraw: () => void;
 }
@@ -159,7 +169,7 @@ export function drawFrame(ctx: WaveDrawCtx): void {
   }
   drawBeats(full, H);
   drawSelection(full, H);
-  drawPlayhead(full, H);
+  if (!ctx.overlayPlayhead) drawPlayhead(full, H); // frame2 overlay layer owns the playhead
   if (ctx.axis) {
     drawRail(full);
     drawAmplitudeAxis(full);
@@ -193,6 +203,14 @@ function drawRuler(ctx: FullCtx): void {
   g.textBaseline = 'middle';
 
   const dur = V.viewDuration(ctx.view, ctx.env);
+  if (ctx.minorTicks) {
+    g.fillStyle = currentTheme().rulerLine;
+    for (const t of minorTicks(ctx.view.start, ctx.view.start + dur, tick)) {
+      const x = Math.round(V.xAtTime(ctx.view, ctx.env, t)) + 0.5 + rail;
+      if (x < rail || x > W) continue;
+      g.fillRect(x, RULER_H - 4, 1, 4);
+    }
+  }
   for (let t = Math.ceil(ctx.view.start / tick) * tick; t < ctx.view.start + dur; t += tick) {
     const x = Math.round(V.xAtTime(ctx.view, ctx.env, t)) + 0.5 + rail;
     if (x < rail - 60 || x > W + 60) continue;
@@ -228,6 +246,11 @@ function drawLanes(ctx: FullCtx, lanesH: number): void {
       continue;
     }
 
+    if (ctx.batchedLanes) {
+      missing = drawBatchedLane(ctx, ch, y0, laneH, mid, amp, level, laneW) || missing;
+      continue;
+    }
+
     g.fillStyle = currentTheme().wave;
     for (let x = 0; x < laneW; ++x) {
       const sample = ctx.view.start * doc.sampleRate + x * ctx.view.spp;
@@ -250,6 +273,69 @@ function drawLanes(ctx: FullCtx, lanesH: number): void {
     const unique = dedupeReqs(tileReqs);
     void peaks.requestTiles(unique).then(() => ctx.requestDraw());
   }
+}
+
+/**
+ * frame2 (UX-4): one Path2D fill per lane (plus merged pending runs)
+ * instead of per-pixel fillRects — same data path (PeakClient buckets).
+ */
+function drawBatchedLane(
+  ctx: FullCtx,
+  ch: number,
+  y0: number,
+  laneH: number,
+  mid: number,
+  amp: number,
+  level: number,
+  laneW: number,
+): boolean {
+  const { g, doc, peaks, view } = ctx;
+  if (!peaks) return false;
+  const rail = ctx.axis ? RAIL_W : 0;
+  const sr = doc.sampleRate;
+  const base = view.start * sr;
+  const spp = view.spp;
+  const reqs: ReturnType<typeof tilesForRange> = [];
+
+  // UX-4: with dbScale the y-mapping is linear-in-dB with the analytic
+  // anchors (1.0 → edge, 0.5 → −6.02, 0.1 → −20, floor −60 → center) — the
+  // same mapping the DOM scale panel labels, so the picture tells the truth.
+  const geom = lanePathPoints(
+    laneW,
+    (x) => {
+      const sample = base + x * spp;
+      const v = peaks.bucketValue(ch, level, Math.floor(sample / level));
+      if (v) return { min: v.min, max: v.max };
+      reqs.push(...tilesForRange(ch, level, Math.max(0, sample), Math.max(0, sample) + spp));
+      return null;
+    },
+    y0,
+    mid,
+    amp,
+    ctx.dbScale ? dBValueMapper() : undefined,
+  );
+
+  g.fillStyle = currentTheme().wave;
+  if (geom.cols.length > 0) {
+    const path = new Path2D();
+    const [firstX, firstMin] = geom.cols[0]!;
+    path.moveTo(rail + firstX, firstMin);
+    for (const [x, yMin] of geom.cols) path.lineTo(rail + x, yMin);
+    for (let i = geom.cols.length - 1; i >= 0; --i) {
+      const [x, , yMax] = geom.cols[i]!;
+      path.lineTo(rail + x, yMax);
+    }
+    path.closePath();
+    g.fill(path);
+  }
+  if (geom.missing.length > 0) {
+    g.fillStyle = currentTheme().pending;
+    for (const [x0, x1] of geom.missing) g.fillRect(rail + x0, y0, x1 - x0 + 1, laneH);
+    if (reqs.length > 0) {
+      void peaks.requestTiles(dedupeReqs(reqs)).then(() => ctx.requestDraw());
+    }
+  }
+  return geom.missing.length > 0 && reqs.length > 0;
 }
 
 /** Sample-level lane (spp < 1): polyline from raw slices. */

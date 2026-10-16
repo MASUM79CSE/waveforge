@@ -33,6 +33,14 @@ export class WaveRenderer {
   private frameQueued = false;
   private axis = true;
   private vzoom = 1;
+  /** frame2 (UX-4): playhead drawn on a separate overlay layer, not here. */
+  overlayPlayhead = false;
+  /** frame2 (UX-4): batched one-path-per-lane painting. */
+  batchedLanes = false;
+  /** frame2 (UX-4): minor ruler ticks. */
+  minorTicks = false;
+  /** frame2 (UX-4): vertical scale linear-in-dB (batched lanes). */
+  dbScale = false;
   private pendingRaw = new Map<number, Float32Array>();
   private drag: { mode: 'scrub' | 'select'; anchor: number; startX: number } | null = null;
 
@@ -111,12 +119,14 @@ export class WaveRenderer {
     this.setStart(t - half);
   }
 
-  /** Auto-follow during playback. */
-  followCursor(t: number): void {
+  /** Auto-follow during playback; returns true when the view paged. */
+  followCursor(t: number): boolean {
     const env = this.env();
-    if (!env) return;
+    if (!env) return false;
+    const prev = this.view;
     this.view = V.ensureVisible(this.view, env, t);
-    this.emitView();
+    if (prev !== this.view) this.emitView();
+    return prev !== this.view;
   }
 
   /** D4: toggle the left rail + bottom amplitude axis (reference layout). */
@@ -194,6 +204,10 @@ export class WaveRenderer {
       pendingRaw: this.pendingRaw,
       axis: this.axis,
       vzoom: this.vzoom,
+      overlayPlayhead: this.overlayPlayhead,
+      batchedLanes: this.batchedLanes,
+      minorTicks: this.minorTicks,
+      dbScale: this.dbScale,
       requestDraw: () => this.requestDraw(),
     });
   }

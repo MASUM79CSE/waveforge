@@ -1,0 +1,25 @@
+{
+  "window": {
+    "ms": 5050,
+    "viewport": "1280x800",
+    "theme": "light",
+    "state": "playing, sample loaded",
+    "url": "http://localhost:5180/?ui2=1"
+  },
+  "drawCalls": {
+    "raf": 610,
+    "clearRect": 301,
+    "fillRect": 823,
+    "strokeRect": 0,
+    "beginPath": 0,
+    "drawImage": 0,
+    "arc": 0
+  },
+  "rafCalls": 610,
+  "longAnimationFrame": {
+    "count": 1,
+    "totalMs": 67,
+    "blockingMs": 17,
+    "worst": 67
+  }
+}
