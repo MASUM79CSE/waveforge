@@ -41,7 +41,15 @@ with spectrogram; a literal `APPROVE TIER B: RMS` before Phase 4 revives it).
 | UX-2.5 | Z-shell Frame2 (Option B zones Z1–Z9, legacy bars mounted verbatim; capability parity flag-ON) | VERIFIED | `1f8b27c` | `src/app/frame2/Frame2.tsx` + `frame2.css` + App switch; live screenshot verified (waveform 1280×660) |
 | UX-2.6 | Full gate: flag OFF identical legacy; flag ON parity; LH; bundle | VERIFIED | `1f8b27c` | unit **90 f / 750 t** PASS · e2e **65 passed** (59 legacy + 6 frame2, both projects) · build PASS · bundle **120,361 B gz (+277 vs baseline)** · LH D **P100/A100/BP100/S91** · M **P99/A100/BP100/S91** = baseline parity |
 
-Phases: **0..5 PASSED · 6 COMPLETE (PCA PASSED) — PROGRAM BUILD COMPLETE.**
+Phases: **0..5 PASSED · 6 COMPLETE (PCA PASSED) — PROGRAM COMPLETE AND MERGED TO main.**
+Integration merge `6484844` (main): resolved against the parallel WF-001..016 line —
+kept both waveDraw ctx option sets · dropped frame2's UrlDialog ref (URL import was
+removed by WF-011 privacy work) · reachability gate now covers keyboard-only
+`marker.select{Prev,Next}` (shared '{'/'}' keys) · axe injection via same-origin URL
+(CSP_ENFORCE clean) · 30 stale role=button selectors in the merged specs migrated.
+**Integration gates: unit 109 f / 906 t PASS · e2e 107 passed + 1 flaky-retry PASS
+(CSP_ENFORCE=1, their retry policy) · walk 110/112 failed:0 · bundle 61,502 gz /
+199,804 raw (their perf line halved it) · LH D P100/A100/BP100/S91 · M P97/A100/BP100/S91.**
 Deliverables: `INDEPENDENT-REVIEW.md`, `PROGRAM-SUMMARY.md`, `docs/ui2/clean-slate-layout.md`.
 **Awaiting user decisions:** merge of the opt-in preview · (later) default flip ·
 (later, token-gated) `APPROVE REMOVE LEGACY UI` · optional `APPROVE TIER B: RMS`.

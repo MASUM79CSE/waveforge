@@ -69,3 +69,9 @@
 - Tab stops re-measured (selector excludes tabindex=-1): legacy **45→40**, frame2 **32→27**.
 - LH (flag OFF): D P100/A100/BP100/S91 · M P98/A100/BP100/S91 (unchanged). Bundle **130,389 gz / 420,869 raw** (+770).
 - **R-3 lesson (process):** first selector sweep missed `Effects`/`Analyze`/regex names → 28 tests clicked a non-existent role and hung (run reported 50/78 in 23.5 m; `tail` had cut the failed-count line). Fixed by grepping EVERY menu-title `getByRole('button'…)` form; full suite then green at normal speed. Also: pkill in a compound command aborted the following python twice — run ledgers standalone (existing rule, re-learned).
+
+## Integration merge (main @ 6484844) — verbatim
+- Discovery: origin/main was 50+ commits ahead (WF-001..016 hardening/features, own Phase audits, verdict GO); our branch predated all of it.
+- Conflicts: exactly ONE file (waveDraw.ts ctx interface) — resolved keep-both; semantic fixes: frame2 UrlDialog removal (WF-011), marker.select{Prev,Next} added to reachability exceptions as documented global keys, 30 role=button selectors in their merged specs → role=menuitem (menubar F-2 roles), axe addScriptTag path→URL (CSP `script-src 'self'` blocks inline injection under CSP_ENFORCE=1).
+- Gates on the merged tree: unit **906/906** · e2e **108** (107 pass + 1 flaky passed on their retry-1 policy) with **CSP_ENFORCE=1** · walk 110/112 failed:0 · build PASS · bundle **61,502 gz / 199,804 raw** · LH **D P100/A100/BP100/S91, M P97**/A100/BP100/S91.
+- Process notes (R-4): convert selectors AFTER every merge, not just before; run suites with the project's own env policy (CSP_ENFORCE=1, retries=1) — ad-hoc overrides manufacture failures.
